@@ -1,9 +1,9 @@
 use core::fmt;
-use std::fmt::Display;
+use std::{fmt::Display, collections::BTreeMap};
 
 use eframe::{
-    egui::{self, Layout, RichText},
-    emath::Align,
+    egui::{self, Layout, RichText, style},
+    emath::Align, epaint::FontFamily,
 };
 
 
@@ -29,7 +29,7 @@ fn main() -> Result<(), eframe::Error> {
                 }
 
                 egui::ComboBox::from_id_source("my_combobox").width(200.0)
-                .selected_text(format!("{:?}", selected))
+                .selected_text(RichText::new(format!("{:?}",selected)).size(30.0))
                 .show_ui(ui, |ui|{
                     ui.selectable_value(&mut selected,ModeOptions::Rectangle, RichText::new("Rectangle").size(30.0));
                     ui.selectable_value(&mut selected, ModeOptions::FullScreen , RichText::new("FullScreen").size(30.0));
