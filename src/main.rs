@@ -1,4 +1,4 @@
-use eframe::egui::{self, RichText};
+use eframe::{egui::{self, RichText}, Frame};
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -24,7 +24,8 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    eframe::run_simple_native("Screen Grabbing Utility", options, move |ctx, _frame| {
+
+    eframe::run_simple_native("Screen Grabbing Utility", options, move |ctx, frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.add_space(20.0); // da modificare
@@ -32,7 +33,9 @@ fn main() -> Result<(), eframe::Error> {
                     .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
                     .clicked()
                 {
+                    
                     println!("premuto +");
+                    frame.set_minimized(true);
                 }
 
                 egui::ComboBox::from_id_source("mode_Combobox")
@@ -75,6 +78,7 @@ fn main() -> Result<(), eframe::Error> {
                         {
                             selected_timer_string = "No Timer".to_string();
                         };
+                        
                         if ui
                             .selectable_value(
                                 &mut selected_timer,
