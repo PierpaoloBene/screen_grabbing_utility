@@ -1,9 +1,9 @@
-use std::{sync::Arc, option};
 use screenshots::Screen;
 use std::time::Instant;
+use std::{option, sync::Arc};
 
 use eframe::{
-    egui::{self, RichText, Options, Visuals, Color32},
+    egui::{self, Color32, Options, RichText, Visuals},
     epaint::mutex::Mutex,
     Frame,
 };
@@ -27,7 +27,6 @@ fn main() -> Result<(), eframe::Error> {
         transparent: true,
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         ..Default::default()
-        
     };
 
     eframe::run_native(
@@ -43,10 +42,6 @@ fn main() -> Result<(), eframe::Error> {
             })
         }),
     )
-
-
-
-
 }
 
 struct FirstWindow {
@@ -68,8 +63,6 @@ impl eframe::App for FirstWindow {
                     {
                         println!("premuto +");
                         self.selected_window = 2;
-                        
-
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
@@ -162,35 +155,32 @@ impl eframe::App for FirstWindow {
         } else {
             println!("sono in update;");
             frame.set_maximized(true);
-            
+
             frame.set_decorations(false);
             egui::Window::new("Second window").show(ctx, |ui| {
                 let start = Instant::now();
                 let screens = Screen::all().unwrap();
 
-                
                 if ui.input(|i| i.pointer.any_down()) {
                     let mouse_pos = ui.input(|i| i.pointer.interact_pos());
                     println!("Click del mouse a: {:?}", mouse_pos);
                 }
-                
-            
+
                 // for screen in screens {
                 //     /*Prende tutti gli schermi e ne salva l'intero contenuto*/
-                    
+
                 //     let mut image = screen.capture().unwrap();
-                //     image   
+                //     image
                 //         .save(format!("target/{}.png", screen.display_info.id))
                 //         .unwrap();
-            
-                   
+
                 // }
-               
-                    
-            
-                  
-                
-                
+
+                //         let position = Mouse::get_mouse_position();
+                //     match position {
+                //         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
+                //         Mouse::Error => println!("Error getting mouse position"),
+                //    }
             });
         }
     }
