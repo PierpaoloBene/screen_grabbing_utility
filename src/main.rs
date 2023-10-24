@@ -16,9 +16,9 @@ enum TimerOptions {
 
 fn main() -> Result<(), eframe::Error> {
     let mut selected_mode: ModeOptions = ModeOptions::Rectangle;
-    let mut selected_mode_string = "Select Mode".to_string();
+    let mut selected_mode_string = "Rectangle".to_string();
     let mut selected_timer: TimerOptions = TimerOptions::NoTimer;
-    let mut selected_timer_string = "Set Timer".to_string();
+    let mut selected_timer_string = "No timer".to_string();
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         ..Default::default()
