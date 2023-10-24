@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 eframe = "0.23.0"
+screenshots = "0.8.4"

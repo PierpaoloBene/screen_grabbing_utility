@@ -1,7 +1,9 @@
 use std::{sync::Arc, option};
+use screenshots::Screen;
+use std::time::Instant;
 
 use eframe::{
-    egui::{self, RichText, Options},
+    egui::{self, RichText, Options, Visuals, Color32},
     epaint::mutex::Mutex,
     Frame,
 };
@@ -22,8 +24,10 @@ enum TimerOptions {
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
+        transparent: true,
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         ..Default::default()
+        
     };
 
     eframe::run_native(
@@ -64,6 +68,7 @@ impl eframe::App for FirstWindow {
                     {
                         println!("premuto +");
                         self.selected_window = 2;
+                        
 
                     }
 
@@ -156,11 +161,36 @@ impl eframe::App for FirstWindow {
             });
         } else {
             println!("sono in update;");
-            frame.set_fullscreen(true);
+            frame.set_maximized(true);
+            
+            frame.set_decorations(false);
             egui::Window::new("Second window").show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.button("puttana");
-                });
+                let start = Instant::now();
+                let screens = Screen::all().unwrap();
+
+                
+                if ui.input(|i| i.pointer.any_down()) {
+                    let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+                    println!("Click del mouse a: {:?}", mouse_pos);
+                }
+                
+            
+                // for screen in screens {
+                //     /*Prende tutti gli schermi e ne salva l'intero contenuto*/
+                    
+                //     let mut image = screen.capture().unwrap();
+                //     image   
+                //         .save(format!("target/{}.png", screen.display_info.id))
+                //         .unwrap();
+            
+                   
+                // }
+               
+                    
+            
+                  
+                
+                
             });
         }
     }
