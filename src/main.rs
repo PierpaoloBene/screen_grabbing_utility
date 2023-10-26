@@ -1,10 +1,8 @@
 use screenshots::Screen;
 use std::time::Instant;
-use std::{option, sync::Arc};
 
 use eframe::{
-    egui::{self, Color32, Options, RichText, Visuals},
-    epaint::mutex::Mutex,
+    egui::{self, RichText},
     Frame,
 };
 
@@ -23,8 +21,6 @@ enum TimerOptions {
 }
 
 fn main() -> Result<(), eframe::Error> {
-
-
     let options = eframe::NativeOptions {
         transparent: true,
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
@@ -55,7 +51,7 @@ struct FirstWindow {
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-        if (self.selected_window == 1) {
+        if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
@@ -158,10 +154,10 @@ impl eframe::App for FirstWindow {
             println!("sono in update;");
             frame.set_maximized(true);
 
-            frame.set_decorations(true);
+            frame.set_decorations(false);
             egui::Window::new("Second window").show(ctx, |ui| {
-                let start = Instant::now();
-                let screens = Screen::all().unwrap();
+                let _start = Instant::now();
+                let _screens = Screen::all().unwrap();
 
                 if ui.input(|i| i.pointer.any_down()) {
                     let mouse_pos = ui.input(|i| i.pointer.interact_pos());
@@ -175,14 +171,13 @@ impl eframe::App for FirstWindow {
                 //     image
                 //         .save(format!("target/{}.png", screen.display_info.id))
                 //         .unwrap();
-
                 // }
 
-                //         let position = Mouse::get_mouse_position();
-                //     match position {
-                //         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
-                //         Mouse::Error => println!("Error getting mouse position"),
-                //    }
+                // let position = Mouse::get_mouse_position();
+                // match position {
+                //     Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
+                //     Mouse::Error => println!("Error getting mouse position"),
+                // }
             });
         }
     }
