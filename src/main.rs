@@ -23,6 +23,8 @@ enum TimerOptions {
 }
 
 fn main() -> Result<(), eframe::Error> {
+
+
     let options = eframe::NativeOptions {
         transparent: true,
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
@@ -156,7 +158,7 @@ impl eframe::App for FirstWindow {
             println!("sono in update;");
             frame.set_maximized(true);
 
-            frame.set_decorations(false);
+            frame.set_decorations(true);
             egui::Window::new("Second window").show(ctx, |ui| {
                 let start = Instant::now();
                 let screens = Screen::all().unwrap();
