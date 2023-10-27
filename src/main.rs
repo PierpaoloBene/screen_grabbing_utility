@@ -152,9 +152,12 @@ impl eframe::App for FirstWindow {
             });
         } else {
             println!("sono in update;");
-            frame.set_maximized(true);
 
+            
             frame.set_decorations(false);
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            frame.set_window_pos(egui::pos2(0.0, 0.0));
+
             egui::Window::new("Second window").show(ctx, |ui| {
                 let _start = Instant::now();
                 let _screens = Screen::all().unwrap();
