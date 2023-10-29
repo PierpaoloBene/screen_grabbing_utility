@@ -48,6 +48,10 @@ struct FirstWindow {
     selected_timer: TimerOptions,
     selected_timer_string: String,
     selected_window: usize,
+    mouse_pos: Option<Pos2>,
+    mouse_pos_f: Option<Pos2>,
+    openScreen: GlobalHotKeyEventReceiver,
+    closeScreen:GlobalHotKeyEventReceiver
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
