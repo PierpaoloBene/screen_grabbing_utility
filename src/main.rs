@@ -1,6 +1,5 @@
-
 use screenshots::{image::EncodableLayout, Screen};
-use std::{time::Instant, sync::mpsc::Receiver};
+use std::{sync::mpsc::Receiver, time::Instant};
 
 use eframe::{
     egui::{self, Color32, Options, RichText, Visuals},
@@ -10,7 +9,6 @@ use eframe::{
 use egui::Pos2;
 use std::fs;
 use std::fs::File;
-
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -33,7 +31,6 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -49,7 +46,6 @@ fn main() -> Result<(), eframe::Error> {
             })
         }),
     )
-    
 }
 
 struct FirstWindow {
@@ -63,9 +59,7 @@ struct FirstWindow {
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-        if (self.selected_window == 1) {
-            
-
+        if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
@@ -164,13 +158,15 @@ impl eframe::App for FirstWindow {
                     }
                 });
             });
-        } else {
+        } else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
+           
 
             egui::Window::new("Second window").show(ctx, |ui| {
-                let start = Instant::now();
+                let _start = Instant::now();
+
                 let screens = Screen::all().unwrap();
 
                 if ui.input(|i| {
@@ -178,6 +174,7 @@ impl eframe::App for FirstWindow {
                         && self.mouse_pos.unwrap()[0] == -1.0
                         && self.mouse_pos.unwrap()[1] == -1.0
                 }) {
+                    frame.set_visible(false);
                     println!("salvo pressione");
                     self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
                     // let mut image = Screen::from_point(
@@ -186,45 +183,41 @@ impl eframe::App for FirstWindow {
 
                     // );
                 }
-                 
+
                 if ui.input(|i| i.pointer.any_released()) {
                     println!("salvo rilascio");
                     self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
                 }
 
-                let mut width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-                let mut height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+                let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+                let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
 
-                if (self.mouse_pos.unwrap()[0] > -1.0
+                if self.mouse_pos.unwrap()[0] > -1.0
                     && self.mouse_pos.unwrap()[1] > -1.0
                     && self.mouse_pos_f.unwrap()[0] > -1.0
-                    && self.mouse_pos_f.unwrap()[1] > -1.0)
+                    && self.mouse_pos_f.unwrap()[1] > -1.0
                 {
-                    println!(
-                        "xi={} xf={} yi={} yf={}",
-                        self.mouse_pos.unwrap()[0],
-                        self.mouse_pos_f.unwrap()[0],
-                        self.mouse_pos.unwrap()[1],
-                        self.mouse_pos_f.unwrap()[1]
-                    );
-                }
-                for screen in screens {
-                    let mut image = screen.capture_area(
-                        self.mouse_pos.unwrap()[0] as i32,
-                        self.mouse_pos.unwrap()[1] as i32,
-                        width as u32,
-                        height as u32,
-                    );
+                    println!("sono nell'if");
+                    for screen in screens {
+                        let mut image = screen.capture_area(
+                            self.mouse_pos.unwrap()[0] as i32,
+                            self.mouse_pos.unwrap()[1] as i32,
+                            width as u32,
+                            height as u32,
+                        );
 
-                    if image.is_err() == false {
-                        image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.png");
+                        if image.is_err() == false {
+                            println!("gira gira gira gira");
+                            image.unwrap().save("/Users/pierpaolobene/Documents/ao.jpg");
+                            println!("sto resettando");
+                            self.selected_window = 1;
+                        }
                         //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+                        frame.set_visible(true);
                     }
                 }
-                
 
                 //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
-
             });
         }
     }
