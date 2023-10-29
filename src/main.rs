@@ -1,36 +1,3 @@
-// use screenshots::Screen;
-// use std::time::Instant;
-
-// use mouse_position::mouse_position::{Mouse};
-// use eframe::{ NativeOptions};
-// use egui::{Event};
-
-// fn main() {
-//     let start = Instant::now();
-//     let screens = Screen::all().unwrap();
-
-//     for screen in screens {
-
-//         if Mouse::
-//         let position = Mouse::get_mouse_position();
-//         let mut xD=-1;
-//         let mut yD=-1;
-//         match position {
-//             Mouse::Position { x, y } => {xD=x; yD=y}
-//             Mouse::Error => {xD=-1; yD=-1},
-
-//        }
-
-//        let mut image=Screen::from_point(xD, yD);
-
-//     }
-
-//         let position = Mouse::get_mouse_position();
-//     match position {
-//         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
-//         Mouse::Error => println!("Error getting mouse position"),
-//    }
-//     }
 
 use screenshots::{image::EncodableLayout, Screen};
 use std::{time::Instant, sync::mpsc::Receiver};
@@ -43,10 +10,6 @@ use eframe::{
 use egui::Pos2;
 use std::fs;
 use std::fs::File;
-
-use global_hotkey::{hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState, GlobalHotKeyEventReceiver};
-use keyboard_types::{Code, Modifiers};
-
 
 
 #[derive(PartialEq, Debug)]
@@ -70,18 +33,6 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    let manager = GlobalHotKeyManager::new().unwrap();
-    
-
-    let hotkey_o = HotKey::new(Some(Modifiers::SHIFT), Code::KeyD);
-    let hotkey_c = HotKey::new(None, Code::Escape);
-    
-    manager.register(hotkey_o).unwrap();
-    manager.register(hotkey_c).unwrap();
-
-    let open = GlobalHotKeyEvent::receiver();
-    let close=GlobalHotKeyEvent::receiver();
-    
     
     eframe::run_native(
         "Screen Grabbing Utility",
@@ -95,8 +46,6 @@ fn main() -> Result<(), eframe::Error> {
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
-                openScreen:open.clone(),
-                closeScreen:close.clone()
             })
         }),
     )
@@ -111,27 +60,10 @@ struct FirstWindow {
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
-    openScreen: GlobalHotKeyEventReceiver,
-    closeScreen:GlobalHotKeyEventReceiver
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
         if (self.selected_window == 1) {
-            
-            
-            match self.openScreen.try_recv() {
-                Ok(event) => {
-                        self.selected_window=2;
-                         
-                        println!("premuto ctrl+s");
-                }
-                Err(_) => {
-                            println!("{:?}", self.selected_window);
-                        }
-                _=>{
-                    println!("waiting")
-                }
-            }
             
 
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -233,21 +165,10 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else {
-            frame.set_maximized(true);
             frame.set_decorations(false);
-            match self.closeScreen.try_recv() {
-                Ok(event) => {
-                        self.selected_window=1;
-                         
-                        println!("premuto esc");
-                }
-                Err(_) => {
-                            println!("{:?}", self.selected_window);
-                        }
-                _=>{
-                    println!("waiting")
-                }
-            }
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            frame.set_window_pos(egui::pos2(0.0, 0.0));
+
             egui::Window::new("Second window").show(ctx, |ui| {
                 let start = Instant::now();
                 let screens = Screen::all().unwrap();
@@ -265,6 +186,7 @@ impl eframe::App for FirstWindow {
 
                     // );
                 }
+                 
                 if ui.input(|i| i.pointer.any_released()) {
                     println!("salvo rilascio");
                     self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
@@ -295,28 +217,14 @@ impl eframe::App for FirstWindow {
                     );
 
                     if image.is_err() == false {
-                        // image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.png");
+                        image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.png");
                         //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
                     }
                 }
+                
 
                 //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
 
-                // for screen in screens {
-                //     /*Prende tutti gli schermi e ne salva l'intero contenuto*/
-
-                //     let mut image = screen.capture().unwrap();
-                //     image
-                //         .save(format!("target/{}.png", screen.display_info.id))
-                //         .unwrap();
-
-                // }
-
-                //         let position = Mouse::get_mouse_position();
-                //     match position {
-                //         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
-                //         Mouse::Error => println!("Error getting mouse position"),
-                //    }
             });
         }
     }
