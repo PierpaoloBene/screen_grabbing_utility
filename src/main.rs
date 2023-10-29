@@ -1,10 +1,53 @@
-use screenshots::Screen;
-use std::time::Instant;
+// use screenshots::Screen;
+// use std::time::Instant;
+
+// use mouse_position::mouse_position::{Mouse};
+// use eframe::{ NativeOptions};
+// use egui::{Event};
+
+// fn main() {
+//     let start = Instant::now();
+//     let screens = Screen::all().unwrap();
+
+//     for screen in screens {
+
+//         if Mouse::
+//         let position = Mouse::get_mouse_position();
+//         let mut xD=-1;
+//         let mut yD=-1;
+//         match position {
+//             Mouse::Position { x, y } => {xD=x; yD=y}
+//             Mouse::Error => {xD=-1; yD=-1},
+
+//        }
+
+//        let mut image=Screen::from_point(xD, yD);
+
+//     }
+
+//         let position = Mouse::get_mouse_position();
+//     match position {
+//         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
+//         Mouse::Error => println!("Error getting mouse position"),
+//    }
+//     }
+
+use screenshots::{image::EncodableLayout, Screen};
+use std::{time::Instant, sync::mpsc::Receiver};
 
 use eframe::{
-    egui::{self, RichText},
+    egui::{self, Color32, Options, RichText, Visuals},
+    epaint::mutex::Mutex,
     Frame,
 };
+use egui::Pos2;
+use std::fs;
+use std::fs::File;
+
+use global_hotkey::{hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState, GlobalHotKeyEventReceiver};
+use keyboard_types::{Code, Modifiers};
+
+
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -27,6 +70,19 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
+    let manager = GlobalHotKeyManager::new().unwrap();
+    
+
+    let hotkey_o = HotKey::new(Some(Modifiers::SHIFT), Code::KeyD);
+    let hotkey_c = HotKey::new(None, Code::Escape);
+    
+    manager.register(hotkey_o).unwrap();
+    manager.register(hotkey_c).unwrap();
+
+    let open = GlobalHotKeyEvent::receiver();
+    let close=GlobalHotKeyEvent::receiver();
+    
+    
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -44,6 +100,7 @@ fn main() -> Result<(), eframe::Error> {
             })
         }),
     )
+    
 }
 
 struct FirstWindow {
@@ -59,7 +116,24 @@ struct FirstWindow {
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-        if self.selected_window == 1 {
+        if (self.selected_window == 1) {
+            
+            
+            match self.openScreen.try_recv() {
+                Ok(event) => {
+                        self.selected_window=2;
+                         
+                        println!("premuto ctrl+s");
+                }
+                Err(_) => {
+                            println!("{:?}", self.selected_window);
+                        }
+                _=>{
+                    println!("waiting")
+                }
+            }
+            
+
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
@@ -159,13 +233,21 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else {
-            println!("sono in update;");
-
-            
+            frame.set_maximized(true);
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-            frame.set_window_pos(egui::pos2(0.0, 0.0));
-
+            match self.closeScreen.try_recv() {
+                Ok(event) => {
+                        self.selected_window=1;
+                         
+                        println!("premuto esc");
+                }
+                Err(_) => {
+                            println!("{:?}", self.selected_window);
+                        }
+                _=>{
+                    println!("waiting")
+                }
+            }
             egui::Window::new("Second window").show(ctx, |ui| {
                 let start = Instant::now();
                 let screens = Screen::all().unwrap();
