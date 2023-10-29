@@ -159,13 +159,58 @@ impl eframe::App for FirstWindow {
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             egui::Window::new("Second window").show(ctx, |ui| {
-                let _start = Instant::now();
-                let _screens = Screen::all().unwrap();
+                let start = Instant::now();
+                let screens = Screen::all().unwrap();
 
-                if ui.input(|i| i.pointer.any_down()) {
-                    let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                    println!("Click del mouse a: {:?}", mouse_pos);
+                if ui.input(|i| {
+                    i.pointer.any_down()
+                        && self.mouse_pos.unwrap()[0] == -1.0
+                        && self.mouse_pos.unwrap()[1] == -1.0
+                }) {
+                    println!("salvo pressione");
+                    self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
+                    // let mut image = Screen::from_point(
+                    //     mouse_pos.unwrap()[0] as i32,
+                    //     mouse_pos.unwrap()[1] as i32,
+
+                    // );
                 }
+                if ui.input(|i| i.pointer.any_released()) {
+                    println!("salvo rilascio");
+                    self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
+                }
+
+                let mut width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+                let mut height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+
+                if (self.mouse_pos.unwrap()[0] > -1.0
+                    && self.mouse_pos.unwrap()[1] > -1.0
+                    && self.mouse_pos_f.unwrap()[0] > -1.0
+                    && self.mouse_pos_f.unwrap()[1] > -1.0)
+                {
+                    println!(
+                        "xi={} xf={} yi={} yf={}",
+                        self.mouse_pos.unwrap()[0],
+                        self.mouse_pos_f.unwrap()[0],
+                        self.mouse_pos.unwrap()[1],
+                        self.mouse_pos_f.unwrap()[1]
+                    );
+                }
+                for screen in screens {
+                    let mut image = screen.capture_area(
+                        self.mouse_pos.unwrap()[0] as i32,
+                        self.mouse_pos.unwrap()[1] as i32,
+                        width as u32,
+                        height as u32,
+                    );
+
+                    if image.is_err() == false {
+                        // image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.png");
+                        //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+                    }
+                }
+
+                //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
 
                 // for screen in screens {
                 //     /*Prende tutti gli schermi e ne salva l'intero contenuto*/
@@ -174,13 +219,14 @@ impl eframe::App for FirstWindow {
                 //     image
                 //         .save(format!("target/{}.png", screen.display_info.id))
                 //         .unwrap();
+
                 // }
 
-                // let position = Mouse::get_mouse_position();
-                // match position {
-                //     Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
-                //     Mouse::Error => println!("Error getting mouse position"),
-                // }
+                //         let position = Mouse::get_mouse_position();
+                //     match position {
+                //         Mouse::Position { x, y } => println!("x: {}, y: {}", x, y),
+                //         Mouse::Error => println!("Error getting mouse position"),
+                //    }
             });
         }
     }
