@@ -37,6 +37,10 @@ fn main() -> Result<(), eframe::Error> {
                 selected_timer: TimerOptions::NoTimer,
                 selected_timer_string: "No timer".to_string(),
                 selected_window: 1,
+                mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
+                mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
+                openScreen:open.clone(),
+                closeScreen:close.clone()
             })
         }),
     )
