@@ -1,14 +1,17 @@
 use screenshots::{image::EncodableLayout, Screen};
-use std::{sync::mpsc::Receiver, time::Instant};
+use std::{
+    default,
+    fs::File,
+    sync::mpsc::Receiver,
+    time::{Duration, Instant},
+};
 
 use eframe::{
     egui::{self, Color32, Options, RichText, Visuals},
     epaint::mutex::Mutex,
     Frame,
 };
-use egui::Pos2;
-use std::fs;
-use std::fs::File;
+use egui::{Pos2, RawInput, Style, Ui, Widget};
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -68,6 +71,11 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
+
+                        if self.selected_mode == ModeOptions::FullScreen {
+                            frame.set_minimized(true);
+                        }
+
                         self.selected_window = 2;
                     }
 
@@ -159,66 +167,112 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else if self.selected_window == 2 {
-            frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-            frame.set_window_pos(egui::pos2(0.0, 0.0));
-           
-
-            egui::Window::new("Second window").show(ctx, |ui| {
-                let _start = Instant::now();
-
-                let screens = Screen::all().unwrap();
-
-                if ui.input(|i| {
-                    i.pointer.any_down()
-                        && self.mouse_pos.unwrap()[0] == -1.0
-                        && self.mouse_pos.unwrap()[1] == -1.0
-                }) {
-                    frame.set_visible(false);
-                    println!("salvo pressione");
-                    self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                    // let mut image = Screen::from_point(
-                    //     mouse_pos.unwrap()[0] as i32,
-                    //     mouse_pos.unwrap()[1] as i32,
-
-                    // );
+            
+            let mut timer = 0;
+            match self.selected_timer {
+                TimerOptions::NoTimer => {
+                    timer = 0;
                 }
-
-                if ui.input(|i| i.pointer.any_released()) {
-                    println!("salvo rilascio");
-                    self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
+                TimerOptions::ThreeSeconds => {
+                    timer = 3;
                 }
+                TimerOptions::FiveSeconds => {
+                    timer = 5;
+                }
+                TimerOptions::TenSeconds => {
+                    timer = 10;
+                }
+                _ => {}
+            }
+            match self.selected_mode {
+                ModeOptions::FullScreen => {
+                    std::thread::sleep(Duration::from_secs(timer as u64));
+                    let screens = Screen::all().unwrap();
 
-                let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-                let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
-
-                if self.mouse_pos.unwrap()[0] > -1.0
-                    && self.mouse_pos.unwrap()[1] > -1.0
-                    && self.mouse_pos_f.unwrap()[0] > -1.0
-                    && self.mouse_pos_f.unwrap()[1] > -1.0
-                {
-                    println!("sono nell'if");
                     for screen in screens {
-                        let mut image = screen.capture_area(
-                            self.mouse_pos.unwrap()[0] as i32,
-                            self.mouse_pos.unwrap()[1] as i32,
-                            width as u32,
-                            height as u32,
-                        );
+                        println!("screen done");
+                        //SCREEN SU TUTTI GLI SCHERMI COLLEGATI O SOLO SU QUELLO IN CUI è APERTA L'APP?
 
-                        if image.is_err() == false {
-                            println!("gira gira gira gira");
-                            image.unwrap().save("/Users/pierpaolobene/Documents/ao.jpg");
-                            println!("sto resettando");
-                            self.selected_window = 1;
-                        }
-                        //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
-                        frame.set_visible(true);
+                        let mut image = screen.capture().unwrap();
+                        //AGGIUNGERE QUALCOSA PER FAR CAPIRE CHE è STATO FATTO LO SCREEN
+                        image
+                            //CAMBIARE PATH SALVATAGGIO
+                            .save(format!("target/{}.png", screen.display_info.id))
+                            .unwrap();
                     }
-                }
 
-                //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
-            });
+                    self.selected_window = 1; //CAMBIARE CAMBIO FINESTRA
+                }
+                ModeOptions::Rectangle => {
+                    frame.set_decorations(false);
+                    frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+                    frame.set_window_pos(egui::pos2(0.0, 0.0));
+
+                    egui::Window::new("Second window").show(ctx, |ui| {
+                        let _start = Instant::now();
+
+                        let screens = Screen::all().unwrap();
+
+                        if ui.input(|i| {
+                            i.pointer.any_down()
+                                && self.mouse_pos.unwrap()[0] == -1.0
+                                && self.mouse_pos.unwrap()[1] == -1.0
+                        }) {
+                            //frame.set_visible(false);
+                            println!("salvo pressione");
+                            self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
+                        }
+
+                        if ui.input(|i| {
+                            i.pointer.any_released()
+                                && self.mouse_pos_f.unwrap()[0] == -1.0
+                                && self.mouse_pos_f.unwrap()[1] == -1.0
+                        }) {
+                            println!("salvo rilascio");
+                            self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
+                            frame.set_visible(false);
+                            
+                        }
+
+                        let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+                        let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+
+                        if self.mouse_pos.unwrap()[0] != -1.0
+                            && self.mouse_pos.unwrap()[1] != -1.0
+                            && self.mouse_pos_f.unwrap()[0] != -1.0
+                            && self.mouse_pos_f.unwrap()[1] != -1.0
+                        {
+                            println!("sono nell'if");
+                            //std::thread::sleep(Duration::from_secs(30));
+
+                            for screen in screens {
+                                println!("pronto a screennare {:?}", Instant::now());
+                                let image = screen.capture_area(
+                                    self.mouse_pos.unwrap()[0] as i32,
+                                    self.mouse_pos.unwrap()[1] as i32,
+                                    width as u32,
+                                    height as u32,
+                                );
+
+                                if image.is_err() == false {
+                                    println!("gira gira gira gira");
+                                    let _=image.unwrap().save(format!(
+                                        "C:\\Users\\masci\\Desktop\\ao{}.jpg",
+                                        screen.display_info.id
+                                    ));
+                                    println!("sto resettando");
+                                    self.selected_window = 1;
+                                }
+                                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+                                //frame.set_visible(true);
+                            }
+                        }
+
+                        //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
+                    });
+                }
+                _ => {}
+            }
         }
     }
 }
