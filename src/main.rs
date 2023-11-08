@@ -43,6 +43,7 @@ fn main() -> Result<(), eframe::Error> {
                 selected_mode_string: "Rectangle".to_string(),
                 selected_timer: TimerOptions::NoTimer,
                 selected_timer_string: "No timer".to_string(),
+                selected_timer_numeric: 0 as u64,
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
@@ -56,6 +57,7 @@ struct FirstWindow {
     selected_mode_string: String,
     selected_timer: TimerOptions,
     selected_timer_string: String,
+    selected_timer_numeric:u64,
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
@@ -128,6 +130,7 @@ impl eframe::App for FirstWindow {
                                 .clicked()
                             {
                                 self.selected_timer_string = "3 Seconds".to_string();
+                                self.selected_timer_numeric=3;
                             };
                             if ui
                                 .selectable_value(
@@ -138,6 +141,7 @@ impl eframe::App for FirstWindow {
                                 .clicked()
                             {
                                 self.selected_timer_string = "5 Seconds".to_string();
+                                self.selected_timer_numeric=5;
                             };
                             if ui
                                 .selectable_value(
@@ -148,6 +152,7 @@ impl eframe::App for FirstWindow {
                                 .clicked()
                             {
                                 self.selected_timer_string = "10 Seconds".to_string();
+                                self.selected_timer_numeric=10;
                             };
                         });
                     if ui
@@ -166,7 +171,7 @@ impl eframe::App for FirstWindow {
 
             let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
             let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
-
+            std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
             for screen in screens {
                 let mut image = screen.capture_area(
                     self.mouse_pos.unwrap()[0] as i32,
@@ -177,9 +182,9 @@ impl eframe::App for FirstWindow {
 
                 if image.is_err() == false {
                     println!("gira gira gira gira");
-                    image
+                    let _=image
                         .unwrap()
-                        .save("/Users/luigi.maggipinto23/Desktop/ao.jpg");
+                        .save("C:\\Users\\masci\\Desktop\\ao.jpg");
                     println!("sto resettando");
                     self.selected_window = 1;
                 }
@@ -248,7 +253,7 @@ impl eframe::App for FirstWindow {
             });
         }else if self.selected_window==6{
             let screens = Screen::all().unwrap();
-            
+            std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
             for screen in screens {
                 let mut image = screen.capture();
 
@@ -257,7 +262,7 @@ impl eframe::App for FirstWindow {
                     
                     let _=image
                         .unwrap()
-                        .save("/Users/luigi.maggipinto23/Desktop/ao.jpg");
+                        .save("C:\\Users\\masci\\Desktop\\ao.jpg");
                     println!("sto resettando");
                     self.selected_window = 1;
                 }
