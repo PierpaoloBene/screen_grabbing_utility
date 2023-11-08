@@ -41,6 +41,8 @@ fn main() -> Result<(), eframe::Error> {
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
+                rect_pos: egui::pos2(0.0, 0.0),
+                rect_pos_f: egui::pos2(0.0, 0.0),
             })
         }),
     )
@@ -55,6 +57,8 @@ struct FirstWindow {
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
+    rect_pos: Pos2,
+    rect_pos_f: Pos2,
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
@@ -165,6 +169,7 @@ impl eframe::App for FirstWindow {
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
+
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
@@ -184,6 +189,33 @@ impl eframe::App for FirstWindow {
                                 && self.mouse_pos.unwrap()[1] != -1.0
                             {
                                 self.mouse_pos_f = ui.input(|i| i.pointer.latest_pos());
+                                let diff_x =
+                                    self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+                                let diff_y =
+                                    self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+
+                                if diff_x > 0.0 && diff_y > 0.0 {
+                                    self.rect_pos = self.mouse_pos.unwrap();
+                                    self.rect_pos_f =self.mouse_pos_f.unwrap();
+                                    println!("sono in basso a destra");
+                                } else if diff_x < 0.0 && diff_y < 0.0 {
+                                    println!("sono in alto a sinistra");
+                                    self.rect_pos = self.mouse_pos_f.unwrap();
+                                    self.rect_pos_f =self.mouse_pos.unwrap();
+                                } else if diff_x < 0.0 && diff_y > 0.0 {
+                                    println!("sono in basso a sinistra");
+                                    self.rect_pos[0] = self.mouse_pos_f.unwrap()[0];
+                                    self.rect_pos[1] = self.mouse_pos.unwrap()[1];
+                                    self.rect_pos_f[0] = self.mouse_pos.unwrap()[0];
+                                    self.rect_pos_f[1] = self.mouse_pos_f.unwrap()[1];
+                                  
+                                } else if diff_x > 0.0 && diff_y < 0.0 {
+                                    println!("sono in alto a destra");
+                                    self.rect_pos[0] = self.mouse_pos.unwrap()[0];
+                                    self.rect_pos[1] = self.mouse_pos_f.unwrap()[1];
+                                    self.rect_pos_f[0] = self.mouse_pos_f.unwrap()[0];
+                                    self.rect_pos_f[1] = self.mouse_pos.unwrap()[1];
+                                }
                             }
                             if ui.input(|i| i.pointer.any_released()) {
                                 frame.set_window_size(Vec2::new(0.0, 0.0));
@@ -194,8 +226,8 @@ impl eframe::App for FirstWindow {
                             //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
                             ui.painter().add(Shape::Rect(RectShape::new(
                                 Rect::from_min_max(
-                                    self.mouse_pos.unwrap(),
-                                    self.mouse_pos_f.unwrap(),
+                                    self.rect_pos,
+                                    self.rect_pos_f,
                                 ),
                                 Rounding::default(),
                                 Color32::TRANSPARENT,
@@ -219,13 +251,13 @@ impl eframe::App for FirstWindow {
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
-                    let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-                    let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+                    let width = self.rect_pos_f[0] - self.rect_pos[0];
+                    let height = self.rect_pos_f[1] - self.rect_pos[1];
                     std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture_area(
-                            self.mouse_pos.unwrap()[0] as i32,
-                            self.mouse_pos.unwrap()[1] as i32,
+                            self.rect_pos[0] as i32,
+                            self.rect_pos[1] as i32,
                             width as u32,
                             height as u32,
                         );
@@ -234,13 +266,13 @@ impl eframe::App for FirstWindow {
                             println!("gira gira gira gira");
                             let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                         }
-    
+
                         println!(
                             "xi={} yi={} xf={} yf={}",
                             self.mouse_pos.unwrap()[0],
                             self.mouse_pos.unwrap()[1],
-                            self.mouse_pos.unwrap()[0],
-                            self.mouse_pos.unwrap()[1]
+                            self.mouse_pos_f.unwrap()[0],
+                            self.mouse_pos_f.unwrap()[1]
                         );
                     }
                 }
