@@ -198,7 +198,7 @@ impl eframe::App for FirstWindow {
             }
 
             self.selected_window = 1; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 3 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
@@ -234,7 +234,7 @@ impl eframe::App for FirstWindow {
                     ui.painter().add(Shape::Rect(RectShape::new(
                         Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()),
                         Rounding::default(),
-                        Color32::TRANSPARENT,
+                        Color32::BLUE,
                         Stroke::NONE,
                     )));
                     //}else if(self.mouse_pos_2.unwrap()[0]=self.mouse_pos_f_2.unwrap()[0]
