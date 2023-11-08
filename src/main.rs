@@ -197,7 +197,7 @@ impl eframe::App for FirstWindow {
                 );
             }
 
-            self.selected_window = 1; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+            self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
             //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 3 {
             frame.set_decorations(false);
@@ -242,8 +242,34 @@ impl eframe::App for FirstWindow {
                     //  ui.painter().add( Shape::Rect(  RectShape::new(Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()), Rounding::default(), Color32::LIGHT_RED, Stroke::default())));
                     //}
                 });
-        }else {
-            self.selected_window=2;
+        }else if self.selected_window==4{
+            self.selected_window=6;
+        }else if self.selected_window==5{
+            println!("prima");
+            frame.set_decorations(true);
+            frame.set_window_size(Vec2::new(1640.0,600.0));
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.label("caccona");
+                println!("dopo");
+            });
+        }else if self.selected_window==6{
+            let screens = Screen::all().unwrap();
+            
+            for screen in screens {
+                let mut image = screen.capture();
+
+                if image.is_err() == false {
+                    println!("gira gira gira gira");
+                    
+                    let _=image
+                        .unwrap()
+                        .save("/Users/luigi.maggipinto23/Desktop/ao.jpg");
+                    println!("sto resettando");
+                    self.selected_window = 1;
+                }
+                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+            }
+            self.selected_window=5;
         }
     }
 }
