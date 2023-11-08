@@ -2,7 +2,7 @@ use screenshots::{image::EncodableLayout, Screen};
 use std::{
     default,
     fs::File,
-    sync::mpsc::Receiver,
+    sync::mpsc::{Receiver, Sender, SyncSender},
     time::{Duration, Instant},
 };
 
@@ -33,7 +33,7 @@ fn main() -> Result<(), eframe::Error> {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         ..Default::default()
     };
-
+    let (tx,rx) = std::sync::mpsc::sync_channel(0);
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -46,6 +46,8 @@ fn main() -> Result<(), eframe::Error> {
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
+                tx: tx,
+                rx: rx,
             })
         }),
     )
@@ -59,6 +61,8 @@ struct FirstWindow {
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
+    tx: SyncSender<bool>,
+    rx: Receiver<bool>
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
@@ -72,8 +76,10 @@ impl eframe::App for FirstWindow {
                     {
                         println!("premuto +");
 
+                        //agggiunere richiesto screen 
                         if self.selected_mode == ModeOptions::FullScreen {
-                            frame.set_minimized(true);
+                            self.tx.send(true);
+                            //frame.set_minimized(true);
                         }
 
                         self.selected_window = 2;
@@ -186,6 +192,9 @@ impl eframe::App for FirstWindow {
             }
             match self.selected_mode {
                 ModeOptions::FullScreen => {
+                    if(self.rx.recv().unwrap() == true){
+                        
+                    frame.set_minimized(true);
                     std::thread::sleep(Duration::from_secs(timer as u64));
                     let screens = Screen::all().unwrap();
 
@@ -202,6 +211,9 @@ impl eframe::App for FirstWindow {
                     }
 
                     self.selected_window = 1; //CAMBIARE CAMBIO FINESTRA
+
+                    }
+
                 }
                 ModeOptions::Rectangle => {
                     frame.set_decorations(false);
