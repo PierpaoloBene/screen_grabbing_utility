@@ -1,17 +1,11 @@
-use screenshots::{image::EncodableLayout, Screen};
-use std::{
-    sync::mpsc::Receiver,
-    time::{Duration, Instant},
-};
+use screenshots::Screen;
+use std::time::Duration;
 
 use eframe::{
-    egui::{self, Color32, Options, RichText, Visuals},
-    epaint::mutex::Mutex,
+    egui::{self, Color32, RichText},
     Frame,
 };
-use egui::{epaint::RectShape, pos2, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
-use std::fs;
-use std::fs::File;
+use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -73,7 +67,7 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
-                        self.selected_window = 3;
+                        self.selected_window = 2;
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
@@ -166,45 +160,11 @@ impl eframe::App for FirstWindow {
                     }
                 });
             });
-        } else if self.selected_window == 2 {
-            let screens = Screen::all().unwrap();
-
-            let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-            let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
-            std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
-            for screen in screens {
-                let mut image = screen.capture_area(
-                    self.mouse_pos.unwrap()[0] as i32,
-                    self.mouse_pos.unwrap()[1] as i32,
-                    width as u32,
-                    height as u32,
-                );
-
-                if image.is_err() == false {
-                    println!("gira gira gira gira");
-                    let _=image
-                        .unwrap()
-                        .save("C:\\Users\\masci\\Desktop\\ao.jpg");
-                    println!("sto resettando");
-                    self.selected_window = 1;
-                }
-                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
-                println!(
-                    "xi={} yi={} xf={} yf={}",
-                    self.mouse_pos.unwrap()[0],
-                    self.mouse_pos.unwrap()[1],
-                    self.mouse_pos.unwrap()[0],
-                    self.mouse_pos.unwrap()[1]
-                );
-            }
-
-            self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
-            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-        } else if self.selected_window == 3 {
+        }  else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-            let screens = Screen::all().unwrap();
+
 
             egui::Area::new("my_area")
                 .fixed_pos(egui::pos2(0.0, 0.0))
@@ -219,8 +179,8 @@ impl eframe::App for FirstWindow {
                         self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
                         //self.mouse_pos=self.mouse_pos_2;
                     }
-                    if (self.mouse_pos.unwrap()[0] != -1.0
-                        && self.mouse_pos.unwrap()[1] != -1.0)
+                    if self.mouse_pos.unwrap()[0] != -1.0
+                        && self.mouse_pos.unwrap()[1] != -1.0
                     {
                         self.mouse_pos_f = ui.input(|i| i.pointer.latest_pos());
                     }
@@ -228,7 +188,7 @@ impl eframe::App for FirstWindow {
                         frame.set_window_size(Vec2::new(0.0,0.0));
 
 
-                        self.selected_window = 4; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+                        self.selected_window = 3; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
                     }
                     // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
                     //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
@@ -243,8 +203,40 @@ impl eframe::App for FirstWindow {
                     //  ui.painter().add( Shape::Rect(  RectShape::new(Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()), Rounding::default(), Color32::LIGHT_RED, Stroke::default())));
                     //}
                 });
-        }else if self.selected_window==4{
-            self.selected_window=2;
+            }else if self.selected_window==3{
+                self.selected_window=4;
+            }else if self.selected_window == 4 {
+            let screens = Screen::all().unwrap();
+
+            let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+            let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
+            std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
+            for screen in screens {
+                let image = screen.capture_area(
+                    self.mouse_pos.unwrap()[0] as i32,
+                    self.mouse_pos.unwrap()[1] as i32,
+                    width as u32,
+                    height as u32,
+                );
+
+                if image.is_err() == false {
+                    println!("gira gira gira gira");
+                    let _=image
+                        .unwrap()
+                        .save("/Users/pierpaolobene/Desktop/ao.jpg");
+                }
+                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+                println!(
+                    "xi={} yi={} xf={} yf={}",
+                    self.mouse_pos.unwrap()[0],
+                    self.mouse_pos.unwrap()[1],
+                    self.mouse_pos.unwrap()[0],
+                    self.mouse_pos.unwrap()[1]
+                );
+            }
+
+            self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         }else if self.selected_window==5{
             frame.set_decorations(true);
             frame.set_window_size(Vec2::new(1640.0,600.0));
@@ -255,7 +247,7 @@ impl eframe::App for FirstWindow {
             let screens = Screen::all().unwrap();
             std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
             for screen in screens {
-                let mut image = screen.capture();
+                let image = screen.capture();
 
                 if image.is_err() == false {
                     println!("gira gira gira gira");
