@@ -46,8 +46,6 @@ fn main() -> Result<(), eframe::Error> {
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
-                mouse_pos_2: Option::Some(egui::pos2(-1.0, -1.0)),
-                mouse_pos_f_2: Option::Some(egui::pos2(-1.0, -1.0)),
             })
         }),
     )
@@ -61,8 +59,6 @@ struct FirstWindow {
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
-    mouse_pos_2: Option<Pos2>,
-    mouse_pos_f_2: Option<Pos2>,
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
@@ -168,13 +164,13 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 2 {
             let screens = Screen::all().unwrap();
 
-            let width = self.mouse_pos_f_2.unwrap()[0] - self.mouse_pos_2.unwrap()[0];
-            let height = self.mouse_pos_f_2.unwrap()[1] - self.mouse_pos_2.unwrap()[1];
+            let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
+            let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
 
             for screen in screens {
                 let mut image = screen.capture_area(
-                    self.mouse_pos_2.unwrap()[0] as i32,
-                    self.mouse_pos_2.unwrap()[1] as i32,
+                    self.mouse_pos.unwrap()[0] as i32,
+                    self.mouse_pos.unwrap()[1] as i32,
                     width as u32,
                     height as u32,
                 );
@@ -190,10 +186,10 @@ impl eframe::App for FirstWindow {
                 //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
                 println!(
                     "xi={} yi={} xf={} yf={}",
-                    self.mouse_pos_2.unwrap()[0],
-                    self.mouse_pos_2.unwrap()[1],
-                    self.mouse_pos_f_2.unwrap()[0],
-                    self.mouse_pos_f_2.unwrap()[1]
+                    self.mouse_pos.unwrap()[0],
+                    self.mouse_pos.unwrap()[1],
+                    self.mouse_pos.unwrap()[0],
+                    self.mouse_pos.unwrap()[1]
                 );
             }
 
@@ -210,18 +206,18 @@ impl eframe::App for FirstWindow {
                 .show(ctx, |ui| {
                     if ui.input(|i| {
                         i.pointer.any_down()
-                            && self.mouse_pos_2.unwrap()[0] == -1.0
-                            && self.mouse_pos_2.unwrap()[1] == -1.0
+                            && self.mouse_pos.unwrap()[0] == -1.0
+                            && self.mouse_pos.unwrap()[1] == -1.0
                     }) {
                         println!("salvo pressione");
 
-                        self.mouse_pos_2 = ui.input(|i| i.pointer.interact_pos());
+                        self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
                         //self.mouse_pos=self.mouse_pos_2;
                     }
-                    if (self.mouse_pos_2.unwrap()[0] != -1.0
-                        && self.mouse_pos_2.unwrap()[1] != -1.0)
+                    if (self.mouse_pos.unwrap()[0] != -1.0
+                        && self.mouse_pos.unwrap()[1] != -1.0)
                     {
-                        self.mouse_pos_f_2 = ui.input(|i| i.pointer.latest_pos());
+                        self.mouse_pos_f = ui.input(|i| i.pointer.latest_pos());
                     }
                     if ui.input(|i| i.pointer.any_released()) {
                         frame.set_window_size(Vec2::new(0.0,0.0));
@@ -232,10 +228,10 @@ impl eframe::App for FirstWindow {
                     // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
                     //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
                     ui.painter().add(Shape::Rect(RectShape::new(
-                        Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()),
+                        Rect::from_min_max(self.mouse_pos.unwrap(), self.mouse_pos_f.unwrap()),
                         Rounding::default(),
-                        Color32::BLUE,
-                        Stroke::NONE,
+                        Color32::TRANSPARENT,
+                        Stroke::new(2.0,Color32::GRAY),
                     )));
                     //}else if(self.mouse_pos_2.unwrap()[0]=self.mouse_pos_f_2.unwrap()[0]
                     //       && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
@@ -243,14 +239,12 @@ impl eframe::App for FirstWindow {
                     //}
                 });
         }else if self.selected_window==4{
-            self.selected_window=6;
+            self.selected_window=2;
         }else if self.selected_window==5{
-            println!("prima");
             frame.set_decorations(true);
             frame.set_window_size(Vec2::new(1640.0,600.0));
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.label("caccona");
-                println!("dopo");
             });
         }else if self.selected_window==6{
             let screens = Screen::all().unwrap();
