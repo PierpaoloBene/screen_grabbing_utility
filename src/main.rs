@@ -1,8 +1,6 @@
 use screenshots::{image::EncodableLayout, Screen};
 use std::{
-    default,
-    fs::File,
-    sync::mpsc::{Receiver, Sender, SyncSender},
+    sync::mpsc::Receiver,
     time::{Duration, Instant},
 };
 
@@ -11,7 +9,9 @@ use eframe::{
     epaint::mutex::Mutex,
     Frame,
 };
-use egui::{Pos2, RawInput, Style, Ui, Widget};
+use egui::{epaint::RectShape, pos2, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
+use std::fs;
+use std::fs::File;
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -29,11 +29,11 @@ enum TimerOptions {
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
-        transparent: true,
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
+        transparent: true,
         ..Default::default()
     };
-    let (tx,rx) = std::sync::mpsc::sync_channel(0);
+
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -46,8 +46,8 @@ fn main() -> Result<(), eframe::Error> {
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
-                tx: tx,
-                rx: rx,
+                mouse_pos_2: Option::Some(egui::pos2(-1.0, -1.0)),
+                mouse_pos_f_2: Option::Some(egui::pos2(-1.0, -1.0)),
             })
         }),
     )
@@ -61,8 +61,8 @@ struct FirstWindow {
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
-    tx: SyncSender<bool>,
-    rx: Receiver<bool>
+    mouse_pos_2: Option<Pos2>,
+    mouse_pos_f_2: Option<Pos2>,
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
@@ -75,14 +75,7 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
-
-                        //agggiunere richiesto screen 
-                        if self.selected_mode == ModeOptions::FullScreen {
-                            self.tx.send(true);
-                            //frame.set_minimized(true);
-                        }
-
-                        self.selected_window = 2;
+                        self.selected_window = 3;
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
@@ -173,118 +166,84 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else if self.selected_window == 2 {
-            
-            let mut timer = 0;
-            match self.selected_timer {
-                TimerOptions::NoTimer => {
-                    timer = 0;
+            let screens = Screen::all().unwrap();
+
+            let width = self.mouse_pos_f_2.unwrap()[0] - self.mouse_pos_2.unwrap()[0];
+            let height = self.mouse_pos_f_2.unwrap()[1] - self.mouse_pos_2.unwrap()[1];
+
+            for screen in screens {
+                let mut image = screen.capture_area(
+                    self.mouse_pos_2.unwrap()[0] as i32,
+                    self.mouse_pos_2.unwrap()[1] as i32,
+                    width as u32,
+                    height as u32,
+                );
+
+                if image.is_err() == false {
+                    println!("gira gira gira gira");
+                    image
+                        .unwrap()
+                        .save("/Users/luigi.maggipinto23/Desktop/ao.jpg");
+                    println!("sto resettando");
+                    self.selected_window = 1;
                 }
-                TimerOptions::ThreeSeconds => {
-                    timer = 3;
-                }
-                TimerOptions::FiveSeconds => {
-                    timer = 5;
-                }
-                TimerOptions::TenSeconds => {
-                    timer = 10;
-                }
-                _ => {}
+                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
+                println!(
+                    "xi={} yi={} xf={} yf={}",
+                    self.mouse_pos_2.unwrap()[0],
+                    self.mouse_pos_2.unwrap()[1],
+                    self.mouse_pos_f_2.unwrap()[0],
+                    self.mouse_pos_f_2.unwrap()[1]
+                );
             }
-            match self.selected_mode {
-                ModeOptions::FullScreen => {
-                    if(self.rx.recv().unwrap() == true){
-                        
-                    frame.set_minimized(true);
-                    std::thread::sleep(Duration::from_secs(timer as u64));
-                    let screens = Screen::all().unwrap();
 
-                    for screen in screens {
-                        println!("screen done");
-                        //SCREEN SU TUTTI GLI SCHERMI COLLEGATI O SOLO SU QUELLO IN CUI è APERTA L'APP?
+            self.selected_window = 1; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+        } else if self.selected_window == 3 {
+            frame.set_decorations(false);
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            frame.set_window_pos(egui::pos2(0.0, 0.0));
+            let screens = Screen::all().unwrap();
 
-                        let mut image = screen.capture().unwrap();
-                        //AGGIUNGERE QUALCOSA PER FAR CAPIRE CHE è STATO FATTO LO SCREEN
-                        image
-                            //CAMBIARE PATH SALVATAGGIO
-                            .save(format!("target/{}.png", screen.display_info.id))
-                            .unwrap();
+            egui::Area::new("my_area")
+                .fixed_pos(egui::pos2(0.0, 0.0))
+                .show(ctx, |ui| {
+                    if ui.input(|i| {
+                        i.pointer.any_down()
+                            && self.mouse_pos_2.unwrap()[0] == -1.0
+                            && self.mouse_pos_2.unwrap()[1] == -1.0
+                    }) {
+                        println!("salvo pressione");
+
+                        self.mouse_pos_2 = ui.input(|i| i.pointer.interact_pos());
+                        //self.mouse_pos=self.mouse_pos_2;
                     }
-
-                    self.selected_window = 1; //CAMBIARE CAMBIO FINESTRA
-
+                    if (self.mouse_pos_2.unwrap()[0] != -1.0
+                        && self.mouse_pos_2.unwrap()[1] != -1.0)
+                    {
+                        self.mouse_pos_f_2 = ui.input(|i| i.pointer.latest_pos());
                     }
+                    if ui.input(|i| i.pointer.any_released()) {
+                        frame.set_window_size(Vec2::new(0.0,0.0));
 
-                }
-                ModeOptions::Rectangle => {
-                    frame.set_decorations(false);
-                    frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-                    frame.set_window_pos(egui::pos2(0.0, 0.0));
 
-                    egui::Window::new("Second window").show(ctx, |ui| {
-                        let _start = Instant::now();
-
-                        let screens = Screen::all().unwrap();
-
-                        if ui.input(|i| {
-                            i.pointer.any_down()
-                                && self.mouse_pos.unwrap()[0] == -1.0
-                                && self.mouse_pos.unwrap()[1] == -1.0
-                        }) {
-                            //frame.set_visible(false);
-                            println!("salvo pressione");
-                            self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                        }
-
-                        if ui.input(|i| {
-                            i.pointer.any_released()
-                                && self.mouse_pos_f.unwrap()[0] == -1.0
-                                && self.mouse_pos_f.unwrap()[1] == -1.0
-                        }) {
-                            println!("salvo rilascio");
-                            self.mouse_pos_f = ui.input(|i| i.pointer.interact_pos());
-                            frame.set_visible(false);
-                            
-                        }
-
-                        let width = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-                        let height = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
-
-                        if self.mouse_pos.unwrap()[0] != -1.0
-                            && self.mouse_pos.unwrap()[1] != -1.0
-                            && self.mouse_pos_f.unwrap()[0] != -1.0
-                            && self.mouse_pos_f.unwrap()[1] != -1.0
-                        {
-                            println!("sono nell'if");
-                            //std::thread::sleep(Duration::from_secs(30));
-
-                            for screen in screens {
-                                println!("pronto a screennare {:?}", Instant::now());
-                                let image = screen.capture_area(
-                                    self.mouse_pos.unwrap()[0] as i32,
-                                    self.mouse_pos.unwrap()[1] as i32,
-                                    width as u32,
-                                    height as u32,
-                                );
-
-                                if image.is_err() == false {
-                                    println!("gira gira gira gira");
-                                    let _=image.unwrap().save(format!(
-                                        "C:\\Users\\masci\\Desktop\\ao{}.jpg",
-                                        screen.display_info.id
-                                    ));
-                                    println!("sto resettando");
-                                    self.selected_window = 1;
-                                }
-                                //fs::write("C:\\Users\\masci\\Desktop\\ao.jpg", image.unwrap());
-                                //frame.set_visible(true);
-                            }
-                        }
-
-                        //println!("Click del mouse a: {:?}", mouse_pos.unwrap()[0]);
-                    });
-                }
-                _ => {}
-            }
+                        self.selected_window = 4; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+                    }
+                    // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
+                    //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
+                    ui.painter().add(Shape::Rect(RectShape::new(
+                        Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()),
+                        Rounding::default(),
+                        Color32::TRANSPARENT,
+                        Stroke::NONE,
+                    )));
+                    //}else if(self.mouse_pos_2.unwrap()[0]=self.mouse_pos_f_2.unwrap()[0]
+                    //       && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
+                    //  ui.painter().add( Shape::Rect(  RectShape::new(Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()), Rounding::default(), Color32::LIGHT_RED, Stroke::default())));
+                    //}
+                });
+        }else {
+            self.selected_window=2;
         }
     }
 }
