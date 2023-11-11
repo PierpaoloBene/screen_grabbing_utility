@@ -71,7 +71,9 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
+                        std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
+
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
@@ -253,7 +255,7 @@ impl eframe::App for FirstWindow {
                 ModeOptions::Rectangle => {
                     let width = self.rect_pos_f[0] - self.rect_pos[0];
                     let height = self.rect_pos_f[1] - self.rect_pos[1];
-                    std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
+                    //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture_area(
                             self.rect_pos[0] as i32,
@@ -277,7 +279,7 @@ impl eframe::App for FirstWindow {
                     }
                 }
                 ModeOptions::FullScreen => {
-                    std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
+                    //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture();
 
