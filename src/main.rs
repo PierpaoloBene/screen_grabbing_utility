@@ -2,7 +2,9 @@ use eframe::{
     egui::{self, Color32, RichText},
     Frame,
 };
-use egui::{epaint::RectShape, ImageData, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
+use egui::{
+    epaint::RectShape, ImageData, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2,
+};
 use screenshots::Screen;
 use std::time::Duration;
 
@@ -20,6 +22,11 @@ enum TimerOptions {
     TenSeconds,
 }
 
+#[derive(PartialEq, Debug)]
+enum LoadingState {
+    Loaded,
+    NotLoaded,
+}
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
@@ -33,6 +40,9 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
+                loading_state: LoadingState::NotLoaded,
+                image: None,
+                fp: "caccona".to_string(),
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
                 selected_timer: TimerOptions::NoTimer,
@@ -49,6 +59,9 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
+    loading_state: LoadingState,
+    image: Option<TextureHandle>,
+    fp: String,
     selected_mode: ModeOptions,
     selected_mode_string: String,
     selected_timer: TimerOptions,
@@ -259,9 +272,9 @@ impl eframe::App for FirstWindow {
                         );
 
                         if image.is_err() == false {
-                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
-
+                            let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                            //let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
                             println!("gira gira gira gira");
                         }
 
@@ -296,24 +309,33 @@ impl eframe::App for FirstWindow {
             frame.set_decorations(true);
             frame.set_window_size(egui::Vec2::new(900.0, 400.0));
             egui::CentralPanel::default().show(ctx, |ui| {
-                //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
-                let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
-                let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
-                let size: [usize; 2] = [image.width() as _, image.height() as _];
-                let image_buffer = image.to_rgba8();
-                let pixels = image_buffer.as_flat_samples();
-                let immagine: egui::ColorImage = egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+                match self.loading_state {
+                    LoadingState::Loaded => (),
+                    LoadingState::NotLoaded => {
+                        let fp = std::path::Path::new(&self.fp);
+                        //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
+                        let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
+                        let size: [usize; 2] = [image.width() as _, image.height() as _];
+                        let image_buffer = image.to_rgba8();
+                        let pixels = image_buffer.as_flat_samples();
+                        let immagine: egui::ColorImage =
+                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
-                let img = ImageData::from(immagine);
+                        let img = ui.ctx().load_texture(
+                            "ao",
+                            ImageData::from(immagine),
+                            Default::default(),
+                        );
+                        self.image = Some(img);
+                        self.loading_state = LoadingState::Loaded;
 
-                let img = ui.ctx().load_texture("ao", img, Default::default());
-                
+                        ()
+                    }
+                }
+
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    ui.add(egui::Image::new(&img).shrink_to_fit());
-                    
+                    ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
                 });
-
-                
             });
         }
     }
