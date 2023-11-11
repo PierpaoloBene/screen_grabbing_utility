@@ -259,7 +259,8 @@ impl eframe::App for FirstWindow {
                         );
 
                         if image.is_err() == false {
-                            let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
 
                             println!("gira gira gira gira");
                         }
@@ -281,7 +282,8 @@ impl eframe::App for FirstWindow {
                         if image.is_err() == false {
                             println!("gira gira gira gira");
 
-                            let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
                             println!("sto resettando");
                         }
                     }
@@ -294,7 +296,8 @@ impl eframe::App for FirstWindow {
             frame.set_decorations(true);
             frame.set_window_size(egui::Vec2::new(900.0, 400.0));
             egui::CentralPanel::default().show(ctx, |ui| {
-                let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
+                //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
+                let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
                 let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
                 let size: [usize; 2] = [image.width() as _, image.height() as _];
                 let image_buffer = image.to_rgba8();
