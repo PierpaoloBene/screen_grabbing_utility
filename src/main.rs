@@ -1,11 +1,10 @@
-use screenshots::Screen;
-use std::time::Duration;
-
 use eframe::{
     egui::{self, Color32, RichText},
     Frame,
 };
-use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
+use egui::{epaint::RectShape, ImageData, Pos2, Rect, Rounding, Shape, Stroke, Vec2};
+use screenshots::Screen;
+use std::time::Duration;
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -31,7 +30,8 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
-        Box::new(|_cc| {
+        Box::new(|cc| {
+            egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
@@ -73,7 +73,6 @@ impl eframe::App for FirstWindow {
                         println!("premuto +");
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
-
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
@@ -171,7 +170,6 @@ impl eframe::App for FirstWindow {
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
-
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
@@ -198,19 +196,18 @@ impl eframe::App for FirstWindow {
 
                                 if diff_x > 0.0 && diff_y > 0.0 {
                                     self.rect_pos = self.mouse_pos.unwrap();
-                                    self.rect_pos_f =self.mouse_pos_f.unwrap();
+                                    self.rect_pos_f = self.mouse_pos_f.unwrap();
                                     println!("sono in basso a destra");
                                 } else if diff_x < 0.0 && diff_y < 0.0 {
                                     println!("sono in alto a sinistra");
                                     self.rect_pos = self.mouse_pos_f.unwrap();
-                                    self.rect_pos_f =self.mouse_pos.unwrap();
+                                    self.rect_pos_f = self.mouse_pos.unwrap();
                                 } else if diff_x < 0.0 && diff_y > 0.0 {
                                     println!("sono in basso a sinistra");
                                     self.rect_pos[0] = self.mouse_pos_f.unwrap()[0];
                                     self.rect_pos[1] = self.mouse_pos.unwrap()[1];
                                     self.rect_pos_f[0] = self.mouse_pos.unwrap()[0];
                                     self.rect_pos_f[1] = self.mouse_pos_f.unwrap()[1];
-                                  
                                 } else if diff_x > 0.0 && diff_y < 0.0 {
                                     println!("sono in alto a destra");
                                     self.rect_pos[0] = self.mouse_pos.unwrap()[0];
@@ -227,10 +224,7 @@ impl eframe::App for FirstWindow {
                             // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
                             //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
                             ui.painter().add(Shape::Rect(RectShape::new(
-                                Rect::from_min_max(
-                                    self.rect_pos,
-                                    self.rect_pos_f,
-                                ),
+                                Rect::from_min_max(self.rect_pos, self.rect_pos_f),
                                 Rounding::default(),
                                 Color32::TRANSPARENT,
                                 Stroke::new(2.0, Color32::GRAY),
@@ -265,8 +259,9 @@ impl eframe::App for FirstWindow {
                         );
 
                         if image.is_err() == false {
-                            println!("gira gira gira gira");
                             let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+
+                            println!("gira gira gira gira");
                         }
 
                         println!(
@@ -297,9 +292,25 @@ impl eframe::App for FirstWindow {
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
-            frame.set_window_size(Vec2::new(1640.0, 600.0));
+            frame.set_window_size(egui::Vec2::new(900.0, 400.0));
             egui::CentralPanel::default().show(ctx, |ui| {
-                ui.label("caccona");
+                let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
+                let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
+                let size: [usize; 2] = [image.width() as _, image.height() as _];
+                let image_buffer = image.to_rgba8();
+                let pixels = image_buffer.as_flat_samples();
+                let immagine = egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
+                let img = ImageData::from(immagine);
+
+                let img = ui.ctx().load_texture("ao", img, Default::default());
+                
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                    ui.add(egui::Image::new(&img).shrink_to_fit());
+                    
+                });
+
+                
             });
         }
     }

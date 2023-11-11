@@ -9,10 +9,12 @@ edition = "2021"
 crossbeam-channel = "0.5.8"
 eframe = "0.23.0"
 egui = "0.23.0"
+egui_extras = "0.23.0"
 egui_hotkey = "0.2.0"
 global-hotkey = "0.4.0"
 
 hotkey = "0.3.1"
+image = "0.24.7"
 keyboard-types = "0.7.0"
 
 mouse_position = "0.1.3"
