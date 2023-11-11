@@ -299,7 +299,7 @@ impl eframe::App for FirstWindow {
                 let size: [usize; 2] = [image.width() as _, image.height() as _];
                 let image_buffer = image.to_rgba8();
                 let pixels = image_buffer.as_flat_samples();
-                let immagine = egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+                let immagine: egui::ColorImage = egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
                 let img = ImageData::from(immagine);
 
