@@ -272,9 +272,10 @@ impl eframe::App for FirstWindow {
                         );
 
                         if image.is_err() == false {
-                            let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                            self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            //let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
                             println!("gira gira gira gira");
                         }
 
@@ -295,9 +296,11 @@ impl eframe::App for FirstWindow {
                         if image.is_err() == false {
                             println!("gira gira gira gira");
 
-                            let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                            self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            //let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                            self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            
                             println!("sto resettando");
                         }
                     }
