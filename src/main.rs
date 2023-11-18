@@ -6,7 +6,7 @@ use egui::{
     epaint::RectShape, ImageData, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2,
 };
 use screenshots::Screen;
-use std::time::Duration;
+use std::{fmt::format, time::Duration};
 
 use global_hotkey::{
     hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
@@ -33,7 +33,6 @@ enum LoadingState {
     NotLoaded,
 }
 
-
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
@@ -43,15 +42,12 @@ fn main() -> Result<(), eframe::Error> {
 
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
-    
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
 
     let openfw = GlobalHotKeyEvent::receiver();
-
-    
 
     eframe::run_native(
         "Screen Grabbing Utility",
@@ -61,7 +57,7 @@ fn main() -> Result<(), eframe::Error> {
             Box::new(FirstWindow {
                 loading_state: LoadingState::NotLoaded,
                 image: None,
-                fp: "caccona".to_string(),
+                fp: Vec::new(),
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
                 selected_timer: TimerOptions::NoTimer,
@@ -73,8 +69,7 @@ fn main() -> Result<(), eframe::Error> {
                 rect_pos: egui::pos2(0.0, 0.0),
                 rect_pos_f: egui::pos2(0.0, 0.0),
                 open_fw: openfw.clone(),
-                
-                
+                screenshots_taken: Vec::new(),
             })
         }),
     )
@@ -83,7 +78,7 @@ fn main() -> Result<(), eframe::Error> {
 struct FirstWindow {
     loading_state: LoadingState,
     image: Option<TextureHandle>,
-    fp: String,
+    fp: Vec<String>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
     selected_timer: TimerOptions,
@@ -95,35 +90,28 @@ struct FirstWindow {
     rect_pos: Pos2,
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
-    
+    screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-       
-        
-        match self.open_fw.try_recv() {            
+        match self.open_fw.try_recv() {
             Ok(event) => match event.state {
-                
-                HotKeyState::Pressed => {
-                   
-                    match event.id {
-                        2439345500 => {
-                            
-                            self.selected_window = 1;
-                            frame.set_decorations(true);
-                            frame.set_window_size(egui::vec2(640.0, 480.0));
-                            println!("premuto ESC");
-                        }
-                        2440410256 => {
-                            
-                            self.selected_window = 2;
-
-                            println!("premuto ctrl+D");
-                        }
-                        _=>{println!("siiium")}
+                HotKeyState::Pressed => match event.id {
+                    2439345500 => {
+                        self.selected_window = 1;
+                        frame.set_decorations(true);
+                        frame.set_window_size(egui::vec2(640.0, 480.0));
+                        println!("premuto ESC");
                     }
-                    
-                }
+                    2440410256 => {
+                        self.selected_window = 2;
+
+                        println!("premuto ctrl+D");
+                    }
+                    _ => {
+                        println!("siiium")
+                    }
+                },
                 HotKeyState::Released => {}
             },
 
@@ -132,8 +120,6 @@ impl eframe::App for FirstWindow {
                 println!("waiting")
             }
         }
-
-      
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -292,7 +278,7 @@ impl eframe::App for FirstWindow {
                             if ui.input(|i| i.pointer.any_released()) {
                                 frame.set_window_size(Vec2::new(0.0, 0.0));
 
-                                self.selected_window = 3; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
+                                self.selected_window = 3; //Le coordinate sono salvate in self.mouse_pos_2 e self.mouse_posf_2
                             }
                             // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
                             //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
@@ -334,8 +320,10 @@ impl eframe::App for FirstWindow {
                         if image.is_err() == false {
                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
-                            self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+
+                            self.screenshots_taken.push(image.unwrap());
+
+                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
                             println!("gira gira gira gira");
                         }
 
@@ -346,6 +334,11 @@ impl eframe::App for FirstWindow {
                             self.mouse_pos_f.unwrap()[0],
                             self.mouse_pos_f.unwrap()[1]
                         );
+                    }
+
+                    for i in [0, self.screenshots_taken.len() - 1] {
+                        self.fp.push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                        self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
                 ModeOptions::FullScreen => {
@@ -358,11 +351,16 @@ impl eframe::App for FirstWindow {
 
                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                            let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                            //let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            self.screenshots_taken.push(image.unwrap());
 
                             println!("sto resettando");
                         }
+                    }
+                    for i in [0, self.screenshots_taken.len() - 1] {
+                        self.fp.push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                        self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
             }
@@ -376,24 +374,29 @@ impl eframe::App for FirstWindow {
                 match self.loading_state {
                     LoadingState::Loaded => (),
                     LoadingState::NotLoaded => {
-                        let fp = std::path::Path::new(&self.fp);
-                        //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
-                        let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
-                        let size: [usize; 2] = [image.width() as _, image.height() as _];
-                        let image_buffer = image.to_rgba8();
-                        let pixels = image_buffer.as_flat_samples();
-                        let immagine: egui::ColorImage =
-                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+                        for i in [0, self.screenshots_taken.len()-1] {
+                            
+                            let fp = std::path::Path::new(&self.fp[i]);
+                            //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
+                            let size: [usize; 2] = [image.width() as _, image.height() as _];
+                            let image_buffer = image.to_rgba8();
+                            let pixels = image_buffer.as_flat_samples();
+                            let immagine: egui::ColorImage =
+                                egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
-                        let img = ui.ctx().load_texture(
-                            "ao",
-                            ImageData::from(immagine),
-                            Default::default(),
-                        );
-                        self.image = Some(img);
-                        self.loading_state = LoadingState::Loaded;
+                            let img = ui.ctx().load_texture(
+                                "ao",
+                                ImageData::from(immagine),
+                                Default::default(),
+                            );
+                            self.image = Some(img);
+                            self.loading_state = LoadingState::Loaded;
+                            
 
-                        ()
+                            ()
+                           
+                        }
                     }
                 }
 
