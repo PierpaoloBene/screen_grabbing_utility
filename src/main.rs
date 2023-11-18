@@ -8,6 +8,11 @@ use egui::{
 use screenshots::Screen;
 use std::time::Duration;
 
+use global_hotkey::{
+    hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
+};
+use keyboard_types::{Code, Modifiers};
+
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
     Rectangle,
@@ -27,12 +32,26 @@ enum LoadingState {
     Loaded,
     NotLoaded,
 }
+
+
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         transparent: true,
         ..Default::default()
     };
+
+    let manager = GlobalHotKeyManager::new().unwrap();
+    let hotkey_exit = HotKey::new(None, Code::Escape);
+    println!("{:?}", hotkey_exit.id());
+    let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
+
+    manager.register(hotkey_exit).unwrap();
+    manager.register(hotkey_screen).unwrap();
+
+    let openfw = GlobalHotKeyEvent::receiver();
+
+    
 
     eframe::run_native(
         "Screen Grabbing Utility",
@@ -53,6 +72,9 @@ fn main() -> Result<(), eframe::Error> {
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
                 rect_pos: egui::pos2(0.0, 0.0),
                 rect_pos_f: egui::pos2(0.0, 0.0),
+                open_fw: openfw.clone(),
+                
+                
             })
         }),
     )
@@ -72,9 +94,47 @@ struct FirstWindow {
     mouse_pos_f: Option<Pos2>,
     rect_pos: Pos2,
     rect_pos_f: Pos2,
+    open_fw: GlobalHotKeyEventReceiver,
+    
 }
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+       
+        
+        match self.open_fw.try_recv() {            
+            Ok(event) => match event.state {
+                
+                HotKeyState::Pressed => {
+                   
+                    match event.id {
+                        2439345500 => {
+                            
+                            self.selected_window = 1;
+                            frame.set_decorations(true);
+                            frame.set_window_size(egui::vec2(640.0, 480.0));
+                            println!("premuto ESC");
+                        }
+                        2440410256 => {
+                            
+                            self.selected_window = 2;
+
+                            println!("premuto ctrl+D");
+                        }
+                        _=>{println!("siiium")}
+                    }
+                    
+                }
+                HotKeyState::Released => {}
+            },
+
+            Err(_) => {}
+            _ => {
+                println!("waiting")
+            }
+        }
+
+      
+
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -300,7 +360,7 @@ impl eframe::App for FirstWindow {
                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                             self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
                             let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
-                            
+
                             println!("sto resettando");
                         }
                     }
