@@ -43,7 +43,7 @@ fn main() -> Result<(), eframe::Error> {
 
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
-    println!("{:?}", hotkey_exit.id());
+    
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
 
     manager.register(hotkey_exit).unwrap();
