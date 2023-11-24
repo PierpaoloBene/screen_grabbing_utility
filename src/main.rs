@@ -7,7 +7,7 @@ use egui::{
     TextureHandle, Ui, Vec2, Window,
 };
 use screenshots::Screen;
-use std::{fmt::format, time::Duration};
+use std::{fmt::format, time::Duration, process::exit};
 
 use global_hotkey::{
     hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
@@ -63,6 +63,7 @@ fn main() -> Result<(), eframe::Error> {
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
+    let mut p = Painting::default();
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
@@ -90,6 +91,7 @@ fn main() -> Result<(), eframe::Error> {
                 rect_pos_f: egui::pos2(0.0, 0.0),
                 open_fw: openfw.clone(),
                 screenshots_taken: Vec::new(),
+                Painting:p
             })
         }),
     )
@@ -207,6 +209,7 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
+    Painting:Painting
 }
 
 impl eframe::App for FirstWindow {
@@ -489,52 +492,63 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
             frame.set_window_size(egui::Vec2::new(900.0, 400.0));
-            
 
             egui::CentralPanel::default().show(ctx, |ui| {
                 egui::TopBottomPanel::top("top").show(ctx, |ui| {
                     egui::menu::bar(ui, |ui| {
                         egui::menu::menu_button(ui, "Menù", |ui| {
-                            if ui.add(egui::Button::new("Crop")).clicked() {
-                                println!("cliccato");
-                                let mut p = Painting::default();
-                                Painting::ui(&mut p, ui);
-                                ui.close_menu();
+                            let btn=ui.add(egui::Button::new("Paint"));
+                            
+                            
+                            match self.loading_state {
+                                LoadingState::Loaded => {
+                                    println!("fff");
+                                    if btn.clicked() {
+                                        println!("cliccato");                                        
+                                        self.Painting.ui(ui);
+                                        ui.close_menu();
+                                    }
+                                    
+        
+                                    
+                                
+                                }
+                                LoadingState::NotLoaded => {
+                                    for i in [0, self.screenshots_taken.len() - 1] {
+                                        let fp = std::path::Path::new(&self.fp[i]);
+                                        //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
+                                        let image =
+                                            image::io::Reader::open(&fp).unwrap().decode().unwrap();
+                                        let size: [usize; 2] =
+                                            [image.width() as _, image.height() as _];
+                                        let image_buffer = image.to_rgba8();
+                                        let pixels = image_buffer.as_flat_samples();
+                                        let immagine: egui::ColorImage =
+                                            egui::ColorImage::from_rgba_unmultiplied(
+                                                size,
+                                                pixels.as_slice(),
+                                            );
+
+                                        let img = ui.ctx().load_texture(
+                                            "ao",
+                                            ImageData::from(immagine),
+                                            Default::default(),
+                                        );
+                                        self.image = Some(img);
+                                        self.loading_state = LoadingState::Loaded;
+                                        println!("ddd");
+
+                                        ()
+                                    }
+                                }
+                                
                             }
+                            
                         })
                     })
                 });
+
                 
-                match self.loading_state {
-                    LoadingState::Loaded => {
-                        println!("fff");
-                        
-                        ()
-                    },
-                    LoadingState::NotLoaded => {
-                        for i in [0, self.screenshots_taken.len() - 1] {
-                            let fp = std::path::Path::new(&self.fp[i]);
-                            //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
-                            let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
-                            let size: [usize; 2] = [image.width() as _, image.height() as _];
-                            let image_buffer = image.to_rgba8();
-                            let pixels = image_buffer.as_flat_samples();
-                            let immagine: egui::ColorImage =
-                                egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-                            let img = ui.ctx().load_texture(
-                                "ao",
-                                ImageData::from(immagine),
-                                Default::default(),
-                            );
-                            self.image = Some(img);
-                            self.loading_state = LoadingState::Loaded;
-                            println!("ddd");
-
-                            ()
-                        }
-                    }
-                }
 
                 // ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                 //     ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
