@@ -3,7 +3,8 @@ use eframe::{
     Frame,
 };
 use egui::{
-    epaint::RectShape, ImageData, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2,
+    emath, epaint::RectShape, vec2, Context, ImageData, Pos2, Rect, Rounding, Sense, Shape, Stroke,
+    TextureHandle, Ui, Vec2, Window,
 };
 use screenshots::Screen;
 use std::{fmt::format, time::Duration};
@@ -12,6 +13,25 @@ use global_hotkey::{
     hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
 };
 use keyboard_types::{Code, Modifiers};
+
+/// Something to view in the demo windows
+pub trait View {
+    fn ui(&mut self, ui: &mut egui::Ui);
+}
+
+/// Something to view
+pub trait Demo {
+    /// Is the demo enabled for this integraton?
+    fn is_enabled(&self, _ctx: &egui::Context) -> bool {
+        true
+    }
+
+    /// `&'static` so we can also use it as a key to store open/close state.
+    fn name(&self) -> &'static str;
+
+    /// Show windows, etc
+    fn show(&mut self, ctx: &egui::Context, open: &mut bool);
+}
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -75,6 +95,102 @@ fn main() -> Result<(), eframe::Error> {
     )
 }
 
+pub struct Painting {
+    /// in 0-1 normalized coordinates
+    lines: Vec<Vec<Pos2>>,
+    stroke: Stroke,
+}
+
+impl Default for Painting {
+    fn default() -> Self {
+        Self {
+            lines: Default::default(),
+            stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+        }
+    }
+}
+
+impl Painting {
+    pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        println!("In ui_control");
+        ui.horizontal(|ui| {
+            egui::stroke_ui(ui, &mut self.stroke, "Stroke");
+            ui.separator();
+            if ui.button("Clear Painting").clicked() {
+                self.lines.clear();
+            }
+        })
+        .response
+    }
+
+    pub fn ui_content(&mut self, ui: &mut Ui) -> egui::Response {
+        println!("In ui_content");
+        let (mut response, painter) =
+            ui.allocate_painter(ui.available_size_before_wrap(), Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        let from_screen = to_screen.inverse();
+
+        if self.lines.is_empty() {
+            self.lines.push(vec![]);
+        }
+
+        let current_line = self.lines.last_mut().unwrap();
+
+        if let Some(pointer_pos) = response.interact_pointer_pos() {
+            let canvas_pos = from_screen * pointer_pos;
+            if current_line.last() != Some(&canvas_pos) {
+                current_line.push(canvas_pos);
+                response.mark_changed();
+            }
+        } else if !current_line.is_empty() {
+            self.lines.push(vec![]);
+            response.mark_changed();
+        }
+
+        let shapes = self
+            .lines
+            .iter()
+            .filter(|line| line.len() >= 2)
+            .map(|line| {
+                let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
+                egui::Shape::line(points, self.stroke)
+            });
+
+        painter.extend(shapes);
+
+        response
+    }
+}
+
+impl Demo for Painting {
+    fn name(&self) -> &'static str {
+        "🖊 Painting"
+    }
+
+    fn show(&mut self, ctx: &Context, open: &mut bool) {
+        use View as _;
+        Window::new(self.name())
+            .open(open)
+            .default_size(vec2(512.0, 512.0))
+            .vscroll(false)
+            .show(ctx, |ui| self.ui(ui));
+    }
+}
+
+impl View for Painting {
+    fn ui(&mut self, ui: &mut Ui) {
+        self.ui_control(ui);
+        ui.label("Paint with your mouse/touch!");
+        egui::Frame::canvas(ui.style()).show(ui, |ui| {
+            self.ui_content(ui);
+        });
+    }
+}
+
 struct FirstWindow {
     loading_state: LoadingState,
     image: Option<TextureHandle>,
@@ -92,6 +208,7 @@ struct FirstWindow {
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
 }
+
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
         match self.open_fw.try_recv() {
@@ -337,7 +454,8 @@ impl eframe::App for FirstWindow {
                     }
 
                     for i in [0, self.screenshots_taken.len() - 1] {
-                        self.fp.push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                        self.fp
+                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -359,7 +477,8 @@ impl eframe::App for FirstWindow {
                         }
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
-                        self.fp.push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                        self.fp
+                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -370,12 +489,30 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
             frame.set_window_size(egui::Vec2::new(900.0, 400.0));
+            
+
             egui::CentralPanel::default().show(ctx, |ui| {
+                egui::TopBottomPanel::top("top").show(ctx, |ui| {
+                    egui::menu::bar(ui, |ui| {
+                        egui::menu::menu_button(ui, "Menù", |ui| {
+                            if ui.add(egui::Button::new("Crop")).clicked() {
+                                println!("cliccato");
+                                let mut p = Painting::default();
+                                Painting::ui(&mut p, ui);
+                                ui.close_menu();
+                            }
+                        })
+                    })
+                });
+                
                 match self.loading_state {
-                    LoadingState::Loaded => (),
+                    LoadingState::Loaded => {
+                        println!("fff");
+                        
+                        ()
+                    },
                     LoadingState::NotLoaded => {
-                        for i in [0, self.screenshots_taken.len()-1] {
-                            
+                        for i in [0, self.screenshots_taken.len() - 1] {
                             let fp = std::path::Path::new(&self.fp[i]);
                             //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
                             let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
@@ -392,17 +529,16 @@ impl eframe::App for FirstWindow {
                             );
                             self.image = Some(img);
                             self.loading_state = LoadingState::Loaded;
-                            
+                            println!("ddd");
 
                             ()
-                           
                         }
                     }
                 }
 
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                });
+                // ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                //     ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                // });
             });
         }
     }
