@@ -91,7 +91,8 @@ fn main() -> Result<(), eframe::Error> {
                 rect_pos_f: egui::pos2(0.0, 0.0),
                 open_fw: openfw.clone(),
                 screenshots_taken: Vec::new(),
-                Painting:p
+                Painting:p,
+                painting_bool:false
             })
         }),
     )
@@ -209,7 +210,8 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
-    Painting:Painting
+    Painting:Painting,
+    painting_bool:bool
 }
 
 impl eframe::App for FirstWindow {
@@ -498,21 +500,36 @@ impl eframe::App for FirstWindow {
                     egui::menu::bar(ui, |ui| {
                         egui::menu::menu_button(ui, "Menù", |ui| {
                             let btn=ui.add(egui::Button::new("Paint"));
+                            if btn.clicked() {
+                                self.painting_bool=true;
+                                ui.close_menu();
+                            }
+
+
+
+                        });
+                    });
+                });
+                
                             
                             
                             match self.loading_state {
                                 LoadingState::Loaded => {
                                     println!("fff");
-                                    if btn.clicked() {
-                                        println!("cliccato");                                        
+                                    if self.painting_bool{   
+                                        // ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                                        //   ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                                        // });
+                                                                                              
                                         self.Painting.ui(ui);
-                                        ui.close_menu();
-                                    }
-                                    
-        
+                                        
+                                        
                                     
                                 
                                 }
+                                   
+                                                            
+                                }, 
                                 LoadingState::NotLoaded => {
                                     for i in [0, self.screenshots_taken.len() - 1] {
                                         let fp = std::path::Path::new(&self.fp[i]);
@@ -543,17 +560,12 @@ impl eframe::App for FirstWindow {
                                 }
                                 
                             }
-                            
-                        })
-                    })
+                        
                 });
-
                 
-
-                // ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                //     ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                // });
-            });
+                
+               
+                           
         }
     }
 }
