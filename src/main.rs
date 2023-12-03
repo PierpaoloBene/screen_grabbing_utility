@@ -16,7 +16,7 @@ use keyboard_types::{Code, Modifiers};
 
 /// Something to view in the demo windows
 pub trait View {
-    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image)->Option<egui::Response>;
+    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
 }
 
 /// Something to view
@@ -93,7 +93,8 @@ fn main() -> Result<(), eframe::Error> {
                 screenshots_taken: Vec::new(),
                 Painting: p,
                 painting_bool: false,
-                dim_max: Vec2::new(0.0, 0.0),
+                width: 0.0,
+                height: 0.0,
             })
         }),
     )
@@ -127,16 +128,15 @@ impl Painting {
         .response
     }
 
-    pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image) -> egui::Response {
+    pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
         println!("In ui_content");
-        let (mut response, painter) =
-            ui.allocate_painter(vec2(image.size().unwrap().x/2.0, image.size().unwrap().y/2.0), Sense::drag());
+        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
-        
+
         image.paint_at(ui, response.rect);
         let from_screen = to_screen.inverse();
 
@@ -188,12 +188,17 @@ impl Demo for Painting {
 }
 
 impl View for Painting {
-    fn ui(&mut self, ui: &mut Ui, image: egui::widgets::Image) ->Option<egui::Response>{
-        let mut resp=None;
+    fn ui(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
         self.ui_control(ui);
         ui.label("Paint with your mouse/touch!");
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
-             resp = Some(self.ui_content(ui, image));
+            resp = Some(self.ui_content(ui, image, dim));
         });
         resp
     }
@@ -217,7 +222,8 @@ struct FirstWindow {
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     Painting: Painting,
     painting_bool: bool,
-    dim_max: Vec2,
+    width: f32,
+    height: f32,
 }
 
 impl eframe::App for FirstWindow {
@@ -354,8 +360,7 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            self.dim_max=frame.info().window_info.monitor_size.unwrap();
-            frame.set_window_size(self.dim_max);
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             match self.selected_mode {
@@ -435,17 +440,16 @@ impl eframe::App for FirstWindow {
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
-                    let width = self.rect_pos_f[0] - self.rect_pos[0];
-                    let height = self.rect_pos_f[1] - self.rect_pos[1];
+                    self.width = self.rect_pos_f[0] - self.rect_pos[0];
+                    self.height = self.rect_pos_f[1] - self.rect_pos[1];
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture_area(
                             self.rect_pos[0] as i32,
                             self.rect_pos[1] as i32,
-                            width as u32,
-                            height as u32,
+                            self.width as u32,
+                            self.height as u32,
                         );
-                        println!("{:?} {:?}", width,height);
 
                         if image.is_err() == false {
                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
@@ -468,11 +472,9 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("/Users/pierpaolobene/Desktop/ao{}.jpg", i));
+                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
-                    
-
                 }
                 ModeOptions::FullScreen => {
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
@@ -496,7 +498,6 @@ impl eframe::App for FirstWindow {
                             .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
-
                 }
             }
 
@@ -504,7 +505,7 @@ impl eframe::App for FirstWindow {
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
-            frame.set_window_size(self.dim_max);
+            frame.set_window_size(Vec2::new(self.width + 50.0, self.height + 50.0));
             frame.set_window_pos(Pos2::new(0.0, 0.0));
 
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
@@ -516,6 +517,7 @@ impl eframe::App for FirstWindow {
                             let btn = ui.add(egui::Button::new("Paint"));
                             if btn.clicked() {
                                 self.painting_bool = true;
+
                                 ui.close_menu();
                             }
                         });
@@ -526,43 +528,39 @@ impl eframe::App for FirstWindow {
                     LoadingState::Loaded => {
                         println!("fff");
                         if self.painting_bool {
-                            let response =self.Painting.ui(
-                                ui,
-                                egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
-                            ).clone().unwrap();
+                            let response = self
+                                .Painting
+                                .ui(
+                                    ui,
+                                    egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    Vec2::new(self.width, self.height),
+                                )
+                                .clone()
+                                .unwrap();
                             /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                              ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
                             });*/
-                            if ui.button("caccona").clicked() {       
-                                
-                            
-                            
-                            let screens = Screen::all().unwrap();
-                                for screen in screens{
-                                    let mod_img=screen.capture_area(
+                            if ui.button("caccona").clicked() {
+                                let screens = Screen::all().unwrap();
+                                for screen in screens {
+                                    let mod_img = screen.capture_area(
                                         response.rect.left_top()[0] as i32,
-                                        response.rect.left_top()[1] as i32+50,
+                                        response.rect.left_top()[1] as i32 + 50,
                                         response.rect.width() as u32,
-                                         response.rect.height() as u32
-                                        );
-                                    
+                                        response.rect.height() as u32,
+                                    );
 
-                                        if mod_img.is_err() == false {
-                                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img.unwrap().save(self.fp[0].to_string());
-                                            self.selected_window = 6;
-                
-                                            
-                
-                                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                            println!("gira gira gira gira");
-                                        }
+                                    if mod_img.is_err() == false {
+                                        //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                        //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                        mod_img.unwrap().save(self.fp[0].to_string());
+                                        self.selected_window = 6;
+
+                                        //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                        println!("gira gira gira gira");
+                                    }
                                 }
                             }
-                                
-
-                               
                         }
                     }
                     LoadingState::NotLoaded => {
@@ -592,6 +590,7 @@ impl eframe::App for FirstWindow {
                 }
             });
         } else if self.selected_window == 6 {
+            let c = 1;
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
