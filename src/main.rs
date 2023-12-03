@@ -16,7 +16,7 @@ use keyboard_types::{Code, Modifiers};
 
 /// Something to view in the demo windows
 pub trait View {
-    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image);
+    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image)->Option<egui::Response>;
 }
 
 /// Something to view
@@ -135,7 +135,7 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
-
+        
         image.paint_at(ui, response.rect);
         let from_screen = to_screen.inverse();
 
@@ -187,12 +187,14 @@ impl Demo for Painting {
 }
 
 impl View for Painting {
-    fn ui(&mut self, ui: &mut Ui, image: egui::widgets::Image) {
+    fn ui(&mut self, ui: &mut Ui, image: egui::widgets::Image) ->Option<egui::Response>{
+        let mut resp=None;
         self.ui_control(ui);
         ui.label("Paint with your mouse/touch!");
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
-            self.ui_content(ui, image);
+             resp = Some(self.ui_content(ui, image));
         });
+        resp
     }
 }
 
@@ -514,16 +516,43 @@ impl eframe::App for FirstWindow {
                     LoadingState::Loaded => {
                         println!("fff");
                         if self.painting_bool {
+                            let response =self.Painting.ui(
+                                ui,
+                                egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                            ).clone().unwrap();
                             /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                              ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
                             });*/
-                            if ui.button("caccona").clicked() {
-                                self.selected_window = 6;
+                            if ui.button("caccona").clicked() {       
+                                
+                            
+                            
+                            let screens = Screen::all().unwrap();
+                                for screen in screens{
+                                    let mod_img=screen.capture_area(
+                                        response.rect.left_top()[0] as i32,
+                                        response.rect.left_top()[1] as i32+50,
+                                        response.rect.width() as u32,
+                                         response.rect.height() as u32
+                                        );
+                                    
+
+                                        if mod_img.is_err() == false {
+                                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                            mod_img.unwrap().save(self.fp[0].to_string());
+                                            self.selected_window = 6;
+                
+                                            
+                
+                                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                            println!("gira gira gira gira");
+                                        }
+                                }
                             }
-                            self.Painting.ui(
-                                ui,
-                                egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
-                            );
+                                
+
+                               
                         }
                     }
                     LoadingState::NotLoaded => {
