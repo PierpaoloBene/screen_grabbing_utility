@@ -16,7 +16,7 @@ use keyboard_types::{Code, Modifiers};
 
 /// Something to view in the demo windows
 pub trait View {
-    fn ui(&mut self, ui: &mut egui::Ui);
+    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image);
 }
 
 /// Something to view
@@ -29,8 +29,8 @@ pub trait Demo {
     /// `&'static` so we can also use it as a key to store open/close state.
     fn name(&self) -> &'static str;
 
-    /// Show windows, etc
-    fn show(&mut self, ctx: &egui::Context, open: &mut bool);
+    // Show windows, etc
+    /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
 
 #[derive(PartialEq, Debug)]
@@ -126,15 +126,18 @@ impl Painting {
         .response
     }
 
-    pub fn ui_content(&mut self, ui: &mut Ui) -> egui::Response {
+    pub fn ui_content(&mut self, ui: &mut Ui,image: egui::Image) -> egui::Response {
         println!("In ui_content");
         let (mut response, painter) =
             ui.allocate_painter(ui.available_size_before_wrap(), Sense::drag());
 
+  
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
+
+        image.paint_at(ui, response.rect);
         let from_screen = to_screen.inverse();
 
         if self.lines.is_empty() {
@@ -174,22 +177,22 @@ impl Demo for Painting {
         "🖊 Painting"
     }
 
-    fn show(&mut self, ctx: &Context, open: &mut bool) {
+   /*  fn show(&mut self, ctx: &Context, open: &mut bool) {
         use View as _;
         Window::new(self.name())
             .open(open)
             .default_size(vec2(512.0, 512.0))
             .vscroll(false)
             .show(ctx, |ui| self.ui(ui));
-    }
+    }*/
 }
 
 impl View for Painting {
-    fn ui(&mut self, ui: &mut Ui) {
+    fn ui(&mut self, ui: &mut Ui, image: egui::widgets::Image) {
         self.ui_control(ui);
         ui.label("Paint with your mouse/touch!");
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
-            self.ui_content(ui);
+            self.ui_content(ui,image);
         });
     }
 }
@@ -517,11 +520,12 @@ impl eframe::App for FirstWindow {
                                 LoadingState::Loaded => {
                                     println!("fff");
                                     if self.painting_bool{   
-                                        // ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                        //   ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        // });
+                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                                          ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                                         });*/
                                                                                               
-                                        self.Painting.ui(ui);
+                                        self.Painting.ui(ui,egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                                    
                                         
                                         
                                     
@@ -533,6 +537,7 @@ impl eframe::App for FirstWindow {
                                 LoadingState::NotLoaded => {
                                     for i in [0, self.screenshots_taken.len() - 1] {
                                         let fp = std::path::Path::new(&self.fp[i]);
+                                        //println!("{:?}",self.fp[i]);
                                         //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
                                         let image =
                                             image::io::Reader::open(&fp).unwrap().decode().unwrap();
