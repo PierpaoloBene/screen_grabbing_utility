@@ -197,9 +197,12 @@ impl View for Painting {
         let mut resp = None;
         self.ui_control(ui);
         ui.label("Paint with your mouse/touch!");
-        egui::Frame::canvas(ui.style()).show(ui, |ui| {
-            resp = Some(self.ui_content(ui, image, dim));
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content(ui, image, dim));
+            });
         });
+       
         resp
     }
 }
@@ -507,10 +510,14 @@ impl eframe::App for FirstWindow {
 
             frame.set_decorations(true);
 
-            if(self.width<=1000.0 || self.height<=500.0){
-                frame.set_window_size(Vec2::new(1000.0, 500.0));
+            if(self.width<=1000.0 && self.height<=500.0){
+                frame.set_window_size(Vec2::new(1400.0, 800.0));
+            }else if(self.width<=1000.0 && self.height>=500.0){
+                frame.set_window_size(Vec2::new(1000.0, self.height + 10.0));
+            }else if(self.width>=1000.0 && self.height<=500.0){
+                frame.set_window_size(Vec2::new(self.width+10.0, 500.0));
             }else{
-                frame.set_window_size(Vec2::new(self.width + 10.0, self.height + 10.0));
+                frame.set_window_size(Vec2::new(self.width + (15.0*self.width)/100.0, self.height + (15.0*self.height)/100.0));
             }
 
             frame.set_window_pos(Pos2::new(0.0, 0.0));
