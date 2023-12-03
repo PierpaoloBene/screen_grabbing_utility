@@ -93,6 +93,7 @@ fn main() -> Result<(), eframe::Error> {
                 screenshots_taken: Vec::new(),
                 Painting: p,
                 painting_bool: false,
+                dim_max: Vec2::new(0.0, 0.0),
             })
         }),
     )
@@ -129,7 +130,7 @@ impl Painting {
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image) -> egui::Response {
         println!("In ui_content");
         let (mut response, painter) =
-            ui.allocate_painter(ui.available_size_before_wrap(), Sense::drag());
+            ui.allocate_painter(image.size().unwrap(), Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -216,6 +217,7 @@ struct FirstWindow {
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     Painting: Painting,
     painting_bool: bool,
+    dim_max: Vec2,
 }
 
 impl eframe::App for FirstWindow {
@@ -352,7 +354,8 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            self.dim_max=frame.info().window_info.monitor_size.unwrap();
+            frame.set_window_size(self.dim_max);
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             match self.selected_mode {
@@ -464,9 +467,11 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
+                    
+
                 }
                 ModeOptions::FullScreen => {
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
@@ -490,6 +495,7 @@ impl eframe::App for FirstWindow {
                             .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
+
                 }
             }
 
@@ -497,7 +503,10 @@ impl eframe::App for FirstWindow {
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
-            frame.set_window_size(egui::Vec2::new(900.0, 400.0));
+            frame.set_window_size(self.dim_max);
+            frame.set_window_pos(Pos2::new(0.0, 0.0));
+
+            //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
 
             egui::CentralPanel::default().show(ctx, |ui| {
                 egui::TopBottomPanel::top("top").show(ctx, |ui| {
