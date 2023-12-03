@@ -54,11 +54,21 @@ enum LoadingState {
 }
 
 fn main() -> Result<(), eframe::Error> {
+    let current_os = if cfg!(unix) {
+        "unix"
+      } else if cfg!(windows) {
+        "windows"
+      } else{
+        "unknown"
+      };
+      println!("{:?}",current_os);
+
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 480.0)),
         transparent: true,
         ..Default::default()
     };
+    
 
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
@@ -76,6 +86,8 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
+                current_os: current_os.to_string(),
+                multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 fp: Vec::new(),
@@ -208,6 +220,8 @@ impl View for Painting {
 }
 
 struct FirstWindow {
+    current_os: String,
+    multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     fp: Vec<String>,
@@ -231,6 +245,9 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+        if self.current_os=="windows" && self.multiplication_factor.is_none(){
+            self.multiplication_factor = Some(frame.info().window_info.monitor_size.unwrap().x);
+        }
         match self.open_fw.try_recv() {
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
@@ -445,6 +462,11 @@ impl eframe::App for FirstWindow {
                 ModeOptions::Rectangle => {
                     self.width = self.rect_pos_f[0] - self.rect_pos[0];
                     self.height = self.rect_pos_f[1] - self.rect_pos[1];
+                    if self.current_os=="windows"{
+                        self.width= self.width * (self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
+                        self.height = self.height * (self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
+                    }
+
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture_area(
@@ -475,7 +497,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
+                            .push(format!("/Users/pierpaolobene/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
