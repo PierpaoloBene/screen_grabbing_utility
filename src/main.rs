@@ -504,8 +504,15 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
+
             frame.set_decorations(true);
-            frame.set_window_size(Vec2::new(self.width + 50.0, self.height + 50.0));
+
+            if(self.width<=1000.0 || self.height<=500.0){
+                frame.set_window_size(Vec2::new(1000.0, 500.0));
+            }else{
+                frame.set_window_size(Vec2::new(self.width + 50.0, self.height + 50.0));
+            }
+
             frame.set_window_pos(Pos2::new(0.0, 0.0));
 
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
