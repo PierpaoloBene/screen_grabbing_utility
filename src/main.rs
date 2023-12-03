@@ -467,8 +467,9 @@ impl eframe::App for FirstWindow {
                     if self.current_os=="windows"{
                         self.width= self.width * (self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
                         self.height = self.height * (self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
+                        self.rect_pos[0]=self.rect_pos[0]* (self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
+                        self.rect_pos[1]=self.rect_pos[1]*(self.multiplication_factor.unwrap()/(frame.info().window_info.monitor_size.unwrap().x));
                     }
-
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
                         let image = screen.capture_area(
@@ -499,7 +500,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
+                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -537,9 +538,11 @@ impl eframe::App for FirstWindow {
             if(self.width<=1000.0 && self.height<=500.0){
                 frame.set_window_size(Vec2::new(1000.0, 500.0)); //1400 750
             }else if(self.width<=1000.0 && self.height>=500.0){
-                frame.set_window_size(Vec2::new(1000.0, self.height + 10.0));
+                frame.set_window_size(Vec2::new(1000.0, self.height));
             }else if(self.width>=1000.0 && self.height<=500.0){
-                frame.set_window_size(Vec2::new(self.width+10.0, 500.0));
+                frame.set_window_size(Vec2::new(self.width, 500.0));
+            }else if(self.width>=1200.0 && self.height>=700.0) {
+                frame.set_window_size(Vec2::new(1200.0, 700.0));
             }else{
                 frame.set_window_size(Vec2::new(self.width, self.height));
             }
