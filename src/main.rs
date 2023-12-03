@@ -142,7 +142,9 @@ impl Painting {
 
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
         println!("In ui_content");
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        
+            let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -497,7 +499,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("/Users/pierpaolobene/Desktop/ao{}.jpg", i));
+                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -533,13 +535,13 @@ impl eframe::App for FirstWindow {
             frame.set_decorations(true);
 
             if(self.width<=1000.0 && self.height<=500.0){
-                frame.set_window_size(Vec2::new(1400.0, 800.0));
+                frame.set_window_size(Vec2::new(1000.0, 500.0)); //1400 750
             }else if(self.width<=1000.0 && self.height>=500.0){
                 frame.set_window_size(Vec2::new(1000.0, self.height + 10.0));
             }else if(self.width>=1000.0 && self.height<=500.0){
                 frame.set_window_size(Vec2::new(self.width+10.0, 500.0));
             }else{
-                frame.set_window_size(Vec2::new(self.width + (15.0*self.width)/100.0, self.height + (15.0*self.height)/100.0));
+                frame.set_window_size(Vec2::new(self.width, self.height));
             }
 
             frame.set_window_pos(Pos2::new(0.0, 0.0));
@@ -552,12 +554,14 @@ impl eframe::App for FirstWindow {
                     LoadingState::Loaded => {
                         println!("fff");
                         if self.painting_bool {
-                            let response = self
+                            if(self.width>=1200.0 && self.height>=700.0){
+                                let dim=Vec2::new(1200.0, 700.0);
+                                let response = self
                                 .Painting
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
-                                    Vec2::new(self.width, self.height),
+                                    dim,
                                 )
                                 .clone()
                                 .unwrap();
@@ -585,6 +589,115 @@ impl eframe::App for FirstWindow {
                                     }
                                 }
                             }
+                            }else if (self.width>=1200.0 && self.height<=700.0){
+                                let dim=Vec2::new(1200.0,self.height);
+                                let response = self
+                                .Painting
+                                .ui(
+                                    ui,
+                                    egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    dim,
+                                )
+                                .clone()
+                                .unwrap();
+                            /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                             ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                            });*/
+                            if ui.button("caccona").clicked() {
+                                let screens = Screen::all().unwrap();
+                                for screen in screens {
+                                    let mod_img = screen.capture_area(
+                                        response.rect.left_top()[0] as i32,
+                                        response.rect.left_top()[1] as i32 + 50,
+                                        response.rect.width() as u32,
+                                        response.rect.height() as u32,
+                                    );
+
+                                    if mod_img.is_err() == false {
+                                        //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                        //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                        mod_img.unwrap().save(self.fp[0].to_string());
+                                        self.selected_window = 6;
+
+                                        //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                        println!("gira gira gira gira");
+                                    }
+                                }
+                            }
+                            }else if (self.width<=1200.0 && self.height>=700.0){
+                                let dim=Vec2::new(self.width,700.0);
+                                let response = self
+                                .Painting
+                                .ui(
+                                    ui,
+                                    egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    dim,
+                                )
+                                .clone()
+                                .unwrap();
+                            /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                             ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                            });*/
+                            if ui.button("caccona").clicked() {
+                                let screens = Screen::all().unwrap();
+                                for screen in screens {
+                                    let mod_img = screen.capture_area(
+                                        response.rect.left_top()[0] as i32,
+                                        response.rect.left_top()[1] as i32 + 50,
+                                        response.rect.width() as u32,
+                                        response.rect.height() as u32,
+                                    );
+
+                                    if mod_img.is_err() == false {
+                                        //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                        //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                        mod_img.unwrap().save(self.fp[0].to_string());
+                                        self.selected_window = 6;
+
+                                        //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                        println!("gira gira gira gira");
+                                    }
+                                }
+                            }
+
+                            }else{
+                                let dim=Vec2::new(self.width,self.height);
+                                let response = self
+                                .Painting
+                                .ui(
+                                    ui,
+                                    egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    dim,
+                                )
+                                .clone()
+                                .unwrap();
+                            /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                             ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
+                            });*/
+                            if ui.button("caccona").clicked() {
+                                let screens = Screen::all().unwrap();
+                                for screen in screens {
+                                    let mod_img = screen.capture_area(
+                                        response.rect.left_top()[0] as i32,
+                                        response.rect.left_top()[1] as i32 + 50,
+                                        response.rect.width() as u32,
+                                        response.rect.height() as u32,
+                                    );
+
+                                    if mod_img.is_err() == false {
+                                        //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                        //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                        mod_img.unwrap().save(self.fp[0].to_string());
+                                        self.selected_window = 6;
+
+                                        //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                        println!("gira gira gira gira");
+                                    }
+                                }
+                            }
+
+                            }
+                            
                         }
                     }
                     LoadingState::NotLoaded => {
