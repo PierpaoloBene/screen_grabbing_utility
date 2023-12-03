@@ -130,7 +130,7 @@ impl Painting {
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image) -> egui::Response {
         println!("In ui_content");
         let (mut response, painter) =
-            ui.allocate_painter(image.size().unwrap(), Sense::drag());
+            ui.allocate_painter(vec2(image.size().unwrap().x/2.0, image.size().unwrap().y/2.0), Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -445,6 +445,7 @@ impl eframe::App for FirstWindow {
                             width as u32,
                             height as u32,
                         );
+                        println!("{:?} {:?}", width,height);
 
                         if image.is_err() == false {
                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
@@ -467,7 +468,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
+                            .push(format!("/Users/pierpaolobene/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                     
