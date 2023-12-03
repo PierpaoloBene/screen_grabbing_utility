@@ -500,7 +500,7 @@ impl eframe::App for FirstWindow {
                     }
                 }
             }
-
+            self.painting_bool=true;
             self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
@@ -510,7 +510,7 @@ impl eframe::App for FirstWindow {
             if(self.width<=1000.0 || self.height<=500.0){
                 frame.set_window_size(Vec2::new(1000.0, 500.0));
             }else{
-                frame.set_window_size(Vec2::new(self.width + 50.0, self.height + 50.0));
+                frame.set_window_size(Vec2::new(self.width + 10.0, self.height + 10.0));
             }
 
             frame.set_window_pos(Pos2::new(0.0, 0.0));
@@ -518,18 +518,6 @@ impl eframe::App for FirstWindow {
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
 
             egui::CentralPanel::default().show(ctx, |ui| {
-                egui::TopBottomPanel::top("top").show(ctx, |ui| {
-                    egui::menu::bar(ui, |ui| {
-                        egui::menu::menu_button(ui, "Menù", |ui| {
-                            let btn = ui.add(egui::Button::new("Paint"));
-                            if btn.clicked() {
-                                self.painting_bool = true;
-
-                                ui.close_menu();
-                            }
-                        });
-                    });
-                });
 
                 match self.loading_state {
                     LoadingState::Loaded => {
