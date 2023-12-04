@@ -1,3 +1,7 @@
+mod postProcessing;
+use crate::postProcessing::View;
+use crate::postProcessing::Demo;
+
 use eframe::{
     egui::{self, Color32, RichText},
     Frame,
@@ -15,30 +19,18 @@ use global_hotkey::{
 };
 use keyboard_types::{Code, Modifiers};
 
-/// Something to view in the demo windows
-pub trait View {
-    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
-    fn ui_arrows(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
-}
 
-/// Something to view
-pub trait Demo {
-    /// Is the demo enabled for this integraton?
-    fn is_enabled(&self, _ctx: &egui::Context) -> bool {
-        true
-    }
-
-    /// `&'static` so we can also use it as a key to store open/close state.
-    fn name(&self) -> &'static str;
-
-    // Show windows, etc
-    /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
-}
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
     Rectangle,
     FullScreen,
+}
+#[derive(PartialEq, Debug)]
+enum Shapes {
+    Arrow,
+    Circle,
+    Square,
 }
 
 #[derive(PartialEq, Debug)]
@@ -74,7 +66,8 @@ fn main() -> Result<(), eframe::Error> {
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
-    let mut p = Painting::default();
+    let mut p = postProcessing::Painting::default();
+    let mut a=postProcessing::Arrow::default();
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
@@ -97,6 +90,8 @@ fn main() -> Result<(), eframe::Error> {
                 selected_timer: TimerOptions::NoTimer,
                 selected_timer_string: "No timer".to_string(),
                 selected_timer_numeric: 0 as u64,
+                selected_shape: Shapes::Arrow,
+                selected_shape_string: "Arrow".to_string(),
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
@@ -105,9 +100,12 @@ fn main() -> Result<(), eframe::Error> {
                 open_fw: openfw.clone(),
                 screenshots_taken: Vec::new(),
                 Painting: p,
+                Arrow:a,
                 painting_bool: false,
-                shaping_bool:false,
-                texting_bool:false,
+                arrow_bool: false,
+                circle_bool: false,
+                square_bool: false,
+                texting_bool: false,
                 width: 0.0,
                 height: 0.0,
             })
@@ -115,174 +113,6 @@ fn main() -> Result<(), eframe::Error> {
     )
 }
 
-pub struct Painting {
-    /// in 0-1 normalized coordinates
-    lines: Vec<Vec<Pos2>>,
-    stroke: Stroke,
-    starting_point: Pos2,
-    final_point:Pos2,
-    arrows:Vec<(Pos2, Pos2)>
-}
-
-impl Default for Painting {
-    fn default() -> Self {
-        Self {
-            lines: Default::default(),
-            stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
-            starting_point: Pos2{x:-1.0, y:-1.0},
-            final_point:Pos2{x:-1.0, y:-1.0},
-            arrows:Vec::new(),
-        }
-    }
-}
-
-impl Painting {
-    pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control");
-        ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.stroke, "Stroke");
-            ui.separator();
-            if ui.button("Clear Painting").clicked() {
-                self.lines.clear();
-            }
-        })
-        .response
-    }
-
-    pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
-        println!("In ui_content");
-
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
-
-        let to_screen = emath::RectTransform::from_to(
-            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
-            response.rect,
-        );
-
-        image.paint_at(ui, response.rect);
-        let from_screen = to_screen.inverse();
-
-        if self.lines.is_empty() {
-            self.lines.push(vec![]);
-        }
-
-        let current_line = self.lines.last_mut().unwrap();
-
-        if let Some(pointer_pos) = response.interact_pointer_pos() {
-            let canvas_pos = from_screen * pointer_pos;
-            if current_line.last() != Some(&canvas_pos) {
-                current_line.push(canvas_pos);
-                response.mark_changed();
-            }
-        } else if !current_line.is_empty() {
-            self.lines.push(vec![]);
-            response.mark_changed();
-        }
-
-        let shapes = self
-            .lines
-            .iter()
-            .filter(|line| line.len() >= 2)
-            .map(|line| {
-                let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, self.stroke)
-            });
-
-        painter.extend(shapes);
-
-        response
-    }
-
-    pub fn ui_content_arrows(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
-        println!("In ui_content arrows");
-
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
-
-        let to_screen = emath::RectTransform::from_to(
-            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
-            response.rect,
-        );
-        image.paint_at(ui, response.rect);
-        
-        self.stroke=Stroke::new(3.0, egui::Color32::WHITE);
-        if ui.input(|i| i.pointer.any_down()) && self.starting_point.x==-1.0 && self.starting_point.y==-1.0{            
-            self.starting_point=ui.input(|i| i.pointer.interact_pos().unwrap());
-       }
-       if ui.input(|i| i.pointer.any_released()) && self.final_point.x==-1.0 && self.final_point.y==-1.0{
-            self.final_point=ui.input(|i| i.pointer.interact_pos().unwrap());
-       }
-       if self.final_point.x!=-1.0 && self.final_point.y!=-1.0 && self.starting_point.x!=-1.0 && self.starting_point.y!=-1.0{
-            self.arrows.push((self.starting_point, self.final_point));
-            self.starting_point=Pos2{x:-1.0,y:-1.0};
-            self.final_point=Pos2{x:-1.0,y:-1.0};
-
-       }
-
-       for point in self.arrows.clone().into_iter(){
-        painter.arrow(point.0, vec2(point.1.x-point.0.x, point.1.y-point.0.y), self.stroke);
-            
-       }
-        
-        
-
-        response
-    }
-}
-
-impl Demo for Painting {
-    fn name(&self) -> &'static str {
-        "🖊 Painting"
-    }
-
-    /*  fn show(&mut self, ctx: &Context, open: &mut bool) {
-        use View as _;
-        Window::new(self.name())
-            .open(open)
-            .default_size(vec2(512.0, 512.0))
-            .vscroll(false)
-            .show(ctx, |ui| self.ui(ui));
-    }*/
-}
-
-impl View for Painting {
-    fn ui(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control(ui);
-        ui.label("Paint with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-    fn ui_arrows(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        //self.ui_control(ui);
-        ui.label("Paint an arrow with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content_arrows(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-
-}
 
 struct FirstWindow {
     current_os: String,
@@ -295,6 +125,8 @@ struct FirstWindow {
     selected_timer: TimerOptions,
     selected_timer_string: String,
     selected_timer_numeric: u64,
+    selected_shape: Shapes,
+    selected_shape_string: String,
     selected_window: usize,
     mouse_pos: Option<Pos2>,
     mouse_pos_f: Option<Pos2>,
@@ -302,10 +134,13 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
-    Painting: Painting,
+    Painting: postProcessing::Painting,
+    Arrow: postProcessing::Arrow,
     painting_bool: bool,
-    shaping_bool:bool,
-    texting_bool:bool,
+    arrow_bool: bool,
+    circle_bool: bool,
+    square_bool: bool,
+    texting_bool: bool,
     width: f32,
     height: f32,
 }
@@ -461,7 +296,6 @@ impl eframe::App for FirstWindow {
                                     && self.mouse_pos.unwrap()[1] == -1.0
                             }) {
                                 println!("salvo pressione");
-                               
 
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
                                 //self.mouse_pos=self.mouse_pos_2;
@@ -622,7 +456,7 @@ impl eframe::App for FirstWindow {
 
             frame.set_window_pos(Pos2::new(0.0, 0.0));
             let mut paint_btn = None;
-            let mut shapes_btn = None;
+           
             let mut text_btn = None;
             let mut save_btn = None;
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
@@ -633,15 +467,12 @@ impl eframe::App for FirstWindow {
                         paint_btn = Some(ui.add(egui::Button::new("Paint")));
                         if paint_btn.unwrap().clicked() {
                             self.painting_bool = true;
-                            self.shaping_bool=false;
-                            self.texting_bool=false;
+                            self.arrow_bool = false;
+                            self.circle_bool = false;
+                            self.square_bool = false;
+                            self.texting_bool = false;
                         }
-                        shapes_btn = Some(ui.add(egui::Button::new("Shapes")));
-                        if shapes_btn.unwrap().clicked() {
-                            self.painting_bool = false;
-                            self.shaping_bool=true;
-                            self.texting_bool=false;
-                        }                        
+                        
                         text_btn = Some(ui.add(egui::Button::new("Text")));
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                     });
@@ -682,7 +513,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
 
@@ -725,7 +556,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -767,7 +598,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -811,7 +642,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -822,11 +653,11 @@ impl eframe::App for FirstWindow {
                                         //}
                                     }
                                 }
-                            } else if self.shaping_bool{
+                            } else if self.arrow_bool {
                                 if (self.width >= 1200.0 && self.height >= 700.0) {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
-                                        .Painting
+                                        .Arrow
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -855,7 +686,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
 
@@ -869,7 +700,7 @@ impl eframe::App for FirstWindow {
                                 } else if (self.width >= 1200.0 && self.height <= 700.0) {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
-                                        .Painting
+                                        .Arrow
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -898,7 +729,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -911,7 +742,7 @@ impl eframe::App for FirstWindow {
                                 } else if (self.width <= 1200.0 && self.height >= 700.0) {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
-                                        .Painting
+                                        .Arrow
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -940,7 +771,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -953,7 +784,7 @@ impl eframe::App for FirstWindow {
                                 } else {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
-                                        .Painting
+                                        .Arrow
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -984,7 +815,7 @@ impl eframe::App for FirstWindow {
                                         if mod_img.is_err() == false {
                                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                            mod_img
+                                            let _=mod_img
                                                 .unwrap()
                                                 .save("C:\\Users\\masci\\Desktop\\mod.jpg");
                                             self.selected_window = 6;
@@ -995,13 +826,7 @@ impl eframe::App for FirstWindow {
                                         //}
                                     }
                                 }
-
-                            }
-                            
-                            
-                            
-                            
-                            else {
+                            } else {
                                 self.selected_window = 6
                             }
                         }
@@ -1038,39 +863,88 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 6 {
             let mut paint_btn = None;
-            let mut shapes_btn = None;
+
             let mut text_btn = None;
-            
+
             egui::CentralPanel::default().show(ctx, |ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
                     ui.horizontal(|ui| {
                         paint_btn = Some(ui.add(egui::Button::new("Paint")));
                         if paint_btn.unwrap().clicked() {
                             self.painting_bool = true;
-                            self.shaping_bool=false;
-                            self.texting_bool=false;
-                            self.selected_window=5;
+                            self.arrow_bool = false;
+                            self.circle_bool = false;
+                            self.square_bool = false;
+                            self.texting_bool = false;
+                            self.selected_window = 5;
                         }
-                        shapes_btn = Some(ui.add(egui::Button::new("Shapes")));
-                        if shapes_btn.unwrap().clicked() {
-                            self.painting_bool = false;
-                            self.shaping_bool=true;
-                            self.texting_bool=false;
-                            self.selected_window=5;
-                        }
+
+                        egui::ComboBox::from_label("Select the shape!")
+                            .selected_text(format!("{}", self.selected_shape_string))
+                            .show_ui(ui, |ui| {
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Arrow,
+                                        "Arrow",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Arrow;
+                                    self.selected_shape_string = "Arrow".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = true;
+                                    self.circle_bool = false;
+                                    self.square_bool = false;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                }
+
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Circle,
+                                        "Circle",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Circle;
+                                    self.selected_shape_string = "Circle".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = false;
+                                    self.circle_bool = true;
+                                    self.square_bool = false;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                }
+
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Square,
+                                        "Square",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Square;
+                                    self.selected_shape_string = "Square".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = false;
+                                    self.circle_bool = false;
+                                    self.square_bool = true;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                };
+                            });
+
                         text_btn = Some(ui.add(egui::Button::new("Text")));
-                        
                     });
-                    
                 });
-               ui.add_space(20.0);
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {                    
+                ui.add_space(20.0);
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     ui.add(egui::Image::new(self.image.as_ref().unwrap()));
-                    
                 });
-                
             });
-            
         }
     }
 }
