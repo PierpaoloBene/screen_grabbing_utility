@@ -9,6 +9,8 @@ pub trait View {
         image: egui::Image,
         dim: Vec2,
     ) -> Option<egui::Response>;
+
+    fn ui_circles(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
 }
 
 /// Something to view
@@ -33,6 +35,11 @@ pub struct Painting {
     final_point: Pos2,
     arrows: Vec<(Pos2, Pos2, Stroke)>,
     arrows_stroke:Stroke,
+
+    circle_center:Pos2,
+    radius:f32,
+    circles: Vec<(Pos2, f32, Stroke)>,
+    circles_stroke:Stroke
 }
 
 impl Default for Painting {
@@ -45,6 +52,11 @@ impl Default for Painting {
             final_point: Pos2 { x: -1.0, y: -1.0 },
             arrows: Vec::new(),
             arrows_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+
+            circle_center:Pos2 { x: -1.0, y: -1.0 },
+            radius:-1.0,
+            circles: Vec::new(),
+            circles_stroke:Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
         }
     }
 }
@@ -59,6 +71,18 @@ impl Painting {
                     point.2,
                 );
             }
+        }
+
+        if !self.circles.is_empty(){
+            for point in self.circles.clone().into_iter() {
+                painter.circle(
+                    point.0,
+                    point.1,
+                    egui::Color32::TRANSPARENT,
+                    point.2
+                );
+            }
+            
         }
 
         
@@ -88,8 +112,10 @@ impl Painting {
                 }
             })
             .response;
-
-            self.lines_stroke=self.lines.last_mut().unwrap().1;
+            if !self.lines.is_empty(){
+                self.lines_stroke=self.lines.last_mut().unwrap().1;
+            }
+            
             res
         }
         
@@ -107,6 +133,7 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
+        
         self.render_elements(painter.clone());
 
         let from_screen = to_screen.inverse();
@@ -165,7 +192,7 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-
+        self.render_elements(painter.clone());
         if !self.lines.is_empty() {
             let shapes = self.lines
             .iter()            
@@ -179,7 +206,7 @@ impl Painting {
             painter.extend(shapes);
         }
 
-        // self.stroke = Stroke::new(3.0, egui::Color32::WHITE);
+        
         if ui.input(|i| i.pointer.any_down())
             && self.starting_point.x == -1.0
             && self.starting_point.y == -1.0
@@ -202,13 +229,75 @@ impl Painting {
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
         }
 
-        for point in self.arrows.clone().into_iter() {
-            painter.arrow(
-                point.0,
-                vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                point.2,
-            );
+        self.render_elements(painter.clone());
+
+        response
+    }
+
+    pub fn ui_control_circles(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        println!("In ui_control circles");
+        ui.horizontal(|ui| {
+            egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
+            ui.separator();
+        })
+        .response
+    }
+
+    pub fn ui_content_circles(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> egui::Response {
+        println!("In ui_content circles");
+
+        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        image.paint_at(ui, response.rect);
+        self.render_elements(painter.clone());
+        if !self.lines.is_empty() {
+            let shapes = self.lines
+            .iter()            
+            .filter(|line| line.0.len() >= 2)
+            .map(|line| {
+                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                egui::Shape::line(points, line.1)
+            });
+            painter.extend(shapes);
         }
+
+
+        if ui.input(|i| i.pointer.any_down())
+            && self.circle_center.x == -1.0
+            && self.circle_center.y == -1.0
+        {
+            self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
+        }
+        if ui.input(|i| i.pointer.any_released())
+            && self.circle_center.x != -1.0
+            && self.circle_center.y != -1.0
+            && self.radius==-1.0
+        {
+            self.radius=ui.input(|i| i.pointer.interact_pos().unwrap()).x-self.circle_center.x;
+            self.radius=self.radius.abs();
+                     
+        }
+
+        if self.circle_center.x != -1.0
+            && self.circle_center.y != -1.0
+            && self.radius != -1.0
+            {
+                self.circles.push((self.circle_center, self.radius, self.circles_stroke));
+                self.circle_center = Pos2 { x: -1.0, y: -1.0 };   
+                self.radius=-1.0;  
+            }
+
+            self.render_elements(painter.clone());
+        
 
         response
     }
@@ -251,6 +340,24 @@ impl View for Painting {
         ui.vertical_centered(|ui| {
             egui::Frame::canvas(ui.style()).show(ui, |ui| {
                 resp = Some(self.ui_content_arrows(ui, image, dim));
+            });
+        });
+
+        resp
+    }
+
+    fn ui_circles(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
+        self.ui_control_circles(ui);
+        ui.label("Paint a circle with your mouse/touch!");
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content_circles(ui, image, dim));
             });
         });
 
