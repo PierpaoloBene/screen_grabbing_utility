@@ -28,6 +28,7 @@ enum ModeOptions {
 }
 #[derive(PartialEq, Debug)]
 enum Shapes {
+    None, 
     Arrow,
     Circle,
     Square,
@@ -90,7 +91,7 @@ fn main() -> Result<(), eframe::Error> {
                 selected_timer: TimerOptions::NoTimer,
                 selected_timer_string: "No timer".to_string(),
                 selected_timer_numeric: 0 as u64,
-                selected_shape: Shapes::Arrow,
+                selected_shape: Shapes::None,
                 selected_shape_string: "Select a shape!".to_string(),
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
