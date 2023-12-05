@@ -91,7 +91,7 @@ fn main() -> Result<(), eframe::Error> {
                 selected_timer_string: "No timer".to_string(),
                 selected_timer_numeric: 0 as u64,
                 selected_shape: Shapes::Arrow,
-                selected_shape_string: "Select the shape!".to_string(),
+                selected_shape_string: "Select a shape!".to_string(),
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
@@ -469,8 +469,9 @@ impl eframe::App for FirstWindow {
                             self.circle_bool = false;
                             self.square_bool = false;
                             self.texting_bool = false;
+                            self.selected_shape_string="Select a shape!".to_string();
                         }
-                        egui::ComboBox::from_id_source("Select the shape!")
+                        egui::ComboBox::from_id_source("Select a shape!")
                             .selected_text(format!("{}", self.selected_shape_string))
                             .show_ui(ui, |ui| {
                                 if ui
@@ -931,9 +932,10 @@ impl eframe::App for FirstWindow {
                             self.square_bool = false;
                             self.texting_bool = false;
                             self.selected_window = 5;
+                            self.selected_shape_string="Select a shape!".to_string();
                         }
 
-                        egui::ComboBox::from_id_source("Select the shape!")
+                        egui::ComboBox::from_id_source("Select a shape!")
                             .selected_text(format!("{}", self.selected_shape_string))
                             .show_ui(ui, |ui| {
                                 if ui

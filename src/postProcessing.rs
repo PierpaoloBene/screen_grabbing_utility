@@ -1,4 +1,4 @@
-use egui::{emath, vec2, Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2};
+use egui::{emath, vec2, Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2, Painter};
 
 /// Something to view in the demo windows
 pub trait View {
@@ -27,29 +27,46 @@ pub trait Demo {
 pub struct Painting {
     /// in 0-1 normalized coordinates
     lines: Vec<Vec<Pos2>>,
-    stroke: Stroke,
+    lines_stroke: Stroke,
+
     starting_point: Pos2,
     final_point: Pos2,
     arrows: Vec<(Pos2, Pos2)>,
+    arrows_stroke:Stroke,
 }
 
 impl Default for Painting {
     fn default() -> Self {
         Self {
             lines: Default::default(),
-            stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+
             starting_point: Pos2 { x: -1.0, y: -1.0 },
             final_point: Pos2 { x: -1.0, y: -1.0 },
             arrows: Vec::new(),
+            arrows_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
         }
     }
 }
 
 impl Painting {
+    pub fn render_elements(&mut self, painter:Painter){
+        if !self.arrows.is_empty() {
+            for point in self.arrows.clone().into_iter() {
+                painter.arrow(
+                    point.0,
+                    vec2(point.1.x - point.0.x, point.1.y - point.0.y),
+                    self.arrows_stroke,
+                );
+            }
+        }
+
+        
+    }
     pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control");
         ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.stroke, "Stroke");
+            egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
             ui.separator();
             if ui.button("Clear Painting").clicked() {
                 self.lines.clear();
@@ -69,15 +86,7 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
-        if !self.arrows.is_empty() {
-            for point in self.arrows.clone().into_iter() {
-                painter.arrow(
-                    point.0,
-                    vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                    self.stroke,
-                );
-            }
-        }
+        self.render_elements(painter.clone());
 
         let from_screen = to_screen.inverse();
 
@@ -104,7 +113,7 @@ impl Painting {
             .filter(|line| line.len() >= 2)
             .map(|line| {
                 let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, self.stroke)
+                egui::Shape::line(points, self.lines_stroke)
             });
 
         painter.extend(shapes);
@@ -115,7 +124,7 @@ impl Painting {
     pub fn ui_control_arrows(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control arrows");
         ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.stroke, "Stroke");
+            egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
             ui.separator();
         })
         .response
@@ -144,7 +153,7 @@ impl Painting {
                 .filter(|line| line.len() >= 2)
                 .map(|line| {
                     let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, self.stroke)
+                    egui::Shape::line(points, self.lines_stroke)
                 });
 
             painter.extend(shapes);
@@ -177,7 +186,7 @@ impl Painting {
             painter.arrow(
                 point.0,
                 vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                self.stroke,
+                self.arrows_stroke,
             );
         }
 
