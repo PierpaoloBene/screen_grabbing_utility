@@ -489,7 +489,7 @@ impl eframe::App for FirstWindow {
                                     self.circle_bool = false;
                                     self.square_bool = false;
                                     self.texting_bool = false;
-                                    self.selected_window = 5;
+                                    
                                 }
 
                                 if ui
@@ -507,7 +507,7 @@ impl eframe::App for FirstWindow {
                                     self.circle_bool = true;
                                     self.square_bool = false;
                                     self.texting_bool = false;
-                                    self.selected_window = 5;
+                                    
                                 }
 
                                 if ui
@@ -525,7 +525,7 @@ impl eframe::App for FirstWindow {
                                     self.circle_bool = false;
                                     self.square_bool = true;
                                     self.texting_bool = false;
-                                    self.selected_window = 5;
+                                    
                                 };
                             });
                         text_btn = Some(ui.add(egui::Button::new("Text")));
