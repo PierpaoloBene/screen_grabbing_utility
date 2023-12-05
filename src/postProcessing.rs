@@ -74,17 +74,23 @@ impl Painting {
                     self.lines.clear();
                 }
             })
+            
             .response
+            
 
         }else{
-            ui.horizontal(|ui| {
+            
+            let res=ui.horizontal(|ui| {
                 egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
                 ui.separator();
                 if ui.button("Clear Painting").clicked() {
                     self.lines.clear();
                 }
             })
-            .response
+            .response;
+
+            self.lines_stroke=self.lines.last_mut().unwrap().1;
+            res
         }
         
         
