@@ -67,7 +67,7 @@ fn main() -> Result<(), eframe::Error> {
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
     let mut p = postProcessing::Painting::default();
-    let mut a=postProcessing::Arrow::default();
+    
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
@@ -91,7 +91,7 @@ fn main() -> Result<(), eframe::Error> {
                 selected_timer_string: "No timer".to_string(),
                 selected_timer_numeric: 0 as u64,
                 selected_shape: Shapes::Arrow,
-                selected_shape_string: "Arrow".to_string(),
+                selected_shape_string: "Select the shape!".to_string(),
                 selected_window: 1,
                 mouse_pos: Option::Some(egui::pos2(-1.0, -1.0)),
                 mouse_pos_f: Option::Some(egui::pos2(-1.0, -1.0)),
@@ -100,7 +100,6 @@ fn main() -> Result<(), eframe::Error> {
                 open_fw: openfw.clone(),
                 screenshots_taken: Vec::new(),
                 Painting: p,
-                Arrow:a,
                 painting_bool: false,
                 arrow_bool: false,
                 circle_bool: false,
@@ -135,7 +134,6 @@ struct FirstWindow {
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     Painting: postProcessing::Painting,
-    Arrow: postProcessing::Arrow,
     painting_bool: bool,
     arrow_bool: bool,
     circle_bool: bool,
@@ -472,7 +470,63 @@ impl eframe::App for FirstWindow {
                             self.square_bool = false;
                             self.texting_bool = false;
                         }
-                        
+                        egui::ComboBox::from_id_source("Select the shape!")
+                            .selected_text(format!("{}", self.selected_shape_string))
+                            .show_ui(ui, |ui| {
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Arrow,
+                                        "Arrow",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Arrow;
+                                    self.selected_shape_string = "Arrow".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = true;
+                                    self.circle_bool = false;
+                                    self.square_bool = false;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                }
+
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Circle,
+                                        "Circle",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Circle;
+                                    self.selected_shape_string = "Circle".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = false;
+                                    self.circle_bool = true;
+                                    self.square_bool = false;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                }
+
+                                if ui
+                                    .selectable_value(
+                                        &mut self.selected_shape,
+                                        Shapes::Square,
+                                        "Square",
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected_shape = Shapes::Square;
+                                    self.selected_shape_string = "Square".to_string();
+                                    self.painting_bool = false;
+                                    self.arrow_bool = false;
+                                    self.circle_bool = false;
+                                    self.square_bool = true;
+                                    self.texting_bool = false;
+                                    self.selected_window = 5;
+                                };
+                            });
                         text_btn = Some(ui.add(egui::Button::new("Text")));
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                     });
@@ -657,7 +711,7 @@ impl eframe::App for FirstWindow {
                                 if (self.width >= 1200.0 && self.height >= 700.0) {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
-                                        .Arrow
+                                        .Painting
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -700,7 +754,7 @@ impl eframe::App for FirstWindow {
                                 } else if (self.width >= 1200.0 && self.height <= 700.0) {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
-                                        .Arrow
+                                        .Painting
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -742,7 +796,7 @@ impl eframe::App for FirstWindow {
                                 } else if (self.width <= 1200.0 && self.height >= 700.0) {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
-                                        .Arrow
+                                        .Painting
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -784,7 +838,7 @@ impl eframe::App for FirstWindow {
                                 } else {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
-                                        .Arrow
+                                        .Painting
                                         .ui_arrows(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
@@ -879,7 +933,7 @@ impl eframe::App for FirstWindow {
                             self.selected_window = 5;
                         }
 
-                        egui::ComboBox::from_label("Select the shape!")
+                        egui::ComboBox::from_id_source("Select the shape!")
                             .selected_text(format!("{}", self.selected_shape_string))
                             .show_ui(ui, |ui| {
                                 if ui

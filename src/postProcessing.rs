@@ -1,4 +1,4 @@
-use egui::{Vec2, Pos2, Stroke, Color32, Ui, Sense, emath, Rect, vec2};
+use egui::{emath, vec2, Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 /// Something to view in the demo windows
 pub trait View {
@@ -28,16 +28,19 @@ pub struct Painting {
     /// in 0-1 normalized coordinates
     lines: Vec<Vec<Pos2>>,
     stroke: Stroke,
-    
+    starting_point: Pos2,
+    final_point: Pos2,
+    arrows: Vec<(Pos2, Pos2)>,
 }
-
 
 impl Default for Painting {
     fn default() -> Self {
         Self {
             lines: Default::default(),
             stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
-            
+            starting_point: Pos2 { x: -1.0, y: -1.0 },
+            final_point: Pos2 { x: -1.0, y: -1.0 },
+            arrows: Vec::new(),
         }
     }
 }
@@ -54,7 +57,6 @@ impl Painting {
         })
         .response
     }
-    
 
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
         println!("In ui_content");
@@ -67,6 +69,16 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
+        if !self.arrows.is_empty() {
+            for point in self.arrows.clone().into_iter() {
+                painter.arrow(
+                    point.0,
+                    vec2(point.1.x - point.0.x, point.1.y - point.0.y),
+                    self.stroke,
+                );
+            }
+        }
+
         let from_screen = to_screen.inverse();
 
         if self.lines.is_empty() {
@@ -99,66 +111,7 @@ impl Painting {
 
         response
     }
-}
 
-impl Demo for Painting {
-    fn name(&self) -> &'static str {
-        "🖊 Painting"
-    } 
-}
-
-impl View for Painting {
-    fn ui(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control(ui);
-        ui.label("Paint with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-    fn ui_arrows(
-        &mut self,
-        ui: &mut egui::Ui,
-        image: egui::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        todo!()
-    }
-}
-
-
-pub struct Arrow{
-    stroke: Stroke,
-    starting_point: Pos2,
-    final_point: Pos2,
-    arrows: Vec<(Pos2, Pos2)>,
-}
-
-impl Default for Arrow {
-    fn default() -> Self {
-        Self {
-            
-            stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
-            starting_point:Pos2 { x: -1.0, y: -1.0 },
-            final_point:Pos2 { x: -1.0, y: -1.0 },
-            arrows:Vec::new()
-            
-        }
-    }
-}
-
-impl Arrow {
-    
     pub fn ui_control_arrows(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control arrows");
         ui.horizontal(|ui| {
@@ -167,8 +120,6 @@ impl Arrow {
         })
         .response
     }
-
-    
 
     pub fn ui_content_arrows(
         &mut self,
@@ -186,7 +137,20 @@ impl Arrow {
         );
         image.paint_at(ui, response.rect);
 
-       // self.stroke = Stroke::new(3.0, egui::Color32::WHITE);
+        if !self.lines.is_empty() {
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, self.stroke)
+                });
+
+            painter.extend(shapes);
+        }
+
+        // self.stroke = Stroke::new(3.0, egui::Color32::WHITE);
         if ui.input(|i| i.pointer.any_down())
             && self.starting_point.x == -1.0
             && self.starting_point.y == -1.0
@@ -221,16 +185,31 @@ impl Arrow {
     }
 }
 
-impl Demo for Arrow {
+impl Demo for Painting {
     fn name(&self) -> &'static str {
-        "🖊 Painting an arrow"
+        "🖊 Painting"
     }
-
-    
 }
 
-impl View for Arrow {
-   
+impl View for Painting {
+    fn ui(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
+        self.ui_control(ui);
+        ui.label("Paint with your mouse/touch!");
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content(ui, image, dim));
+            });
+        });
+
+        resp
+    }
+
     fn ui_arrows(
         &mut self,
         ui: &mut Ui,
@@ -247,9 +226,5 @@ impl View for Arrow {
         });
 
         resp
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response> {
-        todo!()
     }
 }
