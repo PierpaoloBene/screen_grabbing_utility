@@ -26,12 +26,12 @@ pub trait Demo {
 }
 pub struct Painting {
     /// in 0-1 normalized coordinates
-    lines: Vec<Vec<Pos2>>,
+    lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
 
     starting_point: Pos2,
     final_point: Pos2,
-    arrows: Vec<(Pos2, Pos2)>,
+    arrows: Vec<(Pos2, Pos2, Stroke)>,
     arrows_stroke:Stroke,
 }
 
@@ -56,7 +56,7 @@ impl Painting {
                 painter.arrow(
                     point.0,
                     vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                    self.arrows_stroke,
+                    point.2,
                 );
             }
         }
@@ -65,14 +65,29 @@ impl Painting {
     }
     pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control");
-        ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
-            ui.separator();
-            if ui.button("Clear Painting").clicked() {
-                self.lines.clear();
-            }
-        })
-        .response
+
+        if  self.lines.last_mut()==None{
+            ui.horizontal(|ui| {
+                egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
+                ui.separator();
+                if ui.button("Clear Painting").clicked() {
+                    self.lines.clear();
+                }
+            })
+            .response
+
+        }else{
+            ui.horizontal(|ui| {
+                egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
+                ui.separator();
+                if ui.button("Clear Painting").clicked() {
+                    self.lines.clear();
+                }
+            })
+            .response
+        }
+        
+        
     }
 
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
@@ -91,10 +106,10 @@ impl Painting {
         let from_screen = to_screen.inverse();
 
         if self.lines.is_empty() {
-            self.lines.push(vec![]);
+            self.lines.push((vec![], self.lines_stroke));
         }
 
-        let current_line = self.lines.last_mut().unwrap();
+        let mut current_line = &mut self.lines.last_mut().unwrap().0;
 
         if let Some(pointer_pos) = response.interact_pointer_pos() {
             let canvas_pos = from_screen * pointer_pos;
@@ -103,17 +118,16 @@ impl Painting {
                 response.mark_changed();
             }
         } else if !current_line.is_empty() {
-            self.lines.push(vec![]);
+            self.lines.push((vec![], self.lines_stroke));
             response.mark_changed();
         }
-
-        let shapes = self
-            .lines
-            .iter()
-            .filter(|line| line.len() >= 2)
+        
+        let shapes = self.lines
+            .iter()            
+            .filter(|line| line.0.len() >= 2)
             .map(|line| {
-                let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, self.lines_stroke)
+                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                egui::Shape::line(points, line.1)
             });
 
         painter.extend(shapes);
@@ -147,14 +161,14 @@ impl Painting {
         image.paint_at(ui, response.rect);
 
         if !self.lines.is_empty() {
-            let shapes = self
-                .lines
-                .iter()
-                .filter(|line| line.len() >= 2)
-                .map(|line| {
-                    let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, self.lines_stroke)
-                });
+            let shapes = self.lines
+            .iter()            
+            .filter(|line| line.0.len() >= 2)
+            .map(|line| {
+                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                egui::Shape::line(points, line.1)
+            });
+
 
             painter.extend(shapes);
         }
@@ -177,7 +191,7 @@ impl Painting {
             && self.starting_point.x != -1.0
             && self.starting_point.y != -1.0
         {
-            self.arrows.push((self.starting_point, self.final_point));
+            self.arrows.push((self.starting_point, self.final_point, self.arrows_stroke));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
         }
@@ -186,7 +200,7 @@ impl Painting {
             painter.arrow(
                 point.0,
                 vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                self.arrows_stroke,
+                point.2,
             );
         }
 
