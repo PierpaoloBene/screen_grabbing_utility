@@ -11,6 +11,8 @@ pub trait View {
     ) -> Option<egui::Response>;
 
     fn ui_circles(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
+
+    fn ui_squares(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
 }
 
 /// Something to view
@@ -39,7 +41,15 @@ pub struct Painting {
     circle_center:Pos2,
     radius:f32,
     circles: Vec<(Pos2, f32, Stroke)>,
-    circles_stroke:Stroke
+    circles_stroke:Stroke,
+
+    square_starting_point:Pos2,
+    square_ending_point:Pos2,
+    square:egui::Rect,
+    squares_stroke:Stroke,
+    squares:Vec<(Rect, Stroke)>,
+
+    
 }
 
 impl Default for Painting {
@@ -57,6 +67,12 @@ impl Default for Painting {
             radius:-1.0,
             circles: Vec::new(),
             circles_stroke:Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+
+            square_starting_point:Pos2 { x: -1.0, y: -1.0 },
+            square_ending_point:Pos2 { x: -1.0, y: -1.0 },
+            square:egui::Rect::from_points(&[Pos2{x:-1.0, y:-1.0}, Pos2{x:-1.0, y:-1.0}]),
+            squares_stroke:Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            squares:Vec::new(),
         }
     }
 }
@@ -84,6 +100,19 @@ impl Painting {
             }
             
         }
+
+        if !self.squares.is_empty(){
+            for point in self.squares.clone().into_iter() {
+                painter.rect(
+                    point.0,
+                    1.0,
+                    egui::Color32::TRANSPARENT,
+                    point.1,
+                );
+            }
+
+        }
+        
 
         
     }
@@ -301,6 +330,78 @@ impl Painting {
 
         response
     }
+
+    pub fn ui_control_squares(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        println!("In ui_control squares");
+        ui.horizontal(|ui: &mut Ui| {
+            egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
+            ui.separator();
+        })
+        .response
+    }
+
+    pub fn ui_content_squares(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> egui::Response {
+        println!("In ui_content squares");
+
+        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        image.paint_at(ui, response.rect);
+
+        self.render_elements(painter.clone());
+        if !self.lines.is_empty() {
+            let shapes = self.lines
+            .iter()            
+            .filter(|line| line.0.len() >= 2)
+            .map(|line| {
+                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                egui::Shape::line(points, line.1)
+            });
+            painter.extend(shapes);
+        }
+
+
+        if ui.input(|i| i.pointer.any_down()) 
+            && self.square_starting_point.x==-1.0 
+            && self.square_starting_point.y==-1.0
+        {
+            self.square_starting_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+        }
+        if ui.input(|i| i.pointer.any_released())
+            && self.square_ending_point.x == -1.0
+            && self.square_ending_point.y == -1.0
+            
+        {
+            self.square_ending_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+                     
+        }
+
+        if self.square_starting_point.x != -1.0
+            && self.square_starting_point.y != -1.0
+            && self.square_ending_point.x != -1.0
+            && self.square_ending_point.y !=1.0
+            {
+                let re=egui::Rect::from_points(&[self.square_starting_point, self.square_ending_point]);
+                self.squares.push((re, self.squares_stroke));
+                self.square_starting_point.x = -1.0;
+                self.square_starting_point.y = -1.0;
+                self.square_ending_point.x = -1.0;
+                self.square_ending_point.y =-1.0;
+            }
+
+            self.render_elements(painter.clone());
+        
+
+        response
+    }
 }
 
 impl Demo for Painting {
@@ -358,6 +459,24 @@ impl View for Painting {
         ui.vertical_centered(|ui| {
             egui::Frame::canvas(ui.style()).show(ui, |ui| {
                 resp = Some(self.ui_content_circles(ui, image, dim));
+            });
+        });
+
+        resp
+    }
+
+    fn ui_squares(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
+        self.ui_control_squares(ui);
+        ui.label("Paint a circle with your mouse/touch!");
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content_squares(ui, image, dim));
             });
         });
 
