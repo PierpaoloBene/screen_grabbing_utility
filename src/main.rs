@@ -407,7 +407,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -430,7 +430,7 @@ impl eframe::App for FirstWindow {
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                            .push(format!("/Users/luigi.maggipinto23/Desktop/ao{}.jpg", i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -439,6 +439,7 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
         } else if self.selected_window == 5 {
+            
             frame.set_decorations(true);
 
             if (self.width <= 1000.0 && self.height <= 500.0) {
@@ -579,7 +580,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
 
                                             self.selected_window = 6;
 
@@ -622,7 +623,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -664,7 +665,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -708,7 +709,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -752,7 +753,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
 
                                             self.selected_window = 6;
 
@@ -795,7 +796,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -837,7 +838,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -881,7 +882,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -925,7 +926,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
 
                                             self.selected_window = 6;
 
@@ -968,7 +969,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1010,7 +1011,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1054,7 +1055,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1098,7 +1099,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
 
                                             self.selected_window = 6;
 
@@ -1141,7 +1142,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1183,7 +1184,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1227,7 +1228,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1271,7 +1272,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
 
                                             self.selected_window = 6;
 
@@ -1314,7 +1315,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1356,7 +1357,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1400,7 +1401,7 @@ impl eframe::App for FirstWindow {
                                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                             let _=mod_img
                                                 .unwrap()
-                                                .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                                .save("/Users/luigi.maggipinto23/Desktop/mod.jpg");
                                             self.selected_window = 6;
 
                                             //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
@@ -1415,7 +1416,7 @@ impl eframe::App for FirstWindow {
                             }
                         }
                         LoadingState::NotLoaded => {
-                            for i in [0, self.screenshots_taken.len() - 2] {
+                            for i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
                                 let fp = std::path::Path::new(&self.fp[i]);
                                 //println!("{:?}",self.fp[i]);
@@ -1436,9 +1437,9 @@ impl eframe::App for FirstWindow {
                                     Default::default(),
                                 );
                                 self.image = Some(img);
+                                self.painting_bool=true;
                                 self.loading_state = LoadingState::Loaded;
                                 println!("ddd");
-
                                 ()
                             }
                         }
