@@ -1,5 +1,7 @@
 use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
+
+
 /// Something to view in the demo windows
 pub trait View {
     fn ui(
@@ -7,7 +9,7 @@ pub trait View {
         ui: &mut egui::Ui,
         image: egui::Image,
         dim: Vec2,
-        opt: u32,
+        opt: pp_options,
     ) -> Option<egui::Response>;
 }
 
@@ -24,12 +26,13 @@ pub trait Demo {
     // Show windows, etc
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
-#[derive( Debug)]
-enum pp_options {
+#[derive( Debug, Clone)]
+pub enum pp_options {
     Arrow,
     Circle,
     Square,
     Text,
+    Painting,
 }
 pub struct Painting {
     last_type_added: Vec<pp_options>,
@@ -151,11 +154,11 @@ impl Painting {
         self.last_type_added.pop();
     }
 
-    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: u32) -> egui::Response {
+    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: pp_options) -> egui::Response {
         println!("In ui_control");
         let mut res=None;
         match opt {
-            0 => {
+            pp_options::Painting => {
                 if self.lines.last_mut() == None {
                     res=Some(ui.horizontal(|ui| {
                         egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
@@ -183,7 +186,7 @@ impl Painting {
                     res
                 }
             }
-            1 => {
+            pp_options::Arrow => {
                 let mut back_btn = None;
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
@@ -197,7 +200,7 @@ impl Painting {
                 })
                 .response
             }
-            2 => {
+            pp_options::Circle => {
                 println!("In ui_control circles");
                 let mut back_btn = None;
                 ui.horizontal(|ui| {
@@ -212,7 +215,7 @@ impl Painting {
                 })
                 .response
             }
-            3 => {
+            pp_options::Square => {
                 println!("In ui_control squares");
                 let mut back_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -227,7 +230,7 @@ impl Painting {
                 })
                 .response
             }
-            4 => {
+            pp_options::Text => {
                 println!("In ui_control texts");
                 let mut write_btn = None;
                 let mut back_btn = None;
@@ -593,12 +596,12 @@ impl View for Painting {
         ui: &mut Ui,
         image: egui::widgets::Image,
         dim: Vec2,
-        opt: u32,
+        opt: pp_options,
     ) -> Option<egui::Response> {
         let mut resp = None;
 
         match opt {
-            0 => {
+            pp_options::Painting => {
                 self.ui_control(ui, opt);
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -607,7 +610,7 @@ impl View for Painting {
                     });
                 });
             }
-            1 => {
+            pp_options::Arrow => {
                 self.ui_control(ui, opt);
                 ui.label("Paint an arrow with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -616,7 +619,7 @@ impl View for Painting {
                     });
                 });
             }
-            2 => {
+            pp_options::Circle => {
                 self.ui_control(ui, opt);
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -625,7 +628,7 @@ impl View for Painting {
                     });
                 });
             }
-            3 => {
+            pp_options::Square => {
                 self.ui_control(ui, opt);
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -634,7 +637,7 @@ impl View for Painting {
                     });
                 });
             }
-            4 => {
+            pp_options::Text => {
                 self.ui_control(ui, opt);
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
@@ -643,7 +646,7 @@ impl View for Painting {
                     });
                 });
             }
-            _ => assert!(opt > 0 && opt <= 4),
+            
         }
 
         resp
