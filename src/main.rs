@@ -1,4 +1,5 @@
 mod postProcessing;
+use crate::postProcessing::pp_options;
 use crate::postProcessing::Demo;
 use crate::postProcessing::View;
 
@@ -33,18 +34,7 @@ enum Shapes {
 }
 
 #[derive(PartialEq, Debug)]
-enum ppOptions {
-    Arrow,
-    Circle,
-    Square,
-    Painting,
-    Text,
-    None,
-}
-
-#[derive(PartialEq, Debug)]
 enum TimerOptions {
-
     NoTimer,
     ThreeSeconds,
     FiveSeconds,
@@ -89,7 +79,7 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
-                ppOption: ppOptions::None,
+                ppOption: None,
                 current_os: current_os.to_string(),
                 multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
@@ -118,7 +108,7 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
-    ppOption: ppOptions,
+    ppOption: Option<pp_options>,
     current_os: String,
     multiplication_factor: Option<f32>,
     loading_state: LoadingState,
@@ -464,7 +454,7 @@ impl eframe::App for FirstWindow {
                     ui.horizontal(|ui| {
                         paint_btn = Some(ui.add(egui::Button::new("Paint")));
                         if paint_btn.unwrap().clicked() {
-                            self.ppOption = ppOptions::Painting;
+                            self.ppOption = Some(pp_options::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
                         egui::ComboBox::from_id_source("Select a shape!")
@@ -480,7 +470,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Arrow;
                                     self.selected_shape_string = "Arrow".to_string();
-                                    self.ppOption = ppOptions::Arrow;
+                                    self.ppOption = Some(pp_options::Arrow);
                                 }
 
                                 if ui
@@ -493,7 +483,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Circle;
                                     self.selected_shape_string = "Circle".to_string();
-                                    self.ppOption = ppOptions::Circle;
+                                    self.ppOption = Some(pp_options::Circle);
                                 }
 
                                 if ui
@@ -506,12 +496,12 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Square;
                                     self.selected_shape_string = "Square".to_string();
-                                    self.ppOption = ppOptions::Square;
+                                    self.ppOption = Some(pp_options::Square);
                                 };
                             });
                         text_btn = Some(ui.add(egui::Button::new("Text")));
                         if text_btn.unwrap().clicked() {
-                            self.ppOption = ppOptions::Text;
+                            self.ppOption = Some(pp_options::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")));
@@ -520,898 +510,55 @@ impl eframe::App for FirstWindow {
                     match self.loading_state {
                         LoadingState::Loaded => {
                             println!("fff");
-                            match self.ppOption {
-                                ppOptions::Painting => {
-                                    if (self.width >= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(1200.0, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                0,
-                                            )
-                                            .clone()
-                                            .unwrap();
+                            let mut dim = Vec2::new(0.0, 0.0);
+                            if self.width >= 1200.0 && self.height >= 700.0 {
+                                dim = Vec2::new(1200.0, 700.0);
+                            } else if (self.width >= 1200.0 && self.height <= 700.0) {
+                                dim = Vec2::new(1200.0, self.height);
+                            } else if (self.width <= 1200.0 && self.height >= 700.0) {
+                                dim = Vec2::new(self.width, 700.0);
+                            } else {
+                                dim = Vec2::new(self.width, self.height);
+                            }
+                            let response = self
+                                .Painting
+                                .ui(
+                                    ui,
+                                    egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    dim,
+                                    self.ppOption.clone().unwrap(),
+                                )
+                                .clone()
+                                .unwrap();
 
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
+                            if save_btn.unwrap().clicked() {
+                                let screens = Screen::all().unwrap();
+                                let mod_img = screens[0].capture_area(
+                                    response.rect.left_top()[0] as i32,
+                                    response.rect.left_top()[1] as i32 + 50,
+                                    response.rect.width() as u32,
+                                    response.rect.height() as u32,
+                                );
+                                // for screen in screens {
+                                //     let mod_img = screen.capture_area(
+                                //         response.rect.left_top()[0] as i32,
+                                //         response.rect.left_top()[1] as i32 + 50,
+                                //         response.rect.width() as u32,
+                                //         response.rect.height() as u32,
+                                //     );
 
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                if mod_img.is_err() == false {
+                                    //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
+                                    //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                                    let _ =
+                                        mod_img.unwrap().save("C:\\Users\\masci\\Desktop\\mod.jpg");
 
-                                                self.selected_window = 6;
+                                    self.selected_window = 6;
 
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width >= 1200.0 && self.height <= 700.0) {
-                                        let dim = Vec2::new(1200.0, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                0,
-                                            )
-                                            .clone()
-                                            .unwrap();
-
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width <= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(self.width, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                0,
-                                            )
-                                            .clone()
-                                            .unwrap();
-
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else {
-                                        let dim = Vec2::new(self.width, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                0,
-                                            )
-                                            .clone()
-                                            .unwrap();
-                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                         ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        });*/
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    }
+                                    //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                    println!("gira gira gira gira");
                                 }
-                                ppOptions::Arrow => {
-                                    if (self.width >= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(1200.0, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                1,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-    
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width >= 1200.0 && self.height <= 700.0) {
-                                        let dim = Vec2::new(1200.0, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                1,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width <= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(self.width, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                1,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else {
-                                        let dim = Vec2::new(self.width, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                1,
-                                            )
-                                            .clone()
-                                            .unwrap();
-                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                         ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        });*/
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    }
-                                }
-                                ppOptions::Circle => {
-                                    if (self.width >= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(1200.0, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                2,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-    
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width >= 1200.0 && self.height <= 700.0) {
-                                        let dim = Vec2::new(1200.0, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                2,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width <= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(self.width, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                2,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else {
-                                        let dim = Vec2::new(self.width, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                2,
-                                            )
-                                            .clone()
-                                            .unwrap();
-                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                         ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        });*/
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    }
-                                }
-                                ppOptions::Square => {
-                                    if (self.width >= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(1200.0, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                3,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-    
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width >= 1200.0 && self.height <= 700.0) {
-                                        let dim = Vec2::new(1200.0, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                3,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width <= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(self.width, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                3,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else {
-                                        let dim = Vec2::new(self.width, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                3,
-                                            )
-                                            .clone()
-                                            .unwrap();
-                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                         ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        });*/
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    }
-                                }
-                                ppOptions::Text => {
-                                    if (self.width >= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(1200.0, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                4,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-    
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width >= 1200.0 && self.height <= 700.0) {
-                                        let dim = Vec2::new(1200.0, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                4,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else if (self.width <= 1200.0 && self.height >= 700.0) {
-                                        let dim = Vec2::new(self.width, 700.0);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                4,
-                                            )
-                                            .clone()
-                                            .unwrap();
-    
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    } else {
-                                        let dim = Vec2::new(self.width, self.height);
-                                        let response = self
-                                            .Painting
-                                            .ui(
-                                                ui,
-                                                egui::Image::new(self.image.as_ref().unwrap())
-                                                    .shrink_to_fit(),
-                                                dim,
-                                                4,
-                                            )
-                                            .clone()
-                                            .unwrap();
-                                        /*ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                         ui.add(egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit());
-                                        });*/
-                                        if save_btn.unwrap().clicked() {
-                                            let screens = Screen::all().unwrap();
-                                            let mod_img = screens[0].capture_area(
-                                                response.rect.left_top()[0] as i32,
-                                                response.rect.left_top()[1] as i32 + 50,
-                                                response.rect.width() as u32,
-                                                response.rect.height() as u32,
-                                            );
-                                            // for screen in screens {
-                                            //     let mod_img = screen.capture_area(
-                                            //         response.rect.left_top()[0] as i32,
-                                            //         response.rect.left_top()[1] as i32 + 50,
-                                            //         response.rect.width() as u32,
-                                            //         response.rect.height() as u32,
-                                            //     );
-    
-                                            if mod_img.is_err() == false {
-                                                //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                                //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                                let _ = mod_img
-                                                    .unwrap()
-                                                    .save("C:\\Users\\masci\\Desktop\\mod.jpg");
-                                                self.selected_window = 6;
-    
-                                                //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                                                println!("gira gira gira gira");
-                                            }
-                                            //}
-                                        }
-                                    }
-                                }
-                                _ => {self.selected_window = 6}
+                                //}
                             }
                             
                         }
@@ -1438,6 +585,7 @@ impl eframe::App for FirstWindow {
                                 );
                                 self.image = Some(img);
                                 self.loading_state = LoadingState::Loaded;
+                                self.selected_window=6;
                                 println!("ddd");
 
                                 ()
@@ -1456,7 +604,7 @@ impl eframe::App for FirstWindow {
                     ui.horizontal(|ui| {
                         paint_btn = Some(ui.add(egui::Button::new("Paint")));
                         if paint_btn.unwrap().clicked() {
-                            self.ppOption=ppOptions::Painting;
+                            self.ppOption = Some(pp_options::Painting);
                             self.selected_window = 5;
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
@@ -1474,7 +622,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Arrow;
                                     self.selected_shape_string = "Arrow".to_string();
-                                    self.ppOption=ppOptions::Arrow;
+                                    self.ppOption = Some(pp_options::Arrow);
                                     self.selected_window = 5;
                                 }
 
@@ -1488,7 +636,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Circle;
                                     self.selected_shape_string = "Circle".to_string();
-                                    self.ppOption=ppOptions::Circle;
+                                    self.ppOption =Some( pp_options::Circle);
                                     self.selected_window = 5;
                                 }
 
@@ -1502,14 +650,14 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Square;
                                     self.selected_shape_string = "Square".to_string();
-                                    self.ppOption=ppOptions::Square;
+                                    self.ppOption = Some(pp_options::Square);
                                     self.selected_window = 5;
                                 };
                             });
 
                         text_btn = Some(ui.add(egui::Button::new("Text")));
                         if text_btn.unwrap().clicked() {
-                            self.ppOption=ppOptions::Text;
+                            self.ppOption = Some(pp_options::Text);
                             self.selected_window = 5;
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
