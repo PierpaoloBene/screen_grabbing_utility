@@ -2,33 +2,12 @@ use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 /// Something to view in the demo windows
 pub trait View {
-    fn ui(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
-    fn ui_arrows(
+    fn ui(
         &mut self,
         ui: &mut egui::Ui,
         image: egui::Image,
         dim: Vec2,
-    ) -> Option<egui::Response>;
-
-    fn ui_circles(
-        &mut self,
-        ui: &mut egui::Ui,
-        image: egui::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response>;
-
-    fn ui_squares(
-        &mut self,
-        ui: &mut egui::Ui,
-        image: egui::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response>;
-
-    fn ui_texts(
-        &mut self,
-        ui: &mut egui::Ui,
-        image: egui::Image,
-        dim: Vec2,
+        opt: u32,
     ) -> Option<egui::Response>;
 }
 
@@ -45,8 +24,15 @@ pub trait Demo {
     // Show windows, etc
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
+#[derive( Debug)]
+enum pp_options {
+    Arrow,
+    Circle,
+    Square,
+    Text,
+}
 pub struct Painting {
-    element_id: u32,
+    last_type_added: Vec<pp_options>,
 
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
@@ -54,7 +40,7 @@ pub struct Painting {
 
     starting_point: Pos2,
     final_point: Pos2,
-    arrows: Vec<(Pos2, Pos2, Stroke, u32)>,
+    arrows: Vec<(Pos2, Pos2, Stroke)>,
     arrows_stroke: Stroke,
 
     circle_center: Pos2,
@@ -78,7 +64,7 @@ pub struct Painting {
 impl Default for Painting {
     fn default() -> Self {
         Self {
-            element_id: 0,
+            last_type_added: Vec::new(),
 
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
@@ -144,35 +130,133 @@ impl Painting {
             }
         }
     }
-    pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control");
-
-        if self.lines.last_mut() == None {
-            ui.horizontal(|ui| {
-                egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
-                ui.separator();
-                if ui.button("Clear Painting").clicked() {
-                    self.lines.clear();
-                }
+     fn undo(&mut self){
+        
+        match self.last_type_added.last().unwrap(){
+            pp_options::Arrow=>{
+                self.arrows.remove(self.arrows.len() - 1);
                 
-            })
-            .response
-        } else {
-            let res = ui
-                .horizontal(|ui| {
-                    egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
-                    ui.separator();
-                    if ui.button("Clear Painting").clicked() {
-                        self.lines.clear();
-                    }
-                    
-                })
-                .response;
-            if !self.lines.is_empty() {
-                self.lines_stroke = self.lines.last_mut().unwrap().1;
-            }
+            },
+            pp_options::Circle=>{
+                self.circles.remove(self.circles.len() - 1);
+            },
+            pp_options::Square=>{
+                self.squares.remove(self.squares.len() - 1);
+            },
+            pp_options::Text=>{
+                self.texts.remove(self.texts.len() - 1);
+            },
+            _=>{}
+        }
+        self.last_type_added.pop();
+    }
 
-            res
+    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: u32) -> egui::Response {
+        println!("In ui_control");
+        let mut res=None;
+        match opt {
+            0 => {
+                if self.lines.last_mut() == None {
+                    res=Some(ui.horizontal(|ui| {
+                        egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
+                        ui.separator();
+                        if ui.button("Clear Painting").clicked() {
+                            self.lines.clear();
+                        }
+                    })
+                    .response);
+                    res.unwrap()
+                } else {
+                    let res = ui
+                        .horizontal(|ui| {
+                            egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
+                            ui.separator();
+                            if ui.button("Clear Painting").clicked() {
+                                self.lines.clear();
+                            }
+                        })
+                        .response;
+                    if !self.lines.is_empty() {
+                        self.lines_stroke = self.lines.last_mut().unwrap().1;
+                    }
+
+                    res
+                }
+            }
+            1 => {
+                let mut back_btn = None;
+                ui.horizontal(|ui| {
+                    egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
+                    ui.separator();
+                    if self.last_type_added.len() > 0 {
+                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        if back_btn.unwrap().clicked() {
+                            self.undo();
+                        }
+                    }
+                })
+                .response
+            }
+            2 => {
+                println!("In ui_control circles");
+                let mut back_btn = None;
+                ui.horizontal(|ui| {
+                    egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
+                    ui.separator();
+                    if self.last_type_added.len() > 0 {
+                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        if back_btn.unwrap().clicked() {
+                            self.undo();
+                        }
+                    }
+                })
+                .response
+            }
+            3 => {
+                println!("In ui_control squares");
+                let mut back_btn = None;
+                ui.horizontal(|ui: &mut Ui| {
+                    egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
+                    ui.separator();
+                    if self.last_type_added.len() > 0 {
+                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        if back_btn.unwrap().clicked() {
+                            self.undo();
+                        }
+                    }
+                })
+                .response
+            }
+            4 => {
+                println!("In ui_control texts");
+                let mut write_btn = None;
+                let mut back_btn = None;
+                ui.horizontal(|ui: &mut Ui| {
+                    egui::stroke_ui(ui, &mut self.texts_stroke, "Stroke");
+                    ui.separator();
+                    ui.add(egui::TextEdit::singleline(&mut self.to_write_text));
+                    ui.separator();
+                    write_btn = Some(ui.add(egui::Button::new("Write!")));
+                    if write_btn.unwrap().clicked()
+                        && self.text_starting_position.x != -1.0
+                        && self.text_starting_position.y != -1.0
+                        && self.text_ending_position.x != -1.0
+                        && self.text_ending_position.y != -1.0
+                    {
+                        self.to_write_text = self.to_write_text.clone();
+                        self.ready_to_write = true;
+                    }
+                    if self.last_type_added.len() > 0 {
+                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        if back_btn.unwrap().clicked() {
+                            self.undo();
+                        }
+                    }
+                })
+                .response
+            }
+            _=>res.unwrap()
+            
         }
     }
 
@@ -199,13 +283,11 @@ impl Painting {
         let mut current_line = &mut self.lines.last_mut().unwrap().0;
 
         if let Some(pointer_pos) = response.interact_pointer_pos() {
-           
-                let canvas_pos = from_screen * pointer_pos;
-                if current_line.last() != Some(&canvas_pos) {
-                    current_line.push(canvas_pos);
-                    response.mark_changed();
-                }
-            
+            let canvas_pos = from_screen * pointer_pos;
+            if current_line.last() != Some(&canvas_pos) {
+                current_line.push(canvas_pos);
+                response.mark_changed();
+            }
         } else if !current_line.is_empty() {
             self.lines.push((vec![], self.lines_stroke));
             response.mark_changed();
@@ -225,20 +307,6 @@ impl Painting {
         response
     }
 
-    pub fn ui_control_arrows(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        let mut back_btn = None;
-        ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
-            ui.separator();
-            if self.arrows.len() > 0 {
-                back_btn = Some(ui.add(egui::Button::new("Undo")));
-                if back_btn.unwrap().clicked() {
-                    self.arrows.remove(self.arrows.len() - 1);
-                }
-            }
-        })
-        .response
-    }
 
     pub fn ui_content_arrows(
         &mut self,
@@ -290,15 +358,11 @@ impl Painting {
             && self.starting_point.x != -1.0
             && self.starting_point.y != -1.0
         {
-            self.arrows.push((
-                self.starting_point,
-                self.final_point,
-                self.arrows_stroke,
-                self.element_id + 1,
-            ));
+            self.arrows
+                .push((self.starting_point, self.final_point, self.arrows_stroke));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
-            self.element_id += 1;
+            self.last_type_added.push(pp_options::Arrow);
         }
 
         self.render_elements(painter.clone());
@@ -306,21 +370,7 @@ impl Painting {
         response
     }
 
-    pub fn ui_control_circles(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control circles");
-        let mut back_btn = None;
-        ui.horizontal(|ui| {
-            egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
-            ui.separator();
-            if self.circles.len() > 0 {
-                back_btn = Some(ui.add(egui::Button::new("Undo")));
-                if back_btn.unwrap().clicked() {
-                    self.circles.remove(self.circles.len() - 1);
-                }
-            }
-        })
-        .response
-    }
+ 
 
     pub fn ui_content_circles(
         &mut self,
@@ -373,6 +423,7 @@ impl Painting {
                 .push((self.circle_center, self.radius, self.circles_stroke));
             self.circle_center = Pos2 { x: -1.0, y: -1.0 };
             self.radius = -1.0;
+            self.last_type_added.push(pp_options::Circle);
         }
 
         self.render_elements(painter.clone());
@@ -380,22 +431,7 @@ impl Painting {
         response
     }
 
-    pub fn ui_control_squares(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control squares");
-        let mut back_btn = None;
-        ui.horizontal(|ui: &mut Ui| {
-            egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
-            ui.separator();
-            if self.squares.len() > 0 {
-                back_btn = Some(ui.add(egui::Button::new("Undo")));
-                if back_btn.unwrap().clicked() {
-                    self.squares.remove(self.squares.len() - 1);
-                }
-            }
-        })
-        .response
-    }
-
+    
     pub fn ui_content_squares(
         &mut self,
         ui: &mut Ui,
@@ -451,11 +487,13 @@ impl Painting {
         {
             let re =
                 egui::Rect::from_points(&[self.square_starting_point, self.square_ending_point]);
+
             self.squares.push((re, self.squares_stroke));
             self.square_starting_point.x = -1.0;
             self.square_starting_point.y = -1.0;
             self.square_ending_point.x = -1.0;
             self.square_ending_point.y = -1.0;
+            self.last_type_added.push(pp_options::Square);
         }
 
         self.render_elements(painter.clone());
@@ -463,34 +501,8 @@ impl Painting {
         response
     }
 
-    pub fn ui_control_texts(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control texts");
-        let mut write_btn = None;
-        let mut back_btn = None;
-        ui.horizontal(|ui: &mut Ui| {
-            egui::stroke_ui(ui, &mut self.texts_stroke, "Stroke");
-            ui.separator();
-            ui.add(egui::TextEdit::singleline(&mut self.to_write_text));
-            ui.separator();
-            write_btn = Some(ui.add(egui::Button::new("Write!")));
-            if write_btn.unwrap().clicked()
-                && self.text_starting_position.x != -1.0
-                && self.text_starting_position.y != -1.0
-                && self.text_ending_position.x != -1.0
-                && self.text_ending_position.y != -1.0
-            {
-                self.to_write_text = self.to_write_text.clone();
-                self.ready_to_write = true;
-            }
-            if self.texts.len() > 0 {
-                back_btn = Some(ui.add(egui::Button::new("Undo")));
-                if back_btn.unwrap().clicked() {
-                    self.texts.remove(self.texts.len() - 1);
-                }
-            }
-        })
-        .response
-    }
+    
+   
 
     pub fn ui_content_texts(
         &mut self,
@@ -559,15 +571,16 @@ impl Painting {
                 self.text_ending_position.x = -1.0;
                 self.text_ending_position.y = -1.0;
                 self.ready_to_write = false;
+                self.last_type_added.push(pp_options::Text);
             }
         }
 
         self.render_elements(painter.clone());
 
         response
+    
     }
 }
-
 impl Demo for Painting {
     fn name(&self) -> &'static str {
         "🖊 Painting"
@@ -580,88 +593,60 @@ impl View for Painting {
         ui: &mut Ui,
         image: egui::widgets::Image,
         dim: Vec2,
+        opt: u32,
     ) -> Option<egui::Response> {
         let mut resp = None;
-        self.ui_control(ui);
-        ui.label("Paint with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content(ui, image, dim));
-            });
-        });
+
+        match opt {
+            0 => {
+                self.ui_control(ui, opt);
+                ui.label("Paint with your mouse/touch!");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        resp = Some(self.ui_content(ui, image, dim));
+                    });
+                });
+            }
+            1 => {
+                self.ui_control(ui, opt);
+                ui.label("Paint an arrow with your mouse/touch!");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        resp = Some(self.ui_content_arrows(ui, image, dim));
+                    });
+                });
+            }
+            2 => {
+                self.ui_control(ui, opt);
+                ui.label("Paint a circle with your mouse/touch!");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        resp = Some(self.ui_content_circles(ui, image, dim));
+                    });
+                });
+            }
+            3 => {
+                self.ui_control(ui, opt);
+                ui.label("Paint a square with your mouse/touch!");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        resp = Some(self.ui_content_squares(ui, image, dim));
+                    });
+                });
+            }
+            4 => {
+                self.ui_control(ui, opt);
+                ui.label("First, click were you want to write and then write something!");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        resp = Some(self.ui_content_texts(ui, image, dim));
+                    });
+                });
+            }
+            _ => assert!(opt > 0 && opt <= 4),
+        }
 
         resp
     }
 
-    fn ui_arrows(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control_arrows(ui);
-        ui.label("Paint an arrow with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content_arrows(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-    fn ui_circles(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control_circles(ui);
-        ui.label("Paint a circle with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content_circles(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-    fn ui_squares(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control_squares(ui);
-        ui.label("Paint a square with your mouse/touch!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content_squares(ui, image, dim));
-            });
-        });
-
-        resp
-    }
-
-    fn ui_texts(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::widgets::Image,
-        dim: Vec2,
-    ) -> Option<egui::Response> {
-        let mut resp = None;
-        self.ui_control_texts(ui);
-        ui.label("First, click were you want to write and then write something!");
-        ui.vertical_centered(|ui| {
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                resp = Some(self.ui_content_texts(ui, image, dim));
-            });
-        });
-
-        resp
-    }
 }

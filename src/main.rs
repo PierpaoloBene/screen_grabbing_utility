@@ -555,6 +555,7 @@ impl eframe::App for FirstWindow {
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            0
                                         )
                                         .clone()
                                         .unwrap();
@@ -598,6 +599,7 @@ impl eframe::App for FirstWindow {
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            0,
                                         )
                                         .clone()
                                         .unwrap();
@@ -640,6 +642,7 @@ impl eframe::App for FirstWindow {
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            0,
                                         )
                                         .clone()
                                         .unwrap();
@@ -682,6 +685,7 @@ impl eframe::App for FirstWindow {
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            0,
                                         )
                                         .clone()
                                         .unwrap();
@@ -723,11 +727,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_arrows(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            1,
                                         )
                                         .clone()
                                         .unwrap();
@@ -766,11 +771,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_arrows(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            1,
                                         )
                                         .clone()
                                         .unwrap();
@@ -808,11 +814,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_arrows(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            1,
                                         )
                                         .clone()
                                         .unwrap();
@@ -850,11 +857,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_arrows(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            1,
                                         )
                                         .clone()
                                         .unwrap();
@@ -896,11 +904,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_circles(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            2,
                                         )
                                         .clone()
                                         .unwrap();
@@ -939,11 +948,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_circles(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            2,
                                         )
                                         .clone()
                                         .unwrap();
@@ -981,11 +991,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_circles(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            2,
                                         )
                                         .clone()
                                         .unwrap();
@@ -1023,11 +1034,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_circles(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            2,
                                         )
                                         .clone()
                                         .unwrap();
@@ -1069,11 +1081,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_squares(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            3
                                         )
                                         .clone()
                                         .unwrap();
@@ -1112,11 +1125,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_squares(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            3,
                                         )
                                         .clone()
                                         .unwrap();
@@ -1154,11 +1168,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_squares(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            3,
                                         )
                                         .clone()
                                         .unwrap();
@@ -1196,11 +1211,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_squares(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            3,
                                         )
                                         .clone()
                                         .unwrap();
@@ -1242,11 +1258,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_texts(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            4
                                         )
                                         .clone()
                                         .unwrap();
@@ -1285,11 +1302,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(1200.0, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_texts(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            4
                                         )
                                         .clone()
                                         .unwrap();
@@ -1327,11 +1345,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, 700.0);
                                     let response = self
                                         .Painting
-                                        .ui_texts(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            4
                                         )
                                         .clone()
                                         .unwrap();
@@ -1369,11 +1388,12 @@ impl eframe::App for FirstWindow {
                                     let dim = Vec2::new(self.width, self.height);
                                     let response = self
                                         .Painting
-                                        .ui_texts(
+                                        .ui(
                                             ui,
                                             egui::Image::new(self.image.as_ref().unwrap())
                                                 .shrink_to_fit(),
                                             dim,
+                                            4
                                         )
                                         .clone()
                                         .unwrap();
