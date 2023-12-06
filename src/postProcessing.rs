@@ -24,7 +24,7 @@ pub trait Demo {
     // Show windows, etc
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
-
+#[derive( Debug)]
 enum pp_options {
     Arrow,
     Circle,
@@ -32,7 +32,7 @@ enum pp_options {
     Text,
 }
 pub struct Painting {
-    last_type_added: Option<pp_options>,
+    last_type_added: Vec<pp_options>,
 
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
@@ -64,7 +64,7 @@ pub struct Painting {
 impl Default for Painting {
     fn default() -> Self {
         Self {
-            last_type_added: None,
+            last_type_added: Vec::new(),
 
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
@@ -130,6 +130,27 @@ impl Painting {
             }
         }
     }
+     fn undo(&mut self){
+        
+        match self.last_type_added.last().unwrap(){
+            pp_options::Arrow=>{
+                self.arrows.remove(self.arrows.len() - 1);
+                
+            },
+            pp_options::Circle=>{
+                self.circles.remove(self.circles.len() - 1);
+            },
+            pp_options::Square=>{
+                self.squares.remove(self.squares.len() - 1);
+            },
+            pp_options::Text=>{
+                self.texts.remove(self.texts.len() - 1);
+            },
+            _=>{}
+        }
+        self.last_type_added.pop();
+    }
+
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: u32) -> egui::Response {
         println!("In ui_control");
         let mut res=None;
@@ -167,10 +188,10 @@ impl Painting {
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
                     ui.separator();
-                    if self.arrows.len() > 0 {
+                    if self.last_type_added.len() > 0 {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
-                            self.arrows.remove(self.arrows.len() - 1);
+                            self.undo();
                         }
                     }
                 })
@@ -182,10 +203,10 @@ impl Painting {
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
                     ui.separator();
-                    if self.circles.len() > 0 {
+                    if self.last_type_added.len() > 0 {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
-                            self.circles.remove(self.circles.len() - 1);
+                            self.undo();
                         }
                     }
                 })
@@ -197,10 +218,10 @@ impl Painting {
                 ui.horizontal(|ui: &mut Ui| {
                     egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
                     ui.separator();
-                    if self.squares.len() > 0 {
+                    if self.last_type_added.len() > 0 {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
-                            self.squares.remove(self.squares.len() - 1);
+                            self.undo();
                         }
                     }
                 })
@@ -225,10 +246,10 @@ impl Painting {
                         self.to_write_text = self.to_write_text.clone();
                         self.ready_to_write = true;
                     }
-                    if self.texts.len() > 0 {
+                    if self.last_type_added.len() > 0 {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
-                            self.texts.remove(self.texts.len() - 1);
+                            self.undo();
                         }
                     }
                 })
@@ -341,6 +362,7 @@ impl Painting {
                 .push((self.starting_point, self.final_point, self.arrows_stroke));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
+            self.last_type_added.push(pp_options::Arrow);
         }
 
         self.render_elements(painter.clone());
@@ -401,6 +423,7 @@ impl Painting {
                 .push((self.circle_center, self.radius, self.circles_stroke));
             self.circle_center = Pos2 { x: -1.0, y: -1.0 };
             self.radius = -1.0;
+            self.last_type_added.push(pp_options::Circle);
         }
 
         self.render_elements(painter.clone());
@@ -470,6 +493,7 @@ impl Painting {
             self.square_starting_point.y = -1.0;
             self.square_ending_point.x = -1.0;
             self.square_ending_point.y = -1.0;
+            self.last_type_added.push(pp_options::Square);
         }
 
         self.render_elements(painter.clone());
@@ -547,6 +571,7 @@ impl Painting {
                 self.text_ending_position.x = -1.0;
                 self.text_ending_position.y = -1.0;
                 self.ready_to_write = false;
+                self.last_type_added.push(pp_options::Text);
             }
         }
 
