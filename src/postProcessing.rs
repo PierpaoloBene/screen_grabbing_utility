@@ -1,4 +1,4 @@
-use egui::{emath, vec2, Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2, Painter};
+use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 /// Something to view in the demo windows
 pub trait View {
@@ -10,7 +10,26 @@ pub trait View {
         dim: Vec2,
     ) -> Option<egui::Response>;
 
-    fn ui_circles(&mut self, ui: &mut egui::Ui, image: egui::Image, dim: Vec2) -> Option<egui::Response>;
+    fn ui_circles(
+        &mut self,
+        ui: &mut egui::Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response>;
+
+    fn ui_squares(
+        &mut self,
+        ui: &mut egui::Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response>;
+
+    fn ui_texts(
+        &mut self,
+        ui: &mut egui::Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response>;
 }
 
 /// Something to view
@@ -27,24 +46,40 @@ pub trait Demo {
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
 pub struct Painting {
+    element_id: u32,
+
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
 
     starting_point: Pos2,
     final_point: Pos2,
-    arrows: Vec<(Pos2, Pos2, Stroke)>,
-    arrows_stroke:Stroke,
+    arrows: Vec<(Pos2, Pos2, Stroke, u32)>,
+    arrows_stroke: Stroke,
 
-    circle_center:Pos2,
-    radius:f32,
+    circle_center: Pos2,
+    radius: f32,
     circles: Vec<(Pos2, f32, Stroke)>,
-    circles_stroke:Stroke
+    circles_stroke: Stroke,
+
+    square_starting_point: Pos2,
+    square_ending_point: Pos2,
+    squares_stroke: Stroke,
+    squares: Vec<(Rect, Stroke)>,
+
+    text_starting_position: Pos2,
+    text_ending_position: Pos2,
+    texts_stroke: Stroke,
+    texts: Vec<(String, Pos2, Pos2, Stroke)>,
+    to_write_text: String,
+    ready_to_write: bool,
 }
 
 impl Default for Painting {
     fn default() -> Self {
         Self {
+            element_id: 0,
+
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
@@ -53,16 +88,28 @@ impl Default for Painting {
             arrows: Vec::new(),
             arrows_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
-            circle_center:Pos2 { x: -1.0, y: -1.0 },
-            radius:-1.0,
+            circle_center: Pos2 { x: -1.0, y: -1.0 },
+            radius: -1.0,
             circles: Vec::new(),
-            circles_stroke:Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            circles_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+
+            square_starting_point: Pos2 { x: -1.0, y: -1.0 },
+            square_ending_point: Pos2 { x: -1.0, y: -1.0 },
+            squares_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            squares: Vec::new(),
+
+            text_starting_position: Pos2 { x: -1.0, y: -1.0 },
+            text_ending_position: Pos2 { x: -1.0, y: -1.0 },
+            texts: Vec::new(),
+            texts_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            to_write_text: "Write something".to_string(),
+            ready_to_write: false,
         }
     }
 }
 
 impl Painting {
-    pub fn render_elements(&mut self, painter:Painter){
+    pub fn render_elements(&mut self, painter: Painter) {
         if !self.arrows.is_empty() {
             for point in self.arrows.clone().into_iter() {
                 painter.arrow(
@@ -73,53 +120,60 @@ impl Painting {
             }
         }
 
-        if !self.circles.is_empty(){
+        if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
-                painter.circle(
-                    point.0,
-                    point.1,
-                    egui::Color32::TRANSPARENT,
-                    point.2
-                );
+                painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
             }
-            
         }
 
-        
+        if !self.squares.is_empty() || self.squares.len() == 0 {
+            for point in self.squares.clone().into_iter() {
+                painter.rect(point.0, 1.0, egui::Color32::TRANSPARENT, point.1);
+            }
+        }
+
+        if !self.texts.is_empty() {
+            for point in self.texts.clone().into_iter() {
+                painter.text(
+                    point.1,
+                    egui::Align2::LEFT_TOP,
+                    point.0,
+                    egui::FontId::monospace(15.0),
+                    point.3.color,
+                );
+            }
+        }
     }
     pub fn ui_control(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control");
 
-        if  self.lines.last_mut()==None{
+        if self.lines.last_mut() == None {
             ui.horizontal(|ui| {
                 egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
                 ui.separator();
                 if ui.button("Clear Painting").clicked() {
                     self.lines.clear();
                 }
+                
             })
-            
             .response
-            
-
-        }else{
-            
-            let res=ui.horizontal(|ui| {
-                egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
-                ui.separator();
-                if ui.button("Clear Painting").clicked() {
-                    self.lines.clear();
-                }
-            })
-            .response;
-            if !self.lines.is_empty(){
-                self.lines_stroke=self.lines.last_mut().unwrap().1;
+        } else {
+            let res = ui
+                .horizontal(|ui| {
+                    egui::stroke_ui(ui, &mut self.lines.last_mut().unwrap().1, "Stroke");
+                    ui.separator();
+                    if ui.button("Clear Painting").clicked() {
+                        self.lines.clear();
+                    }
+                    
+                })
+                .response;
+            if !self.lines.is_empty() {
+                self.lines_stroke = self.lines.last_mut().unwrap().1;
             }
-            
+
             res
         }
-        
-        
     }
 
     pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
@@ -133,7 +187,7 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
-        
+
         self.render_elements(painter.clone());
 
         let from_screen = to_screen.inverse();
@@ -145,18 +199,21 @@ impl Painting {
         let mut current_line = &mut self.lines.last_mut().unwrap().0;
 
         if let Some(pointer_pos) = response.interact_pointer_pos() {
-            let canvas_pos = from_screen * pointer_pos;
-            if current_line.last() != Some(&canvas_pos) {
-                current_line.push(canvas_pos);
-                response.mark_changed();
-            }
+           
+                let canvas_pos = from_screen * pointer_pos;
+                if current_line.last() != Some(&canvas_pos) {
+                    current_line.push(canvas_pos);
+                    response.mark_changed();
+                }
+            
         } else if !current_line.is_empty() {
             self.lines.push((vec![], self.lines_stroke));
             response.mark_changed();
         }
-        
-        let shapes = self.lines
-            .iter()            
+
+        let shapes = self
+            .lines
+            .iter()
             .filter(|line| line.0.len() >= 2)
             .map(|line| {
                 let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
@@ -169,10 +226,16 @@ impl Painting {
     }
 
     pub fn ui_control_arrows(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control arrows");
+        let mut back_btn = None;
         ui.horizontal(|ui| {
             egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
             ui.separator();
+            if self.arrows.len() > 0 {
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {
+                    self.arrows.remove(self.arrows.len() - 1);
+                }
+            }
         })
         .response
     }
@@ -183,8 +246,6 @@ impl Painting {
         image: egui::Image,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content arrows");
-
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -194,39 +255,50 @@ impl Painting {
         image.paint_at(ui, response.rect);
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
-            let shapes = self.lines
-            .iter()            
-            .filter(|line| line.0.len() >= 2)
-            .map(|line| {
-                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, line.1)
-            });
-
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.0.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, line.1)
+                });
 
             painter.extend(shapes);
         }
 
-        
         if ui.input(|i| i.pointer.any_down())
             && self.starting_point.x == -1.0
             && self.starting_point.y == -1.0
         {
-            self.starting_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let mut sp = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if sp.y > 60.0 {
+                self.starting_point = sp;
+            }
         }
         if ui.input(|i| i.pointer.any_released())
             && self.final_point.x == -1.0
             && self.final_point.y == -1.0
         {
-            self.final_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let mut fp = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if fp.y > 60.0 {
+                self.final_point = fp;
+            }
         }
         if self.final_point.x != -1.0
             && self.final_point.y != -1.0
             && self.starting_point.x != -1.0
             && self.starting_point.y != -1.0
         {
-            self.arrows.push((self.starting_point, self.final_point, self.arrows_stroke));
+            self.arrows.push((
+                self.starting_point,
+                self.final_point,
+                self.arrows_stroke,
+                self.element_id + 1,
+            ));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
+            self.element_id += 1;
         }
 
         self.render_elements(painter.clone());
@@ -236,9 +308,16 @@ impl Painting {
 
     pub fn ui_control_circles(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control circles");
+        let mut back_btn = None;
         ui.horizontal(|ui| {
             egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
             ui.separator();
+            if self.circles.len() > 0 {
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {
+                    self.circles.remove(self.circles.len() - 1);
+                }
+            }
         })
         .response
     }
@@ -260,44 +339,230 @@ impl Painting {
         image.paint_at(ui, response.rect);
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
-            let shapes = self.lines
-            .iter()            
-            .filter(|line| line.0.len() >= 2)
-            .map(|line| {
-                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, line.1)
-            });
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.0.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, line.1)
+                });
             painter.extend(shapes);
         }
-
 
         if ui.input(|i| i.pointer.any_down())
             && self.circle_center.x == -1.0
             && self.circle_center.y == -1.0
         {
-            self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let cc = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if cc.y > 60.0 {
+                self.circle_center = cc;
+            }
         }
         if ui.input(|i| i.pointer.any_released())
             && self.circle_center.x != -1.0
             && self.circle_center.y != -1.0
-            && self.radius==-1.0
+            && self.radius == -1.0
         {
-            self.radius=ui.input(|i| i.pointer.interact_pos().unwrap()).x-self.circle_center.x;
-            self.radius=self.radius.abs();
-                     
+            self.radius = ui.input(|i| i.pointer.interact_pos().unwrap()).x - self.circle_center.x;
+            self.radius = self.radius.abs();
         }
 
-        if self.circle_center.x != -1.0
-            && self.circle_center.y != -1.0
-            && self.radius != -1.0
-            {
-                self.circles.push((self.circle_center, self.radius, self.circles_stroke));
-                self.circle_center = Pos2 { x: -1.0, y: -1.0 };   
-                self.radius=-1.0;  
-            }
+        if self.circle_center.x != -1.0 && self.circle_center.y != -1.0 && self.radius != -1.0 {
+            self.circles
+                .push((self.circle_center, self.radius, self.circles_stroke));
+            self.circle_center = Pos2 { x: -1.0, y: -1.0 };
+            self.radius = -1.0;
+        }
 
+        self.render_elements(painter.clone());
+
+        response
+    }
+
+    pub fn ui_control_squares(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        println!("In ui_control squares");
+        let mut back_btn = None;
+        ui.horizontal(|ui: &mut Ui| {
+            egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
+            ui.separator();
+            if self.squares.len() > 0 {
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {
+                    self.squares.remove(self.squares.len() - 1);
+                }
+            }
+        })
+        .response
+    }
+
+    pub fn ui_content_squares(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> egui::Response {
+        println!("In ui_content squares");
+
+        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        image.paint_at(ui, response.rect);
+
+        self.render_elements(painter.clone());
+        if !self.lines.is_empty() {
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.0.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, line.1)
+                });
+            painter.extend(shapes);
+        }
+
+        if ui.input(|i| i.pointer.any_down())
+            && self.square_starting_point.x == -1.0
+            && self.square_starting_point.y == -1.0
+        {
+            let ssp = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if ssp.y > 60.0 {
+                self.square_starting_point = ssp;
+            }
+        }
+        if ui.input(|i| i.pointer.any_released())
+            && self.square_ending_point.x == -1.0
+            && self.square_ending_point.y == -1.0
+        {
+            let sep = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if sep.y > 60.0 {
+                self.square_ending_point = sep;
+            }
+        }
+
+        if self.square_starting_point.x != -1.0
+            && self.square_starting_point.y != -1.0
+            && self.square_ending_point.x != -1.0
+            && self.square_ending_point.y != 1.0
+        {
+            let re =
+                egui::Rect::from_points(&[self.square_starting_point, self.square_ending_point]);
+            self.squares.push((re, self.squares_stroke));
+            self.square_starting_point.x = -1.0;
+            self.square_starting_point.y = -1.0;
+            self.square_ending_point.x = -1.0;
+            self.square_ending_point.y = -1.0;
+        }
+
+        self.render_elements(painter.clone());
+
+        response
+    }
+
+    pub fn ui_control_texts(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        println!("In ui_control texts");
+        let mut write_btn = None;
+        let mut back_btn = None;
+        ui.horizontal(|ui: &mut Ui| {
+            egui::stroke_ui(ui, &mut self.texts_stroke, "Stroke");
+            ui.separator();
+            ui.add(egui::TextEdit::singleline(&mut self.to_write_text));
+            ui.separator();
+            write_btn = Some(ui.add(egui::Button::new("Write!")));
+            if write_btn.unwrap().clicked()
+                && self.text_starting_position.x != -1.0
+                && self.text_starting_position.y != -1.0
+                && self.text_ending_position.x != -1.0
+                && self.text_ending_position.y != -1.0
+            {
+                self.to_write_text = self.to_write_text.clone();
+                self.ready_to_write = true;
+            }
+            if self.texts.len() > 0 {
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {
+                    self.texts.remove(self.texts.len() - 1);
+                }
+            }
+        })
+        .response
+    }
+
+    pub fn ui_content_texts(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        dim: Vec2,
+    ) -> egui::Response {
+        println!("In ui_content texts");
+
+        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        image.paint_at(ui, response.rect);
+
+        self.render_elements(painter.clone());
+        if !self.lines.is_empty() {
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.0.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, line.1)
+                });
+            painter.extend(shapes);
+        }
+
+        if ui.input(|i| i.pointer.any_down())
+            && self.text_starting_position.x == -1.0
+            && self.text_starting_position.y == -1.0
+        {
+            let tsp = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if tsp.y > 60.0 {
+                self.text_starting_position = tsp;
+            }
+        }
+        if ui.input(|i| i.pointer.any_released())
+            && self.text_ending_position.x == -1.0
+            && self.text_ending_position.y == -1.0
+        {
+            let tep = ui.input(|i| i.pointer.interact_pos().unwrap());
+            if tep.y > 60.0 {
+                self.text_ending_position = tep;
+            }
+        }
+
+        if self.text_starting_position.x != -1.0
+            && self.text_starting_position.y != -1.0
+            && self.text_ending_position.x != -1.0
+            && self.text_ending_position.y != -1.0
+        {
             self.render_elements(painter.clone());
-        
+            if self.ready_to_write {
+                self.texts.push((
+                    self.to_write_text.clone(),
+                    self.text_starting_position,
+                    self.text_ending_position,
+                    self.texts_stroke,
+                ));
+
+                self.text_starting_position.x = -1.0;
+                self.text_starting_position.y = -1.0;
+                self.text_ending_position.x = -1.0;
+                self.text_ending_position.y = -1.0;
+                self.ready_to_write = false;
+            }
+        }
+
+        self.render_elements(painter.clone());
 
         response
     }
@@ -358,6 +623,42 @@ impl View for Painting {
         ui.vertical_centered(|ui| {
             egui::Frame::canvas(ui.style()).show(ui, |ui| {
                 resp = Some(self.ui_content_circles(ui, image, dim));
+            });
+        });
+
+        resp
+    }
+
+    fn ui_squares(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
+        self.ui_control_squares(ui);
+        ui.label("Paint a square with your mouse/touch!");
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content_squares(ui, image, dim));
+            });
+        });
+
+        resp
+    }
+
+    fn ui_texts(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::widgets::Image,
+        dim: Vec2,
+    ) -> Option<egui::Response> {
+        let mut resp = None;
+        self.ui_control_texts(ui);
+        ui.label("First, click were you want to write and then write something!");
+        ui.vertical_centered(|ui| {
+            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                resp = Some(self.ui_content_texts(ui, image, dim));
             });
         });
 
