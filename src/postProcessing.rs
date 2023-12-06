@@ -46,13 +46,15 @@ pub trait Demo {
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
 pub struct Painting {
+    element_id: u32,
+
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
 
     starting_point: Pos2,
     final_point: Pos2,
-    arrows: Vec<(Pos2, Pos2, Stroke)>,
+    arrows: Vec<(Pos2, Pos2, Stroke, u32)>,
     arrows_stroke: Stroke,
 
     circle_center: Pos2,
@@ -76,6 +78,8 @@ pub struct Painting {
 impl Default for Painting {
     fn default() -> Self {
         Self {
+            element_id: 0,
+
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
@@ -122,8 +126,7 @@ impl Painting {
             }
         }
 
-        if !self.squares.is_empty() || self.squares.len()==0{
-            
+        if !self.squares.is_empty() || self.squares.len() == 0 {
             for point in self.squares.clone().into_iter() {
                 painter.rect(point.0, 1.0, egui::Color32::TRANSPARENT, point.1);
             }
@@ -219,10 +222,18 @@ impl Painting {
     }
 
     pub fn ui_control_arrows(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        println!("In ui_control arrows");
+        
+        let mut back_btn = None;
         ui.horizontal(|ui| {
             egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
-            ui.separator();
+            ui.separator();            
+            if self.arrows.len()>0{
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {                              
+                    self.arrows.remove(self.arrows.len()-1);            
+             }
+            }
+            
         })
         .response
     }
@@ -233,7 +244,7 @@ impl Painting {
         image: egui::Image,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content arrows");
+        
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -255,28 +266,43 @@ impl Painting {
 
             painter.extend(shapes);
         }
-
+       
         if ui.input(|i| i.pointer.any_down())
             && self.starting_point.x == -1.0
             && self.starting_point.y == -1.0
         {
-            self.starting_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let mut sp=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if sp.y>60.0{
+                self.starting_point = sp;
+            }
+            
         }
         if ui.input(|i| i.pointer.any_released())
             && self.final_point.x == -1.0
             && self.final_point.y == -1.0
         {
-            self.final_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let mut fp=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if fp.y>60.0{
+                self.final_point = fp;
+            }
+            
         }
         if self.final_point.x != -1.0
             && self.final_point.y != -1.0
             && self.starting_point.x != -1.0
             && self.starting_point.y != -1.0
+            
+            
         {
-            self.arrows
-                .push((self.starting_point, self.final_point, self.arrows_stroke));
+            self.arrows.push((
+                self.starting_point,
+                self.final_point,
+                self.arrows_stroke,
+                self.element_id + 1,
+            ));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
+            self.element_id += 1;
         }
 
         self.render_elements(painter.clone());
@@ -286,9 +312,16 @@ impl Painting {
 
     pub fn ui_control_circles(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control circles");
+        let mut back_btn=None;
         ui.horizontal(|ui| {
             egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
             ui.separator();
+            if self.circles.len()>0{
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {                              
+                    self.circles.remove(self.circles.len()-1);            
+             }
+            }
         })
         .response
     }
@@ -325,14 +358,18 @@ impl Painting {
             && self.circle_center.x == -1.0
             && self.circle_center.y == -1.0
         {
-            self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let cc=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if cc.y>60.0{
+                self.circle_center = cc;
+            }
+            
         }
         if ui.input(|i| i.pointer.any_released())
             && self.circle_center.x != -1.0
             && self.circle_center.y != -1.0
             && self.radius == -1.0
         {
-            self.radius = ui.input(|i| i.pointer.interact_pos().unwrap()).x - self.circle_center.x;
+            self.radius = ui.input(|i| i.pointer.interact_pos().unwrap()).x -self.circle_center.x;
             self.radius = self.radius.abs();
         }
 
@@ -350,9 +387,16 @@ impl Painting {
 
     pub fn ui_control_squares(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control squares");
+        let mut back_btn=None;
         ui.horizontal(|ui: &mut Ui| {
             egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
             ui.separator();
+            if self.squares.len()>0{
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {                              
+                    self.squares.remove(self.squares.len()-1);            
+             }
+            }
         })
         .response
     }
@@ -390,13 +434,21 @@ impl Painting {
             && self.square_starting_point.x == -1.0
             && self.square_starting_point.y == -1.0
         {
-            self.square_starting_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let ssp=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if ssp.y>60.0{
+                self.square_starting_point = ssp;
+            }
+            
         }
         if ui.input(|i| i.pointer.any_released())
             && self.square_ending_point.x == -1.0
             && self.square_ending_point.y == -1.0
         {
-            self.square_ending_point = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let sep=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if sep.y>60.0{
+                self.square_ending_point = sep;
+            }
+           
         }
 
         if self.square_starting_point.x != -1.0
@@ -421,17 +473,27 @@ impl Painting {
     pub fn ui_control_texts(&mut self, ui: &mut egui::Ui) -> egui::Response {
         println!("In ui_control texts");
         let mut write_btn = None;
-
+        let mut back_btn=None;
         ui.horizontal(|ui: &mut Ui| {
             egui::stroke_ui(ui, &mut self.texts_stroke, "Stroke");
             ui.separator();
             ui.add(egui::TextEdit::singleline(&mut self.to_write_text));
             ui.separator();
             write_btn = Some(ui.add(egui::Button::new("Write!")));
-            if write_btn.unwrap().clicked() && self.text_starting_position.x !=-1.0 
-            && self.text_starting_position.y!=-1.0 && self.text_ending_position.x != -1.0 && self.text_ending_position.y != -1.0 {
+            if write_btn.unwrap().clicked()
+                && self.text_starting_position.x != -1.0
+                && self.text_starting_position.y != -1.0
+                && self.text_ending_position.x != -1.0
+                && self.text_ending_position.y != -1.0
+            {
                 self.to_write_text = self.to_write_text.clone();
                 self.ready_to_write = true;
+            }
+            if self.texts.len()>0{
+                back_btn = Some(ui.add(egui::Button::new("Undo")));
+                if back_btn.unwrap().clicked() {                              
+                    self.texts.remove(self.texts.len()-1);            
+             }
             }
         })
         .response
@@ -470,13 +532,21 @@ impl Painting {
             && self.text_starting_position.x == -1.0
             && self.text_starting_position.y == -1.0
         {
-            self.text_starting_position = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let tsp=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if tsp.y>60.0{
+                self.text_starting_position = tsp;
+            }
+           
         }
         if ui.input(|i| i.pointer.any_released())
             && self.text_ending_position.x == -1.0
             && self.text_ending_position.y == -1.0
         {
-            self.text_ending_position = ui.input(|i| i.pointer.interact_pos().unwrap());
+            let tep=ui.input(|i| i.pointer.interact_pos().unwrap());
+            if tep.y>60.0{
+                self.text_ending_position = tep;
+            }
+            
         }
 
         if self.text_starting_position.x != -1.0
@@ -484,7 +554,6 @@ impl Painting {
             && self.text_ending_position.x != -1.0
             && self.text_ending_position.y != -1.0
         {
-           
             self.render_elements(painter.clone());
             if self.ready_to_write {
                 self.texts.push((
@@ -492,18 +561,17 @@ impl Painting {
                     self.text_starting_position,
                     self.text_ending_position,
                     self.texts_stroke,
-                ));  
-                             
+                ));
+
                 self.text_starting_position.x = -1.0;
                 self.text_starting_position.y = -1.0;
                 self.text_ending_position.x = -1.0;
                 self.text_ending_position.y = -1.0;
-                self.ready_to_write=false;
+                self.ready_to_write = false;
             }
         }
 
         self.render_elements(painter.clone());
-        
 
         response
     }
