@@ -624,18 +624,6 @@ impl eframe::App for FirstWindow {
                         LoadingState::NotLoaded => {
                             for i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
-                                // let fp = std::path::Path::new(&self.fp[i]);
-                                // //println!("{:?}",self.fp[i]);
-                                // //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
-                                // let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
-                                // let size: [usize; 2] = [image.width() as _, image.height() as _];
-                                // let image_buffer = image.to_rgba8();
-                                // let pixels = image_buffer.as_flat_samples();
-                                // let immagine: egui::ColorImage =
-                                //     egui::ColorImage::from_rgba_unmultiplied(
-                                //         size,
-                                //         pixels.as_slice(),
-                                //     );
 
                                 let img = ui.ctx().load_texture(
                                     "ao",
