@@ -563,7 +563,7 @@ impl eframe::App for FirstWindow {
                                 .unwrap();
 
                             if save_btn.unwrap().clicked() {
-                                self.image_name =Some( chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
+                                self.image_name =Some( chrono::offset::Local::now().format("%Y-%m-%d_%H_%M_%S").to_string());
                                 
                                 let screens = Screen::all().unwrap();
                                 let mod_img = screens[0].capture_area(
@@ -581,14 +581,25 @@ impl eframe::App for FirstWindow {
                                 //     );
 
                                 if mod_img.is_err() == false {
+
+                                    if self.current_os=="windows"{
+                                        let _ = mod_img.unwrap().save(format!(
+                                            "{}\\{}.{}",
+                                            self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
+                                            self.image_name.clone().unwrap(),
+                                            self.image_format_string
+                                        ));
+                                    }else{
+                                        let _ = mod_img.unwrap().save(format!(
+                                            "{}/{}.{}",
+                                            self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
+                                            self.image_name.clone().unwrap(),
+                                            self.image_format_string
+                                        ));
+                                    }
                                     //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                     //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                    let _ = mod_img.unwrap().save(format!(
-                                        "{}/{}.{}",
-                                        self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
-                                        self.image_name.clone().unwrap(),
-                                        self.image_format_string,
-                                    ));
+                                    
 
                                     //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                     println!("gira gira gira gira");
