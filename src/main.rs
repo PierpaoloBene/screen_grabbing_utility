@@ -107,6 +107,7 @@ fn main() -> Result<(), eframe::Error> {
                 multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
+                image_texture: None,
                 filepath: filepath,
                 fp: Vec::new(),
                 selected_mode: ModeOptions::Rectangle,
@@ -140,6 +141,7 @@ struct FirstWindow {
     multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
+    image_texture: Option<egui::ColorImage>,
     filepath: Option<PathBuf>,
     fp: Vec<String>,
     selected_mode: ModeOptions,
@@ -426,9 +428,15 @@ impl eframe::App for FirstWindow {
                     }
 
                     for i in [0, self.screenshots_taken.len() - 1] {
-                        self.fp
-                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(), i));
-                        self.screenshots_taken[i].save(self.fp[i].to_string());
+                                let size: [usize; 2] = [self.screenshots_taken[i].width() as _,self.screenshots_taken[i].height() as _];
+                                let pixels = self.screenshots_taken[i].as_flat_samples();
+                                let immagine: egui::ColorImage =
+                                     egui::ColorImage::from_rgba_unmultiplied(
+                                            size,
+                                            pixels.as_slice(),
+                                    );
+                                
+                                self.image_texture = Some(immagine);
                     }
                 }
                 ModeOptions::FullScreen => {
@@ -449,9 +457,15 @@ impl eframe::App for FirstWindow {
                         }
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
-                        self.fp
-                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(), i));
-                        self.screenshots_taken[i].save(self.fp[i].to_string());
+                        let size: [usize; 2] = [self.screenshots_taken[i].width() as _,self.screenshots_taken[i].height() as _];
+                        let pixels = self.screenshots_taken[i].as_flat_samples();
+                        let immagine: egui::ColorImage =
+                             egui::ColorImage::from_rgba_unmultiplied(
+                                    size,
+                                    pixels.as_slice(),
+                            );
+                        
+                        self.image_texture = Some(immagine);
                     }
                 }
             }
@@ -610,22 +624,22 @@ impl eframe::App for FirstWindow {
                         LoadingState::NotLoaded => {
                             for i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
-                                let fp = std::path::Path::new(&self.fp[i]);
-                                //println!("{:?}",self.fp[i]);
-                                //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
-                                let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
-                                let size: [usize; 2] = [image.width() as _, image.height() as _];
-                                let image_buffer = image.to_rgba8();
-                                let pixels = image_buffer.as_flat_samples();
-                                let immagine: egui::ColorImage =
-                                    egui::ColorImage::from_rgba_unmultiplied(
-                                        size,
-                                        pixels.as_slice(),
-                                    );
+                                // let fp = std::path::Path::new(&self.fp[i]);
+                                // //println!("{:?}",self.fp[i]);
+                                // //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
+                                // let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
+                                // let size: [usize; 2] = [image.width() as _, image.height() as _];
+                                // let image_buffer = image.to_rgba8();
+                                // let pixels = image_buffer.as_flat_samples();
+                                // let immagine: egui::ColorImage =
+                                //     egui::ColorImage::from_rgba_unmultiplied(
+                                //         size,
+                                //         pixels.as_slice(),
+                                //     );
 
                                 let img = ui.ctx().load_texture(
                                     "ao",
-                                    ImageData::from(immagine),
+                                    ImageData::from(self.image_texture.clone().unwrap()),
                                     Default::default(),
                                 );
                                 self.image = Some(img);
