@@ -48,13 +48,21 @@ enum LoadingState {
 }
 
 fn main() -> Result<(), eframe::Error> {
+    let mut filepath: Option<String> = None;
+
     let current_os = if cfg!(unix) {
+        let _ = std::fs::create_dir("./screenshot");
+        filepath = Some("./screenshot".to_string());
         "unix"
     } else if cfg!(windows) {
+        let _ = std::fs::create_dir(".//screenshot");
+        filepath = Some(".//screenshot".to_string());
         "windows"
     } else {
         "unknown"
     };
+
+    println!("{:?}", filepath);
     println!("{:?}", current_os);
 
     let options = eframe::NativeOptions {
@@ -84,6 +92,7 @@ fn main() -> Result<(), eframe::Error> {
                 multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
+                filepath: filepath,
                 fp: Vec::new(),
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
@@ -113,6 +122,7 @@ struct FirstWindow {
     multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
+    filepath: Option<String>,
     fp: Vec<String>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
@@ -174,6 +184,16 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
+                        //tasto
+                        /*use rfd::FileDialog;
+
+
+                        let files = FileDialog::new()
+                            .set_directory("./screenshot")
+                            .pick_folder();
+
+                        println!("{:?}", files);*/
+                        // fine tasto
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
                     }
@@ -381,7 +401,7 @@ impl eframe::App for FirstWindow {
 
                             self.screenshots_taken.push(image.unwrap());
 
-                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                             println!("gira gira gira gira");
                         }
 
@@ -396,7 +416,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap(), i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -410,8 +430,8 @@ impl eframe::App for FirstWindow {
 
                             //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                             //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
-                            //let _ = image.unwrap().save("C:\\Users\\masci\\Desktop\\ao.jpg");
+                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                             self.screenshots_taken.push(image.unwrap());
 
                             println!("sto resettando");
@@ -419,7 +439,7 @@ impl eframe::App for FirstWindow {
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("C:\\Users\\masci\\Desktop\\ao{}.jpg", i));
+                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap(), i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -550,24 +570,26 @@ impl eframe::App for FirstWindow {
                                 if mod_img.is_err() == false {
                                     //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                     //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                    let _ =
-                                        mod_img.unwrap().save("C:\\Users\\masci\\Desktop\\mod.jpg");
+                                    let _ = mod_img.unwrap().save(format!(
+                                        "{}/mod.jpg",
+                                        self.filepath.clone().unwrap()
+                                    ));
+                                    
+                                    
+                                    
 
-                                    self.selected_window = 6;
-
-                                    //self.fp = "C:\\Users\\masci\\Desktop\\ao.jpg".to_string();
+                                    //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                     println!("gira gira gira gira");
                                 }
                                 //}
                             }
-                            
                         }
                         LoadingState::NotLoaded => {
-                            for i in [0, self.screenshots_taken.len() - 2] {
+                            for i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
                                 let fp = std::path::Path::new(&self.fp[i]);
                                 //println!("{:?}",self.fp[i]);
-                                //let fp = std::path::Path::new("C:\\Users\\masci\\Desktop\\ao.jpg");
+                                //let fp = std::path::Path::new("/Users/pierpaolobene/Desktop/ao.jpg");
                                 let image = image::io::Reader::open(&fp).unwrap().decode().unwrap();
                                 let size: [usize; 2] = [image.width() as _, image.height() as _];
                                 let image_buffer = image.to_rgba8();
@@ -584,88 +606,15 @@ impl eframe::App for FirstWindow {
                                     Default::default(),
                                 );
                                 self.image = Some(img);
+                                self.ppOption = Some(pp_options::Painting);
                                 self.loading_state = LoadingState::Loaded;
-                                self.selected_window=6;
+                                //self.selected_window = 6;
                                 println!("ddd");
 
                                 ()
                             }
                         }
                     }
-                });
-            });
-        } else if self.selected_window == 6 {
-            let mut paint_btn = None;
-
-            let mut text_btn = None;
-
-            egui::CentralPanel::default().show(ctx, |ui| {
-                egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
-                    ui.horizontal(|ui| {
-                        paint_btn = Some(ui.add(egui::Button::new("Paint")));
-                        if paint_btn.unwrap().clicked() {
-                            self.ppOption = Some(pp_options::Painting);
-                            self.selected_window = 5;
-                            self.selected_shape_string = "Select a shape!".to_string();
-                        }
-
-                        egui::ComboBox::from_id_source("Select a shape!")
-                            .selected_text(format!("{}", self.selected_shape_string))
-                            .show_ui(ui, |ui| {
-                                if ui
-                                    .selectable_value(
-                                        &mut self.selected_shape,
-                                        Shapes::Arrow,
-                                        "Arrow",
-                                    )
-                                    .clicked()
-                                {
-                                    self.selected_shape = Shapes::Arrow;
-                                    self.selected_shape_string = "Arrow".to_string();
-                                    self.ppOption = Some(pp_options::Arrow);
-                                    self.selected_window = 5;
-                                }
-
-                                if ui
-                                    .selectable_value(
-                                        &mut self.selected_shape,
-                                        Shapes::Circle,
-                                        "Circle",
-                                    )
-                                    .clicked()
-                                {
-                                    self.selected_shape = Shapes::Circle;
-                                    self.selected_shape_string = "Circle".to_string();
-                                    self.ppOption =Some( pp_options::Circle);
-                                    self.selected_window = 5;
-                                }
-
-                                if ui
-                                    .selectable_value(
-                                        &mut self.selected_shape,
-                                        Shapes::Square,
-                                        "Square",
-                                    )
-                                    .clicked()
-                                {
-                                    self.selected_shape = Shapes::Square;
-                                    self.selected_shape_string = "Square".to_string();
-                                    self.ppOption = Some(pp_options::Square);
-                                    self.selected_window = 5;
-                                };
-                            });
-
-                        text_btn = Some(ui.add(egui::Button::new("Text")));
-                        if text_btn.unwrap().clicked() {
-                            self.ppOption = Some(pp_options::Text);
-                            self.selected_window = 5;
-                            self.selected_shape_string = "Select a shape!".to_string();
-                        }
-                    });
-                });
-                ui.add_space(20.0);
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    ui.add(egui::Image::new(self.image.as_ref().unwrap()));
                 });
             });
         }
