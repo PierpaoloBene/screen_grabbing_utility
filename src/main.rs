@@ -1,7 +1,9 @@
 mod postProcessing;
+use chrono;
 use crate::postProcessing::pp_options;
 use crate::postProcessing::Demo;
 use crate::postProcessing::View;
+use rfd::FileDialog;
 
 use eframe::{
     egui::{self, Color32, RichText},
@@ -13,6 +15,7 @@ use egui::{
 };
 use image::ImageBuffer;
 use screenshots::Screen;
+use std::path::PathBuf;
 use std::{fmt::format, process::exit, time::Duration};
 
 use global_hotkey::{
@@ -47,16 +50,24 @@ enum LoadingState {
     NotLoaded,
 }
 
+#[derive(PartialEq, Debug)]
+enum ImageFormat{
+    Jpg,
+    Png,
+    Gif,
+}
+
+
 fn main() -> Result<(), eframe::Error> {
-    let mut filepath: Option<String> = None;
+    let mut filepath = Some(PathBuf::new());
 
     let current_os = if cfg!(unix) {
         let _ = std::fs::create_dir("./screenshot");
-        filepath = Some("./screenshot".to_string());
+        filepath= Some(PathBuf::from("./screenshot"));
         "unix"
     } else if cfg!(windows) {
         let _ = std::fs::create_dir(".//screenshot");
-        filepath = Some(".//screenshot".to_string());
+        filepath= Some(PathBuf::from(".//screenshot"));
         "windows"
     } else {
         "unknown"
@@ -87,6 +98,9 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
+                image_name: None,
+                image_format: Some(ImageFormat::Jpg),
+                image_format_string: "jpg".to_string(),
                 ppOption: None,
                 current_os: current_os.to_string(),
                 multiplication_factor: None,
@@ -117,12 +131,15 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
+    image_name: Option<String>,
+    image_format: Option<ImageFormat>,
+    image_format_string: String,
     ppOption: Option<pp_options>,
     current_os: String,
     multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
-    filepath: Option<String>,
+    filepath: Option<PathBuf>,
     fp: Vec<String>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
@@ -175,6 +192,8 @@ impl eframe::App for FirstWindow {
             }
         }
 
+        
+
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -184,16 +203,7 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
-                        //tasto
-                        /*use rfd::FileDialog;
 
-
-                        let files = FileDialog::new()
-                            .set_directory("./screenshot")
-                            .pick_folder();
-
-                        println!("{:?}", files);*/
-                        // fine tasto
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
                     }
@@ -284,7 +294,7 @@ impl eframe::App for FirstWindow {
                         )
                         .clicked()
                     {
-                        println!("premuto Settings");
+                        self.selected_window = 6;
                     }
                 });
             });
@@ -416,7 +426,7 @@ impl eframe::App for FirstWindow {
 
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap(), i));
+                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(), i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -439,7 +449,7 @@ impl eframe::App for FirstWindow {
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
                         self.fp
-                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap(), i));
+                            .push(format!("{}/ao{}.jpg", self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(), i));
                         self.screenshots_taken[i].save(self.fp[i].to_string());
                     }
                 }
@@ -552,6 +562,8 @@ impl eframe::App for FirstWindow {
                                 .unwrap();
 
                             if save_btn.unwrap().clicked() {
+                                self.image_name =Some( chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
+                                
                                 let screens = Screen::all().unwrap();
                                 let mod_img = screens[0].capture_area(
                                     response.rect.left_top()[0] as i32,
@@ -571,12 +583,11 @@ impl eframe::App for FirstWindow {
                                     //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                                     //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                     let _ = mod_img.unwrap().save(format!(
-                                        "{}/mod.jpg",
-                                        self.filepath.clone().unwrap()
+                                        "{}/{}.{}",
+                                        self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
+                                        self.image_name.clone().unwrap(),
+                                        self.image_format_string,
                                     ));
-                                    
-                                    
-                                    
 
                                     //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
                                     println!("gira gira gira gira");
@@ -616,6 +627,33 @@ impl eframe::App for FirstWindow {
                         }
                     }
                 });
+            });
+        } else if self.selected_window == 6 {
+            egui::CentralPanel::default().show(ctx, |ui| {
+          
+
+                if ui.button("Choose Path").clicked() {
+                  self.filepath = FileDialog::new()
+                        .set_directory("./screenshot")
+                        .pick_folder();
+                }
+
+                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Jpg), "jpg")).clicked(){
+                    self.image_format = Some(ImageFormat::Jpg);
+                    self.image_format_string = "jpg".to_string();
+                }
+                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Png), "png")).clicked(){
+                    self.image_format = Some(ImageFormat::Png);
+                    self.image_format_string = "png".to_string();
+                }
+                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Gif), "gif")).clicked(){
+                    self.image_format = Some(ImageFormat::Gif);
+                    self.image_format_string = "gif".to_string();
+                }
+                if ui.button("Exit").clicked() {
+                        self.selected_window = 1;
+                    
+                }
             });
         }
     }
