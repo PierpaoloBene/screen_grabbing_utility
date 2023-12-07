@@ -1,8 +1,8 @@
 mod postProcessing;
-use chrono;
 use crate::postProcessing::pp_options;
 use crate::postProcessing::Demo;
 use crate::postProcessing::View;
+use chrono;
 use rfd::FileDialog;
 
 use eframe::{
@@ -51,29 +51,27 @@ enum LoadingState {
 }
 
 #[derive(PartialEq, Debug)]
-enum ImageFormat{
+enum ImageFormat {
     Jpg,
     Png,
     Gif,
 }
-
 
 fn main() -> Result<(), eframe::Error> {
     let mut filepath = Some(PathBuf::new());
 
     let current_os = if cfg!(unix) {
         let _ = std::fs::create_dir("./screenshot");
-        filepath= Some(PathBuf::from("./screenshot"));
+        filepath = Some(PathBuf::from("./screenshot"));
         "unix"
     } else if cfg!(windows) {
         let _ = std::fs::create_dir(".//screenshot");
-        filepath= Some(PathBuf::from(".//screenshot"));
+        filepath = Some(PathBuf::from(".//screenshot"));
         "windows"
     } else {
         "unknown"
     };
 
-    
     println!("{:?}", filepath);
     println!("{:?}", current_os);
 
@@ -194,8 +192,6 @@ impl eframe::App for FirstWindow {
                 println!("waiting")
             }
         }
-
-        
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -428,15 +424,15 @@ impl eframe::App for FirstWindow {
                     }
 
                     for i in [0, self.screenshots_taken.len() - 1] {
-                                let size: [usize; 2] = [self.screenshots_taken[i].width() as _,self.screenshots_taken[i].height() as _];
-                                let pixels = self.screenshots_taken[i].as_flat_samples();
-                                let immagine: egui::ColorImage =
-                                     egui::ColorImage::from_rgba_unmultiplied(
-                                            size,
-                                            pixels.as_slice(),
-                                    );
-                                
-                                self.image_texture = Some(immagine);
+                        let size: [usize; 2] = [
+                            self.screenshots_taken[i].width() as _,
+                            self.screenshots_taken[i].height() as _,
+                        ];
+                        let pixels = self.screenshots_taken[i].as_flat_samples();
+                        let immagine: egui::ColorImage =
+                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
+                        self.image_texture = Some(immagine);
                     }
                 }
                 ModeOptions::FullScreen => {
@@ -457,14 +453,14 @@ impl eframe::App for FirstWindow {
                         }
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
-                        let size: [usize; 2] = [self.screenshots_taken[i].width() as _,self.screenshots_taken[i].height() as _];
+                        let size: [usize; 2] = [
+                            self.screenshots_taken[i].width() as _,
+                            self.screenshots_taken[i].height() as _,
+                        ];
                         let pixels = self.screenshots_taken[i].as_flat_samples();
                         let immagine: egui::ColorImage =
-                             egui::ColorImage::from_rgba_unmultiplied(
-                                    size,
-                                    pixels.as_slice(),
-                            );
-                        
+                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
                         self.image_texture = Some(immagine);
                     }
                 }
@@ -492,6 +488,7 @@ impl eframe::App for FirstWindow {
 
             let mut text_btn = None;
             let mut save_btn = None;
+            let mut save_edit_btn = None;
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
 
             egui::CentralPanel::default().show(ctx, |ui| {
@@ -550,6 +547,7 @@ impl eframe::App for FirstWindow {
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")));
+                        save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
                     });
 
                     match self.loading_state {
@@ -577,8 +575,12 @@ impl eframe::App for FirstWindow {
                                 .unwrap();
 
                             if save_btn.unwrap().clicked() {
-                                self.image_name =Some( chrono::offset::Local::now().format("%Y-%m-%d_%H_%M_%S").to_string());
-                                
+                                self.image_name = Some(
+                                    chrono::offset::Local::now()
+                                        .format("%Y-%m-%d_%H_%M_%S")
+                                        .to_string(),
+                                );
+
                                 let screens = Screen::all().unwrap();
                                 let mod_img = screens[0].capture_area(
                                     response.rect.left_top()[0] as i32,
@@ -586,6 +588,7 @@ impl eframe::App for FirstWindow {
                                     response.rect.width() as u32,
                                     response.rect.height() as u32,
                                 );
+
                                 // for screen in screens {
                                 //     let mod_img = screen.capture_area(
                                 //         response.rect.left_top()[0] as i32,
@@ -595,26 +598,64 @@ impl eframe::App for FirstWindow {
                                 //     );
 
                                 if mod_img.is_err() == false {
-
-                                    if self.current_os=="windows"{
+                                    if self.current_os == "windows" {
                                         let _ = mod_img.unwrap().save(format!(
                                             "{}\\{}.{}",
-                                            self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
+                                            self.filepath
+                                                .clone()
+                                                .unwrap()
+                                                .as_os_str()
+                                                .to_str()
+                                                .unwrap()
+                                                .to_string(),
                                             self.image_name.clone().unwrap(),
                                             self.image_format_string
                                         ));
-                                    }else{
+                                    } else {
                                         let _ = mod_img.unwrap().save(format!(
                                             "{}/{}.{}",
-                                            self.filepath.clone().unwrap().as_os_str().to_str().unwrap().to_string(),
+                                            self.filepath
+                                                .clone()
+                                                .unwrap()
+                                                .as_os_str()
+                                                .to_str()
+                                                .unwrap()
+                                                .to_string(),
                                             self.image_name.clone().unwrap(),
                                             self.image_format_string
                                         ));
                                     }
-
-
                                 }
                                 //}
+                            }
+                            if save_edit_btn.unwrap().clicked() {
+                                 
+                                let dialog = FileDialog::new()
+                                .save_file();
+                                
+                                let screens = Screen::all().unwrap();
+                                let mod_img = screens[0].capture_area(
+                                    response.rect.left_top()[0] as i32,
+                                    response.rect.left_top()[1] as i32 + 50,
+                                    response.rect.width() as u32,
+                                    response.rect.height() as u32,
+                                );
+
+                                if mod_img.is_err() == false {
+
+                                        let _ = mod_img.unwrap().save(format!(
+                                            "{}.{}",
+                                            dialog
+                                                .clone()
+                                                .unwrap()
+                                                .as_os_str()
+                                                .to_str()
+                                                .unwrap()
+                                                .to_string(),
+                                            self.image_format_string,
+                                        ));
+
+                                }
                             }
                         }
                         LoadingState::NotLoaded => {
@@ -640,29 +681,44 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 6 {
             egui::CentralPanel::default().show(ctx, |ui| {
-          
-
                 if ui.button("Choose Path").clicked() {
-                  self.filepath = FileDialog::new()
+                    self.filepath = FileDialog::new()
                         .set_directory("./screenshot")
                         .pick_folder();
                 }
 
-                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Jpg), "jpg")).clicked(){
+                if ui
+                    .add(egui::RadioButton::new(
+                        self.image_format == Some(ImageFormat::Jpg),
+                        "jpg",
+                    ))
+                    .clicked()
+                {
                     self.image_format = Some(ImageFormat::Jpg);
                     self.image_format_string = "jpg".to_string();
                 }
-                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Png), "png")).clicked(){
+                if ui
+                    .add(egui::RadioButton::new(
+                        self.image_format == Some(ImageFormat::Png),
+                        "png",
+                    ))
+                    .clicked()
+                {
                     self.image_format = Some(ImageFormat::Png);
                     self.image_format_string = "png".to_string();
                 }
-                if ui.add(egui::RadioButton::new(self.image_format == Some(ImageFormat::Gif), "gif")).clicked(){
+                if ui
+                    .add(egui::RadioButton::new(
+                        self.image_format == Some(ImageFormat::Gif),
+                        "gif",
+                    ))
+                    .clicked()
+                {
                     self.image_format = Some(ImageFormat::Gif);
                     self.image_format_string = "gif".to_string();
                 }
                 if ui.button("Exit").clicked() {
-                        self.selected_window = 1;
-                    
+                    self.selected_window = 1;
                 }
             });
         }
