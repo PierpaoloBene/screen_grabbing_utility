@@ -611,12 +611,8 @@ impl eframe::App for FirstWindow {
                                             self.image_format_string
                                         ));
                                     }
-                                    //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                                    //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                    
 
-                                    //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                                    println!("gira gira gira gira");
+
                                 }
                                 //}
                             }
