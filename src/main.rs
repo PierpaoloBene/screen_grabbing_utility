@@ -1,8 +1,8 @@
-mod postProcessing;
-use crate::postProcessing::pp_options;
-use crate::postProcessing::Demo;
-use crate::postProcessing::View;
+mod post_processing;
+use crate::post_processing::PpOptions;
+use crate::post_processing::View;
 use chrono;
+use egui::ImageData;
 use rfd::FileDialog;
 
 use eframe::{
@@ -10,13 +10,12 @@ use eframe::{
     Frame,
 };
 use egui::{
-    emath, epaint::RectShape, vec2, Context, ImageData, Pos2, Rect, Rounding, Sense, Shape, Stroke,
-    TextureHandle, Ui, Vec2, Widget, Window,
+    epaint::RectShape,  Pos2, Rect, Rounding, Shape, Stroke,TextureHandle, Vec2, 
 };
-use image::ImageBuffer;
+
 use screenshots::Screen;
 use std::path::PathBuf;
-use std::{fmt::format, process::exit, time::Duration};
+use std::time::Duration;
 
 use global_hotkey::{
     hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
@@ -84,7 +83,7 @@ fn main() -> Result<(), eframe::Error> {
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
-    let mut p = postProcessing::Painting::default();
+    let p = post_processing::Painting::default();
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
@@ -100,14 +99,13 @@ fn main() -> Result<(), eframe::Error> {
                 image_name: None,
                 image_format: Some(ImageFormat::Jpg),
                 image_format_string: "jpg".to_string(),
-                ppOption: None,
+                pp_option: None,
                 current_os: current_os.to_string(),
                 multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
                 filepath: filepath,
-                fp: Vec::new(),
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
                 selected_timer: TimerOptions::NoTimer,
@@ -122,7 +120,7 @@ fn main() -> Result<(), eframe::Error> {
                 rect_pos_f: egui::pos2(0.0, 0.0),
                 open_fw: openfw.clone(),
                 screenshots_taken: Vec::new(),
-                Painting: p,
+                painting: p,
                 width: 0.0,
                 height: 0.0,
             })
@@ -134,14 +132,13 @@ struct FirstWindow {
     image_name: Option<String>,
     image_format: Option<ImageFormat>,
     image_format_string: String,
-    ppOption: Option<pp_options>,
+    pp_option: Option<PpOptions>,
     current_os: String,
     multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
     filepath: Option<PathBuf>,
-    fp: Vec<String>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
     selected_timer: TimerOptions,
@@ -156,7 +153,7 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
-    Painting: postProcessing::Painting,
+    painting: post_processing::Painting,
     width: f32,
     height: f32,
 }
@@ -405,13 +402,10 @@ impl eframe::App for FirstWindow {
                         );
 
                         if image.is_err() == false {
-                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
+
 
                             self.screenshots_taken.push(image.unwrap());
 
-                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            println!("gira gira gira gira");
                         }
 
                         println!(
@@ -441,15 +435,9 @@ impl eframe::App for FirstWindow {
                         let image = screen.capture();
 
                         if image.is_err() == false {
-                            println!("gira gira gira gira");
 
-                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
-                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            //self.fp = "/Users/pierpaolobene/Desktop/ao.jpg".to_string();
-                            //let _ = image.unwrap().save("/Users/pierpaolobene/Desktop/ao.jpg");
                             self.screenshots_taken.push(image.unwrap());
 
-                            println!("sto resettando");
                         }
                     }
                     for i in [0, self.screenshots_taken.len() - 1] {
@@ -471,13 +459,13 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
 
-            if (self.width <= 1000.0 && self.height <= 500.0) {
+            if self.width <= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(1000.0, 500.0)); //1400 750
-            } else if (self.width <= 1000.0 && self.height >= 500.0) {
+            } else if self.width <= 1000.0 && self.height >= 500.0 {
                 frame.set_window_size(Vec2::new(1000.0, self.height));
-            } else if (self.width >= 1000.0 && self.height <= 500.0) {
+            } else if self.width >= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(self.width, 500.0));
-            } else if (self.width >= 1200.0 && self.height >= 700.0) {
+            } else if self.width >= 1200.0 && self.height >= 700.0 {
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
             } else {
                 frame.set_window_size(Vec2::new(self.width, self.height));
@@ -491,12 +479,12 @@ impl eframe::App for FirstWindow {
             let mut save_edit_btn = None;
             //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
 
-            egui::CentralPanel::default().show(ctx, |ui| {
+            egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
                     ui.horizontal(|ui| {
                         paint_btn = Some(ui.add(egui::Button::new("Paint")));
                         if paint_btn.unwrap().clicked() {
-                            self.ppOption = Some(pp_options::Painting);
+                            self.pp_option = Some(PpOptions::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
                         egui::ComboBox::from_id_source("Select a shape!")
@@ -512,7 +500,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Arrow;
                                     self.selected_shape_string = "Arrow".to_string();
-                                    self.ppOption = Some(pp_options::Arrow);
+                                    self.pp_option = Some(PpOptions::Arrow);
                                 }
 
                                 if ui
@@ -525,7 +513,7 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Circle;
                                     self.selected_shape_string = "Circle".to_string();
-                                    self.ppOption = Some(pp_options::Circle);
+                                    self.pp_option = Some(PpOptions::Circle);
                                 }
 
                                 if ui
@@ -538,12 +526,12 @@ impl eframe::App for FirstWindow {
                                 {
                                     self.selected_shape = Shapes::Square;
                                     self.selected_shape_string = "Square".to_string();
-                                    self.ppOption = Some(pp_options::Square);
+                                    self.pp_option = Some(PpOptions::Square);
                                 };
                             });
                         text_btn = Some(ui.add(egui::Button::new("Text")));
                         if text_btn.unwrap().clicked() {
-                            self.ppOption = Some(pp_options::Text);
+                            self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")));
@@ -553,23 +541,23 @@ impl eframe::App for FirstWindow {
                     match self.loading_state {
                         LoadingState::Loaded => {
                             println!("fff");
-                            let mut dim = Vec2::new(0.0, 0.0);
+                            let dim:Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
-                            } else if (self.width >= 1200.0 && self.height <= 700.0) {
+                            } else if self.width >= 1200.0 && self.height <= 700.0{
                                 dim = Vec2::new(1200.0, self.height);
-                            } else if (self.width <= 1200.0 && self.height >= 700.0) {
+                            } else if self.width <= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(self.width, 700.0);
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let response = self
-                                .Painting
+                                .painting
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
                                     dim,
-                                    self.ppOption.clone().unwrap(),
+                                    self.pp_option.clone().unwrap(),
                                 )
                                 .clone()
                                 .unwrap();
@@ -659,7 +647,7 @@ impl eframe::App for FirstWindow {
                             }
                         }
                         LoadingState::NotLoaded => {
-                            for i in [0, self.screenshots_taken.len() - 1] {
+                            for _i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
 
                                 let img = ui.ctx().load_texture(
@@ -668,7 +656,7 @@ impl eframe::App for FirstWindow {
                                     Default::default(),
                                 );
                                 self.image = Some(img);
-                                self.ppOption = Some(pp_options::Painting);
+                                self.pp_option = Some(PpOptions::Painting);
                                 self.loading_state = LoadingState::Loaded;
                                 //self.selected_window = 6;
                                 println!("ddd");

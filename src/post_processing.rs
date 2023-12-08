@@ -9,7 +9,7 @@ pub trait View {
         ui: &mut egui::Ui,
         image: egui::Image,
         dim: Vec2,
-        opt: pp_options,
+        opt: PpOptions,
     ) -> Option<egui::Response>;
 }
 
@@ -27,7 +27,7 @@ pub trait Demo {
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
 #[derive( Debug, Clone)]
-pub enum pp_options {
+pub enum PpOptions {
     Arrow,
     Circle,
     Square,
@@ -35,7 +35,7 @@ pub enum pp_options {
     Painting,
 }
 pub struct Painting {
-    last_type_added: Vec<pp_options>,
+    last_type_added: Vec<PpOptions>,
 
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
@@ -136,17 +136,17 @@ impl Painting {
      fn undo(&mut self){
         
         match self.last_type_added.last().unwrap(){
-            pp_options::Arrow=>{
+            PpOptions::Arrow=>{
                 self.arrows.remove(self.arrows.len() - 1);
                 
             },
-            pp_options::Circle=>{
+            PpOptions::Circle=>{
                 self.circles.remove(self.circles.len() - 1);
             },
-            pp_options::Square=>{
+            PpOptions::Square=>{
                 self.squares.remove(self.squares.len() - 1);
             },
-            pp_options::Text=>{
+            PpOptions::Text=>{
                 self.texts.remove(self.texts.len() - 1);
             },
             _=>{}
@@ -154,11 +154,11 @@ impl Painting {
         self.last_type_added.pop();
     }
 
-    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: pp_options) -> egui::Response {
+    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
         println!("In ui_control");
         let mut res=None;
         match opt {
-            pp_options::Painting => {
+            PpOptions::Painting => {
                 if self.lines.last_mut() == None {
                     res=Some(ui.horizontal(|ui| {
                         egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
@@ -186,7 +186,7 @@ impl Painting {
                     res
                 }
             }
-            pp_options::Arrow => {
+            PpOptions::Arrow => {
                 let mut back_btn = None;
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
@@ -200,7 +200,7 @@ impl Painting {
                 })
                 .response
             }
-            pp_options::Circle => {
+            PpOptions::Circle => {
                 println!("In ui_control circles");
                 let mut back_btn = None;
                 ui.horizontal(|ui| {
@@ -215,7 +215,7 @@ impl Painting {
                 })
                 .response
             }
-            pp_options::Square => {
+            PpOptions::Square => {
                 println!("In ui_control squares");
                 let mut back_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -230,7 +230,7 @@ impl Painting {
                 })
                 .response
             }
-            pp_options::Text => {
+            PpOptions::Text => {
                 println!("In ui_control texts");
                 let mut write_btn = None;
                 let mut back_btn = None;
@@ -365,7 +365,7 @@ impl Painting {
                 .push((self.starting_point, self.final_point, self.arrows_stroke));
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
-            self.last_type_added.push(pp_options::Arrow);
+            self.last_type_added.push(PpOptions::Arrow);
         }
 
         self.render_elements(painter.clone());
@@ -426,7 +426,7 @@ impl Painting {
                 .push((self.circle_center, self.radius, self.circles_stroke));
             self.circle_center = Pos2 { x: -1.0, y: -1.0 };
             self.radius = -1.0;
-            self.last_type_added.push(pp_options::Circle);
+            self.last_type_added.push(PpOptions::Circle);
         }
 
         self.render_elements(painter.clone());
@@ -496,7 +496,7 @@ impl Painting {
             self.square_starting_point.y = -1.0;
             self.square_ending_point.x = -1.0;
             self.square_ending_point.y = -1.0;
-            self.last_type_added.push(pp_options::Square);
+            self.last_type_added.push(PpOptions::Square);
         }
 
         self.render_elements(painter.clone());
@@ -574,7 +574,7 @@ impl Painting {
                 self.text_ending_position.x = -1.0;
                 self.text_ending_position.y = -1.0;
                 self.ready_to_write = false;
-                self.last_type_added.push(pp_options::Text);
+                self.last_type_added.push(PpOptions::Text);
             }
         }
 
@@ -596,12 +596,12 @@ impl View for Painting {
         ui: &mut Ui,
         image: egui::widgets::Image,
         dim: Vec2,
-        opt: pp_options,
+        opt: PpOptions,
     ) -> Option<egui::Response> {
         let mut resp = None;
 
         match opt {
-            pp_options::Painting => {
+            PpOptions::Painting => {
                 self.ui_control(ui, opt);
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -610,7 +610,7 @@ impl View for Painting {
                     });
                 });
             }
-            pp_options::Arrow => {
+            PpOptions::Arrow => {
                 self.ui_control(ui, opt);
                 ui.label("Paint an arrow with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -619,7 +619,7 @@ impl View for Painting {
                     });
                 });
             }
-            pp_options::Circle => {
+            PpOptions::Circle => {
                 self.ui_control(ui, opt);
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -628,7 +628,7 @@ impl View for Painting {
                     });
                 });
             }
-            pp_options::Square => {
+            PpOptions::Square => {
                 self.ui_control(ui, opt);
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
@@ -637,7 +637,7 @@ impl View for Painting {
                     });
                 });
             }
-            pp_options::Text => {
+            PpOptions::Text => {
                 self.ui_control(ui, opt);
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
