@@ -9,9 +9,7 @@ use eframe::{
     egui::{self, Color32, RichText},
     Frame,
 };
-use egui::{
-    epaint::RectShape,  Pos2, Rect, Rounding, Shape, Stroke,TextureHandle, Vec2, 
-};
+use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2};
 
 use screenshots::Screen;
 use std::path::PathBuf;
@@ -89,7 +87,6 @@ fn main() -> Result<(), eframe::Error> {
     manager.register(hotkey_screen).unwrap();
 
     let openfw = GlobalHotKeyEvent::receiver();
-
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -101,7 +98,7 @@ fn main() -> Result<(), eframe::Error> {
                 image_format_string: "jpg".to_string(),
                 pp_option: None,
                 current_os: current_os.to_string(),
-                
+                multiplication_factor: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
@@ -134,7 +131,7 @@ struct FirstWindow {
     image_format_string: String,
     pp_option: Option<PpOptions>,
     current_os: String,
-    
+    multiplication_factor: Option<f32>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
@@ -158,8 +155,91 @@ struct FirstWindow {
     height: f32,
 }
 
+impl FirstWindow {
+    fn take_screenshot(&mut self) {
+        let screens = Screen::all().unwrap();
+        match self.selected_mode {
+            ModeOptions::Rectangle => {
+                self.width = self.rect_pos_f[0] - self.rect_pos[0];
+                self.height = self.rect_pos_f[1] - self.rect_pos[1];
+                if self.current_os == "windows" {
+                    self.width = self.width * self.multiplication_factor.unwrap();
+                    self.height = self.height * self.multiplication_factor.unwrap();
+                    self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
+                    self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
+                }
+
+                for screen in screens {
+                    let image = screen.capture_area(
+                        self.rect_pos[0] as i32,
+                        self.rect_pos[1] as i32,
+                        self.width as u32,
+                        self.height as u32,
+                    );
+
+                    if image.is_err() == false {
+                        self.screenshots_taken.push(image.unwrap());
+                    }
+
+                    println!(
+                        "xi={} yi={} xf={} yf={}",
+                        self.mouse_pos.unwrap()[0],
+                        self.mouse_pos.unwrap()[1],
+                        self.mouse_pos_f.unwrap()[0],
+                        self.mouse_pos_f.unwrap()[1]
+                    );
+                }
+
+                for i in [0, self.screenshots_taken.len() - 1] {
+                    let size: [usize; 2] = [
+                        self.screenshots_taken[i].width() as _,
+                        self.screenshots_taken[i].height() as _,
+                    ];
+                    let pixels = self.screenshots_taken[i].as_flat_samples();
+                    let immagine: egui::ColorImage =
+                        egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
+                    self.image_texture = Some(immagine);
+                }
+            }
+            ModeOptions::FullScreen => {
+                //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
+                for screen in screens {
+                    let image = screen.capture();
+
+                    if image.is_err() == false {
+                        self.screenshots_taken.push(image.unwrap());
+                    }
+                }
+                for i in [0, self.screenshots_taken.len() - 1] {
+                    let size: [usize; 2] = [
+                        self.screenshots_taken[i].width() as _,
+                        self.screenshots_taken[i].height() as _,
+                    ];
+                    let pixels = self.screenshots_taken[i].as_flat_samples();
+                    let immagine: egui::ColorImage =
+                        egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
+                    self.image_texture = Some(immagine);
+                    self.width = self.image_texture.clone().unwrap().size[0] as f32;
+                    self.height = self.image_texture.clone().unwrap().size[1] as f32;
+                    if self.current_os == "windows" {
+                        self.width = self.width * self.multiplication_factor.unwrap();
+                        self.height = self.height * self.multiplication_factor.unwrap();
+                        self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
+                        self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
+                    }
+                }
+            }
+        }
+    }
+}
+
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+        if self.multiplication_factor.is_none() {
+            self.multiplication_factor = frame.info().native_pixels_per_point;
+        }
         match self.open_fw.try_recv() {
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
@@ -189,7 +269,6 @@ impl eframe::App for FirstWindow {
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
-                
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
@@ -370,94 +449,7 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 3 {
             self.selected_window = 4;
         } else if self.selected_window == 4 {
-            let screens = Screen::all().unwrap();
-
-            match self.selected_mode {
-                ModeOptions::Rectangle => {
-                    self.width = self.rect_pos_f[0] - self.rect_pos[0];
-                    self.height = self.rect_pos_f[1] - self.rect_pos[1];
-                    if self.current_os == "windows" {
-                        self.width = self.width * frame.info().native_pixels_per_point.unwrap();
-                        self.height = self.height
-                            * frame.info().native_pixels_per_point.unwrap();
-                        self.rect_pos[0] = self.rect_pos[0]
-                            * frame.info().native_pixels_per_point.unwrap();
-                        self.rect_pos[1] = self.rect_pos[1]
-                            * frame.info().native_pixels_per_point.unwrap();
-                    }
-
-                    for screen in screens {
-                        let image = screen.capture_area(
-                            self.rect_pos[0] as i32,
-                            self.rect_pos[1] as i32,
-                            self.width as u32,
-                            self.height as u32,
-                        );
-
-                        if image.is_err() == false {
-
-
-                            self.screenshots_taken.push(image.unwrap());
-
-                        }
-
-                        println!(
-                            "xi={} yi={} xf={} yf={}",
-                            self.mouse_pos.unwrap()[0],
-                            self.mouse_pos.unwrap()[1],
-                            self.mouse_pos_f.unwrap()[0],
-                            self.mouse_pos_f.unwrap()[1]
-                        );
-                    }
-
-                    for i in [0, self.screenshots_taken.len() - 1] {
-                        let size: [usize; 2] = [
-                            self.screenshots_taken[i].width() as _,
-                            self.screenshots_taken[i].height() as _,
-                        ];
-                        let pixels = self.screenshots_taken[i].as_flat_samples();
-                        let immagine: egui::ColorImage =
-                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-                        self.image_texture = Some(immagine);
-                    }
-                }
-                ModeOptions::FullScreen => {
-                    //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
-                    for screen in screens {
-                        let image = screen.capture();
-
-                        if image.is_err() == false {
-
-                            self.screenshots_taken.push(image.unwrap());
-
-                        }
-                    }
-                    for i in [0, self.screenshots_taken.len() - 1] {
-                        let size: [usize; 2] = [
-                            self.screenshots_taken[i].width() as _,
-                            self.screenshots_taken[i].height() as _,
-                        ];
-                        let pixels = self.screenshots_taken[i].as_flat_samples();
-                        let immagine: egui::ColorImage =
-                            egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-                        self.image_texture = Some(immagine);
-                        self.width=self.image_texture.clone().unwrap().size[0] as f32;
-                        self.height=self.image_texture.clone().unwrap().size[1] as f32;
-                        if self.current_os == "windows" {
-                            self.width = self.width
-                                * frame.info().native_pixels_per_point.unwrap();
-                            self.height = self.height
-                                * frame.info().native_pixels_per_point.unwrap();
-                            self.rect_pos[0] = self.rect_pos[0]
-                                * frame.info().native_pixels_per_point.unwrap();
-                            self.rect_pos[1] = self.rect_pos[1]
-                                * frame.info().native_pixels_per_point.unwrap();
-                        }
-                    }
-                }
-            }
+            self.take_screenshot();
             //self.painting_bool = true;
             self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
                                       //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
@@ -546,18 +538,17 @@ impl eframe::App for FirstWindow {
                     match self.loading_state {
                         LoadingState::Loaded => {
                             println!("fff");
-                            let dim:Vec2;
+                            let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
-                            } else if self.width >= 1200.0 && self.height <= 700.0{
+                            } else if self.width >= 1200.0 && self.height <= 700.0 {
                                 dim = Vec2::new(1200.0, self.height);
                             } else if self.width <= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(self.width, 700.0);
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
-                            
-                           
+
                             let response = self
                                 .painting
                                 .ui(
@@ -624,10 +615,8 @@ impl eframe::App for FirstWindow {
                                 //}
                             }
                             if save_edit_btn.unwrap().clicked() {
-                                 
-                                let dialog = FileDialog::new()
-                                .save_file();
-                                
+                                let dialog = FileDialog::new().save_file();
+
                                 let screens = Screen::all().unwrap();
                                 let mod_img = screens[0].capture_area(
                                     response.rect.left_top()[0] as i32,
@@ -637,19 +626,17 @@ impl eframe::App for FirstWindow {
                                 );
 
                                 if mod_img.is_err() == false {
-
-                                        let _ = mod_img.unwrap().save(format!(
-                                            "{}.{}",
-                                            dialog
-                                                .clone()
-                                                .unwrap()
-                                                .as_os_str()
-                                                .to_str()
-                                                .unwrap()
-                                                .to_string(),
-                                            self.image_format_string,
-                                        ));
-
+                                    let _ = mod_img.unwrap().save(format!(
+                                        "{}.{}",
+                                        dialog
+                                            .clone()
+                                            .unwrap()
+                                            .as_os_str()
+                                            .to_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        self.image_format_string,
+                                    ));
                                 }
                             }
                         }
