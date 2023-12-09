@@ -599,7 +599,7 @@ impl View for Painting {
         opt: PpOptions,
     ) -> Option<egui::Response> {
         let mut resp = None;
-
+        
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);

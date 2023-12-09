@@ -450,6 +450,22 @@ impl eframe::App for FirstWindow {
                             egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
                         self.image_texture = Some(immagine);
+                        self.width=self.image_texture.clone().unwrap().size[0] as f32;
+                        self.height=self.image_texture.clone().unwrap().size[1] as f32;
+                        if self.current_os == "windows" {
+                            self.width = self.width
+                                * (self.multiplication_factor.unwrap()
+                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                            self.height = self.height
+                                * (self.multiplication_factor.unwrap()
+                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                            self.rect_pos[0] = self.rect_pos[0]
+                                * (self.multiplication_factor.unwrap()
+                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                            self.rect_pos[1] = self.rect_pos[1]
+                                * (self.multiplication_factor.unwrap()
+                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                        }
                     }
                 }
             }
@@ -551,6 +567,8 @@ impl eframe::App for FirstWindow {
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
+                            
+                           
                             let response = self
                                 .painting
                                 .ui(
