@@ -160,8 +160,6 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-     
-        
         match self.open_fw.try_recv() {
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
@@ -191,6 +189,7 @@ impl eframe::App for FirstWindow {
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
+                
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
@@ -296,7 +295,7 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-            frame.set_window_pos(egui::pos2(0.0, 0.0));
+            //frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
@@ -477,7 +476,7 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(self.width, self.height));
             }
 
-            frame.set_window_pos(Pos2::new(0.0, 0.0));
+            //frame.set_window_pos(Pos2::new(0.0, 0.0));
             let mut paint_btn = None;
 
             let mut text_btn = None;
