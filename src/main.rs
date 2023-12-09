@@ -5,6 +5,9 @@ use chrono;
 use egui::ImageData;
 use rfd::FileDialog;
 
+mod functions;
+use functions::first_window;
+
 use eframe::{
     egui::{self, Color32, RichText},
     Frame,
@@ -155,74 +158,6 @@ struct FirstWindow {
     height: f32,
 }
 
-impl FirstWindow {
-    fn set_width_height(&mut self) {
-        match self.selected_mode {
-            ModeOptions::Rectangle => {
-                self.width = self.rect_pos_f[0] - self.rect_pos[0];
-                self.height = self.rect_pos_f[1] - self.rect_pos[1];
-            }
-            ModeOptions::FullScreen => {
-                self.width = self.image_texture.clone().unwrap().size[0] as f32;
-                self.height = self.image_texture.clone().unwrap().size[1] as f32;
-            }
-        }
-        if self.current_os == "windows" {
-            self.width = self.width * self.multiplication_factor.unwrap();
-            self.height = self.height * self.multiplication_factor.unwrap();
-            self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
-            self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
-        }
-    }
-
-    fn set_image_texture(&mut self){
-        for i in [0, self.screenshots_taken.len() - 1] {
-            let size: [usize; 2] = [
-                self.screenshots_taken[i].width() as _,
-                self.screenshots_taken[i].height() as _,
-            ];
-            let pixels = self.screenshots_taken[i].as_flat_samples();
-            let immagine: egui::ColorImage =
-                egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-            self.image_texture = Some(immagine);
-        }
-    }
-
-    fn take_screenshot(&mut self) {
-        let screens = Screen::all().unwrap();
-        match self.selected_mode {
-            ModeOptions::Rectangle => {
-                self.set_width_height();
-                for screen in screens {
-                    let image = screen.capture_area(
-                        self.rect_pos[0] as i32,
-                        self.rect_pos[1] as i32,
-                        self.width as u32,
-                        self.height as u32,
-                    );
-
-                    if image.is_err() == false {
-                        self.screenshots_taken.push(image.unwrap());
-                    }
-                }
-                self.set_image_texture();
-                
-            }
-            ModeOptions::FullScreen => {
-                //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
-                for screen in screens {
-                    let image = screen.capture();
-                    if image.is_err() == false {
-                        self.screenshots_taken.push(image.unwrap());
-                    }
-                }
-                self.set_image_texture();
-                self.set_width_height();
-            }
-        }
-    }
-}
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
@@ -376,58 +311,26 @@ impl eframe::App for FirstWindow {
                                     && self.mouse_pos.unwrap()[1] == -1.0
                             }) {
                                 println!("salvo pressione");
-
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                                //self.mouse_pos=self.mouse_pos_2;
                             }
                             if self.mouse_pos.unwrap()[0] != -1.0
                                 && self.mouse_pos.unwrap()[1] != -1.0
                             {
                                 self.mouse_pos_f = ui.input(|i| i.pointer.latest_pos());
-                                let diff_x =
-                                    self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
-                                let diff_y =
-                                    self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
-
-                                if diff_x > 0.0 && diff_y > 0.0 {
-                                    self.rect_pos = self.mouse_pos.unwrap();
-                                    self.rect_pos_f = self.mouse_pos_f.unwrap();
-                                    println!("sono in basso a destra");
-                                } else if diff_x < 0.0 && diff_y < 0.0 {
-                                    println!("sono in alto a sinistra");
-                                    self.rect_pos = self.mouse_pos_f.unwrap();
-                                    self.rect_pos_f = self.mouse_pos.unwrap();
-                                } else if diff_x < 0.0 && diff_y > 0.0 {
-                                    println!("sono in basso a sinistra");
-                                    self.rect_pos[0] = self.mouse_pos_f.unwrap()[0];
-                                    self.rect_pos[1] = self.mouse_pos.unwrap()[1];
-                                    self.rect_pos_f[0] = self.mouse_pos.unwrap()[0];
-                                    self.rect_pos_f[1] = self.mouse_pos_f.unwrap()[1];
-                                } else if diff_x > 0.0 && diff_y < 0.0 {
-                                    println!("sono in alto a destra");
-                                    self.rect_pos[0] = self.mouse_pos.unwrap()[0];
-                                    self.rect_pos[1] = self.mouse_pos_f.unwrap()[1];
-                                    self.rect_pos_f[0] = self.mouse_pos_f.unwrap()[0];
-                                    self.rect_pos_f[1] = self.mouse_pos.unwrap()[1];
-                                }
+                                self.define_rectangle();
                             }
                             if ui.input(|i| i.pointer.any_released()) {
                                 frame.set_window_size(Vec2::new(0.0, 0.0));
 
                                 self.selected_window = 3; //Le coordinate sono salvate in self.mouse_pos_2 e self.mouse_posf_2
                             }
-                            // if(self.mouse_pos_2.unwrap()[0]<=self.mouse_pos_f_2.unwrap()[0]
-                            //   && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
+
                             ui.painter().add(Shape::Rect(RectShape::new(
                                 Rect::from_min_max(self.rect_pos, self.rect_pos_f),
                                 Rounding::default(),
                                 Color32::TRANSPARENT,
                                 Stroke::new(2.0, Color32::GRAY),
                             )));
-                            //}else if(self.mouse_pos_2.unwrap()[0]=self.mouse_pos_f_2.unwrap()[0]
-                            //       && self.mouse_pos_2.unwrap()[1]<=self.mouse_pos_f_2.unwrap()[1]){
-                            //  ui.painter().add( Shape::Rect(  RectShape::new(Rect::from_min_max(self.mouse_pos_2.unwrap(), self.mouse_pos_f_2.unwrap()), Rounding::default(), Color32::LIGHT_RED, Stroke::default())));
-                            //}
                         });
                 }
                 ModeOptions::FullScreen => {
@@ -439,9 +342,8 @@ impl eframe::App for FirstWindow {
             self.selected_window = 4;
         } else if self.selected_window == 4 {
             self.take_screenshot();
-            //self.painting_bool = true;
-            self.selected_window = 5; //Le coordinate sono slavate in self.mouse_pos_2 e self.mouse_posf_2
-                                      //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+           
+            self.selected_window = 5; 
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
 
@@ -457,13 +359,13 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(self.width, self.height));
             }
 
-            //frame.set_window_pos(Pos2::new(0.0, 0.0));
+           
             let mut paint_btn = None;
 
             let mut text_btn = None;
             let mut save_btn = None;
             let mut save_edit_btn = None;
-            //frame.set_window_size(egui::Vec2::new(1500.0,1080.0));
+            
 
             egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
@@ -633,16 +535,9 @@ impl eframe::App for FirstWindow {
                             for _i in [0, self.screenshots_taken.len() - 1] {
                                 //rimettere -1
 
-                                let img = ui.ctx().load_texture(
-                                    "ao",
-                                    ImageData::from(self.image_texture.clone().unwrap()),
-                                    Default::default(),
-                                );
-                                self.image = Some(img);
+                                self.load_image(ui);
                                 self.pp_option = Some(PpOptions::Painting);
                                 self.loading_state = LoadingState::Loaded;
-                                //self.selected_window = 6;
-                                println!("ddd");
 
                                 ()
                             }

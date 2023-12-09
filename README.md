@@ -30,13 +30,13 @@ Aggiustamenti:
 - [ ] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
 - [ ] Capire come funziona la selected window di buffer
 - [ ] Aggiungere testo : “premere ctrl+D per fare screen” 
-- [ ] 
+
 
 Modulare:
-- Take_Screenshot: funzione a cui delegare la capture. (Width,height,current_os,rect_pos ,….) 
+- Take_Screenshot: funzione a cui delegare la capture. (Width,height,current_os,rect_pos ,….)  DONE
 - Save_Screenot:  solo per fare il save;
-- Define_Rectangle: definire rettangolo  della mouse_pos ( da mettere dopo mouse_pos = ui.input) , da diff_x e diff_y
+- Define_Rectangle: definire rettangolo  della mouse_pos ( da mettere dopo mouse_pos = ui.input) , da diff_x e diff_y DONE
 - Init: Funzione Central panel select window 1 da delegare.
-- Refactor_on_windows: da chiamare negli if current_os==windows, modifica il self height e with;
-- Load_image : Funzione per caricare immagine. 
+- Refactor_on_windows: da chiamare negli if current_os==windows, modifica il self height e with; DONE
+- Load_image : Funzione per caricare immagine. DONE
 
