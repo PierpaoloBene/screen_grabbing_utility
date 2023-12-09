@@ -101,7 +101,7 @@ fn main() -> Result<(), eframe::Error> {
                 image_format_string: "jpg".to_string(),
                 pp_option: None,
                 current_os: current_os.to_string(),
-                multiplication_factor: None,
+                
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
@@ -134,7 +134,7 @@ struct FirstWindow {
     image_format_string: String,
     pp_option: Option<PpOptions>,
     current_os: String,
-    multiplication_factor: Option<f32>,
+    
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
@@ -160,9 +160,8 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-        if self.current_os == "windows" && self.multiplication_factor.is_none() {
-            self.multiplication_factor = Some(frame.info().window_info.monitor_size.unwrap().x);
-        }
+     
+        
         match self.open_fw.try_recv() {
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
@@ -379,18 +378,13 @@ impl eframe::App for FirstWindow {
                     self.width = self.rect_pos_f[0] - self.rect_pos[0];
                     self.height = self.rect_pos_f[1] - self.rect_pos[1];
                     if self.current_os == "windows" {
-                        self.width = self.width
-                            * (self.multiplication_factor.unwrap()
-                                / (frame.info().window_info.monitor_size.unwrap().x));
+                        self.width = self.width * frame.info().native_pixels_per_point.unwrap();
                         self.height = self.height
-                            * (self.multiplication_factor.unwrap()
-                                / (frame.info().window_info.monitor_size.unwrap().x));
+                            * frame.info().native_pixels_per_point.unwrap();
                         self.rect_pos[0] = self.rect_pos[0]
-                            * (self.multiplication_factor.unwrap()
-                                / (frame.info().window_info.monitor_size.unwrap().x));
+                            * frame.info().native_pixels_per_point.unwrap();
                         self.rect_pos[1] = self.rect_pos[1]
-                            * (self.multiplication_factor.unwrap()
-                                / (frame.info().window_info.monitor_size.unwrap().x));
+                            * frame.info().native_pixels_per_point.unwrap();
                     }
 
                     for screen in screens {
@@ -454,17 +448,13 @@ impl eframe::App for FirstWindow {
                         self.height=self.image_texture.clone().unwrap().size[1] as f32;
                         if self.current_os == "windows" {
                             self.width = self.width
-                                * (self.multiplication_factor.unwrap()
-                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                                * frame.info().native_pixels_per_point.unwrap();
                             self.height = self.height
-                                * (self.multiplication_factor.unwrap()
-                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                                * frame.info().native_pixels_per_point.unwrap();
                             self.rect_pos[0] = self.rect_pos[0]
-                                * (self.multiplication_factor.unwrap()
-                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                                * frame.info().native_pixels_per_point.unwrap();
                             self.rect_pos[1] = self.rect_pos[1]
-                                * (self.multiplication_factor.unwrap()
-                                    / (frame.info().window_info.monitor_size.unwrap().x));
+                                * frame.info().native_pixels_per_point.unwrap();
                         }
                     }
                 }
