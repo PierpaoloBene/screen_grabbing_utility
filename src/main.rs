@@ -156,19 +156,44 @@ struct FirstWindow {
 }
 
 impl FirstWindow {
-    fn take_screenshot(&mut self) {
-        let screens = Screen::all().unwrap();
+    fn set_width_height(&mut self) {
         match self.selected_mode {
             ModeOptions::Rectangle => {
                 self.width = self.rect_pos_f[0] - self.rect_pos[0];
                 self.height = self.rect_pos_f[1] - self.rect_pos[1];
-                if self.current_os == "windows" {
-                    self.width = self.width * self.multiplication_factor.unwrap();
-                    self.height = self.height * self.multiplication_factor.unwrap();
-                    self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
-                    self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
-                }
+            }
+            ModeOptions::FullScreen => {
+                self.width = self.image_texture.clone().unwrap().size[0] as f32;
+                self.height = self.image_texture.clone().unwrap().size[1] as f32;
+            }
+        }
+        if self.current_os == "windows" {
+            self.width = self.width * self.multiplication_factor.unwrap();
+            self.height = self.height * self.multiplication_factor.unwrap();
+            self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
+            self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
+        }
+    }
 
+    fn set_image_texture(&mut self){
+        for i in [0, self.screenshots_taken.len() - 1] {
+            let size: [usize; 2] = [
+                self.screenshots_taken[i].width() as _,
+                self.screenshots_taken[i].height() as _,
+            ];
+            let pixels = self.screenshots_taken[i].as_flat_samples();
+            let immagine: egui::ColorImage =
+                egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
+
+            self.image_texture = Some(immagine);
+        }
+    }
+
+    fn take_screenshot(&mut self) {
+        let screens = Screen::all().unwrap();
+        match self.selected_mode {
+            ModeOptions::Rectangle => {
+                self.set_width_height();
                 for screen in screens {
                     let image = screen.capture_area(
                         self.rect_pos[0] as i32,
@@ -180,56 +205,20 @@ impl FirstWindow {
                     if image.is_err() == false {
                         self.screenshots_taken.push(image.unwrap());
                     }
-
-                    println!(
-                        "xi={} yi={} xf={} yf={}",
-                        self.mouse_pos.unwrap()[0],
-                        self.mouse_pos.unwrap()[1],
-                        self.mouse_pos_f.unwrap()[0],
-                        self.mouse_pos_f.unwrap()[1]
-                    );
                 }
-
-                for i in [0, self.screenshots_taken.len() - 1] {
-                    let size: [usize; 2] = [
-                        self.screenshots_taken[i].width() as _,
-                        self.screenshots_taken[i].height() as _,
-                    ];
-                    let pixels = self.screenshots_taken[i].as_flat_samples();
-                    let immagine: egui::ColorImage =
-                        egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-                    self.image_texture = Some(immagine);
-                }
+                self.set_image_texture();
+                
             }
             ModeOptions::FullScreen => {
                 //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                 for screen in screens {
                     let image = screen.capture();
-
                     if image.is_err() == false {
                         self.screenshots_taken.push(image.unwrap());
                     }
                 }
-                for i in [0, self.screenshots_taken.len() - 1] {
-                    let size: [usize; 2] = [
-                        self.screenshots_taken[i].width() as _,
-                        self.screenshots_taken[i].height() as _,
-                    ];
-                    let pixels = self.screenshots_taken[i].as_flat_samples();
-                    let immagine: egui::ColorImage =
-                        egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
-
-                    self.image_texture = Some(immagine);
-                    self.width = self.image_texture.clone().unwrap().size[0] as f32;
-                    self.height = self.image_texture.clone().unwrap().size[1] as f32;
-                    if self.current_os == "windows" {
-                        self.width = self.width * self.multiplication_factor.unwrap();
-                        self.height = self.height * self.multiplication_factor.unwrap();
-                        self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
-                        self.rect_pos[1] = self.rect_pos[1] * self.multiplication_factor.unwrap();
-                    }
-                }
+                self.set_image_texture();
+                self.set_width_height();
             }
         }
     }
@@ -374,7 +363,7 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-            //frame.set_window_pos(egui::pos2(0.0, 0.0));
+            frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
