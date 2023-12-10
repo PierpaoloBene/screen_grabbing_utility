@@ -313,7 +313,7 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
-
+        
         response
     }
 

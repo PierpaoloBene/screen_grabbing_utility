@@ -3,6 +3,7 @@ use crate::post_processing::PpOptions;
 use crate::post_processing::View;
 use chrono;
 use egui::ImageData;
+use egui::Response;
 use rfd::FileDialog;
 
 mod functions;
@@ -304,6 +305,7 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
+            
             frame.set_window_pos(egui::pos2(0.0, 0.0));
             
             match self.selected_mode {
@@ -321,6 +323,7 @@ impl eframe::App for FirstWindow {
                                     && self.mouse_pos.unwrap()[1] == -1.0
                             }) {
                                 println!("salvo pressione");
+                                
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
                             }
                             if self.mouse_pos.unwrap()[0] != -1.0
