@@ -20,6 +20,10 @@ Screen grabbing utility
 Cose da fare per il progetto:
 - [ ] Ritaglio immagine in post processing;
 - [x] Gestione più monitor;
+    - [ ] Testare su Mac 
+    - [ ] Testare su più schermi
+    - [ ] Risolvere 'problema' risoluzione diversa dal 100%
+
 - [x] Finestra Setting , con casella testo per scegliere path (e path di default) e radio button per scegliere formato , salvataggio;
 - [ ] Capire come salvare immagine con edit senza fare screen;
 
