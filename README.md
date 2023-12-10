@@ -26,7 +26,7 @@ Cose da fare per il progetto:
 Aggiustamenti:
 - [ ] Rendering shapes in tempo reale e evitare sfasamenti;
 - [ ] Numeri fissi a cazzo per dimensioni finestra, prendendo dimensioni finestra da frame;
-- [] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
+- [x] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
 - [] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
 - [ ] Capire come funziona la selected window di buffer
 - [ ] Aggiungere testo : “premere ctrl+D per fare screen” 

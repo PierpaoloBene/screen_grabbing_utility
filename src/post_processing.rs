@@ -330,6 +330,11 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
+
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        }
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
             let shapes = self
@@ -398,6 +403,14 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        }
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        }
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
             let shapes = self
@@ -462,7 +475,10 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        }
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
             let shapes = self
@@ -537,7 +553,10 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Text);
+        }
         self.render_elements(painter.clone());
         if !self.lines.is_empty() {
             let shapes = self
