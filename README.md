@@ -19,7 +19,7 @@ Screen grabbing utility
 
 Cose da fare per il progetto:
 - [ ] Ritaglio immagine in post processing;
-- [ ] Gestione più monitor;
+- [x] Gestione più monitor;
 - [x] Finestra Setting , con casella testo per scegliere path (e path di default) e radio button per scegliere formato , salvataggio;
 - [ ] Capire come salvare immagine con edit senza fare screen;
 

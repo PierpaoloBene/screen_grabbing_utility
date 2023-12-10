@@ -1,11 +1,9 @@
-
-
 pub mod first_window {
-    
-use egui::ImageData;
-use screenshots::Screen;
 
-use crate::{FirstWindow, ModeOptions};
+    use egui::ImageData;
+    use screenshots::Screen;
+
+    use crate::{FirstWindow, ModeOptions};
     impl FirstWindow {
         pub fn set_width_height(&mut self) {
             match self.selected_mode {
@@ -27,7 +25,8 @@ use crate::{FirstWindow, ModeOptions};
         }
 
         pub fn set_image_texture(&mut self) {
-            for i in [0, self.screenshots_taken.len() - 1] {
+            println!("{}", self.screenshots_taken.len());
+            for i in [0, self.screenshots_taken.len()-1] {
                 let size: [usize; 2] = [
                     self.screenshots_taken[i].width() as _,
                     self.screenshots_taken[i].height() as _,
@@ -45,16 +44,30 @@ use crate::{FirstWindow, ModeOptions};
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     self.set_width_height();
-                    for screen in screens {
-                        let image = screen.capture_area(
-                            self.rect_pos[0] as i32,
-                            self.rect_pos[1] as i32,
-                            self.width as u32,
-                            self.height as u32,
-                        );
-
-                        if image.is_err() == false {
-                            self.screenshots_taken.push(image.unwrap());
+                    
+                    for screen in screens {                        
+                        if self.screen_to_show.is_none() == false
+                            && screen.display_info.id == self.screen_to_show.unwrap()
+                        {                            
+                            println!("{}",screen.display_info.scale_factor);
+                            // println!("{:?} {} {} ", self.rect_pos, self.height, self.width);
+                            // println!("{} {} ", screen.display_info.width, screen.display_info.height);
+                            if screen.display_info.is_primary==false{
+                                self.rect_pos.x-=screen.display_info.width as f32;
+                            }
+                            // println!("{:?} {} {} ", self.rect_pos, self.height, self.width);
+                            // println!("{} {} ", screen.display_info.width, screen.display_info.height);
+                            let image = screen.capture_area(
+                                self.rect_pos[0] as i32,
+                                self.rect_pos[1] as i32,
+                                self.width as u32,
+                                self.height as u32,
+                            );
+                            if image.is_err() == false {
+                                self.screenshots_taken.push(image.unwrap());
+                            }else{                                
+                                println!("{:?}", image);
+                            }
                         }
                     }
                     self.set_image_texture();
@@ -62,9 +75,13 @@ use crate::{FirstWindow, ModeOptions};
                 ModeOptions::FullScreen => {
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
-                        let image = screen.capture();
-                        if image.is_err() == false {
-                            self.screenshots_taken.push(image.unwrap());
+                        if self.screen_to_show.is_none() == false
+                            && self.screen_to_show.unwrap() == screen.display_info.id
+                        {
+                            let image = screen.capture();
+                            if image.is_err() == false {
+                                self.screenshots_taken.push(image.unwrap());
+                            }
                         }
                     }
                     self.set_image_texture();
