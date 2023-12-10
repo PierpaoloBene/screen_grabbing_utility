@@ -12,6 +12,7 @@ eframe = "0.23.0"
 egui = "0.23.0"
 egui_extras = "0.23.0"
 egui_hotkey = "0.2.0"
+
 global-hotkey = "0.4.0"
 
 hotkey = "0.3.1"

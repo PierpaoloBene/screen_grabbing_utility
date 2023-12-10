@@ -8,6 +8,7 @@ use rfd::FileDialog;
 mod functions;
 use functions::first_window;
 
+
 use eframe::{
     egui::{self, Color32, RichText},
     Frame,
@@ -193,6 +194,7 @@ impl eframe::App for FirstWindow {
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
+                
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
@@ -200,7 +202,6 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
-
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
                     }
@@ -294,17 +295,26 @@ impl eframe::App for FirstWindow {
                         self.selected_window = 6;
                     }
                 });
+                ui.add_space(150.0);
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui|{
+                    ui.label(RichText::new("CTRL+D to take a screenshot").size(30.0));
+                   
+               });
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-
+            
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
                         .fixed_pos(egui::pos2(0.0, 0.0))
                         .show(ctx, |ui| {
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui|{
+                                ui.label(RichText::new("ESC to go back").size(15.0));
+                               
+                           });
                             if ui.input(|i| {
                                 i.pointer.any_down()
                                     && self.mouse_pos.unwrap()[0] == -1.0
@@ -370,7 +380,7 @@ impl eframe::App for FirstWindow {
             egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
                     ui.horizontal(|ui| {
-                        paint_btn = Some(ui.add(egui::Button::new("Paint")));
+                        paint_btn = Some(ui.add(egui::Button::new("🖊 Paint")));
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
@@ -382,12 +392,12 @@ impl eframe::App for FirstWindow {
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Arrow,
-                                        "Arrow",
+                                        "↘ Arrow",
                                     )
                                     .clicked()
                                 {
                                     self.selected_shape = Shapes::Arrow;
-                                    self.selected_shape_string = "Arrow".to_string();
+                                    self.selected_shape_string = "↘ Arrow".to_string();
                                     self.pp_option = Some(PpOptions::Arrow);
                                 }
 
@@ -395,12 +405,12 @@ impl eframe::App for FirstWindow {
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Circle,
-                                        "Circle",
+                                        "⭕ Circle",
                                     )
                                     .clicked()
                                 {
                                     self.selected_shape = Shapes::Circle;
-                                    self.selected_shape_string = "Circle".to_string();
+                                    self.selected_shape_string = "⭕ Circle".to_string();
                                     self.pp_option = Some(PpOptions::Circle);
                                 }
 
@@ -408,16 +418,16 @@ impl eframe::App for FirstWindow {
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Square,
-                                        "Square",
+                                        "⬜ Square",
                                     )
                                     .clicked()
                                 {
                                     self.selected_shape = Shapes::Square;
-                                    self.selected_shape_string = "Square".to_string();
+                                    self.selected_shape_string = "⬜ Square".to_string();
                                     self.pp_option = Some(PpOptions::Square);
                                 };
                             });
-                        text_btn = Some(ui.add(egui::Button::new("Text")));
+                        text_btn = Some(ui.add(egui::Button::new("✒ Text")));
                         if text_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
