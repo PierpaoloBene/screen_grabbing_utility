@@ -1,6 +1,4 @@
-use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, CursorIcon};
-
-
+use egui::{emath, vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 /// Something to view in the demo windows
 pub trait View {
@@ -26,7 +24,7 @@ pub trait Demo {
     // Show windows, etc
     /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
-#[derive( Debug, Clone)]
+#[derive(Debug, Clone)]
 pub enum PpOptions {
     Arrow,
     Circle,
@@ -98,7 +96,18 @@ impl Default for Painting {
 }
 
 impl Painting {
-    pub fn render_elements(&mut self, painter: Painter) {
+    pub fn render_elements(&mut self, painter: Painter, to_screen: emath::RectTransform) {
+        if !self.lines.is_empty() {
+            let shapes = self
+                .lines
+                .iter()
+                .filter(|line| line.0.len() >= 2)
+                .map(|line| {
+                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    egui::Shape::line(points, line.1)
+                });
+            painter.extend(shapes);
+        }
         if !self.arrows.is_empty() {
             for point in self.arrows.clone().into_iter() {
                 painter.arrow(
@@ -133,41 +142,41 @@ impl Painting {
             }
         }
     }
-     fn undo(&mut self){
-        
-        match self.last_type_added.last().unwrap(){
-            PpOptions::Arrow=>{
+    fn undo(&mut self) {
+        match self.last_type_added.last().unwrap() {
+            PpOptions::Arrow => {
                 self.arrows.remove(self.arrows.len() - 1);
-                
-            },
-            PpOptions::Circle=>{
+            }
+            PpOptions::Circle => {
                 self.circles.remove(self.circles.len() - 1);
-            },
-            PpOptions::Square=>{
+            }
+            PpOptions::Square => {
                 self.squares.remove(self.squares.len() - 1);
-            },
-            PpOptions::Text=>{
+            }
+            PpOptions::Text => {
                 self.texts.remove(self.texts.len() - 1);
-            },
-            _=>{}
+            }
+            _ => {}
         }
         self.last_type_added.pop();
     }
 
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
         println!("In ui_control");
-        let mut res=None;
+        let mut res = None;
         match opt {
             PpOptions::Painting => {
                 if self.lines.last_mut() == None {
-                    res=Some(ui.horizontal(|ui| {
-                        egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
-                        ui.separator();
-                        if ui.button("Clear Painting").clicked() {
-                            self.lines.clear();
-                        }
-                    })
-                    .response);
+                    res = Some(
+                        ui.horizontal(|ui| {
+                            egui::stroke_ui(ui, &mut self.lines_stroke, "Stroke");
+                            ui.separator();
+                            if ui.button("Clear Painting").clicked() {
+                                self.lines.clear();
+                            }
+                        })
+                        .response,
+                    );
                     res.unwrap()
                 } else {
                     let res = ui
@@ -258,8 +267,7 @@ impl Painting {
                 })
                 .response
             }
-            _=>res.unwrap()
-            
+            _ => res.unwrap(),
         }
     }
 
@@ -274,14 +282,16 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-            if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-                ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
-            }
-        
-        
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx()
+                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
+        }
 
-        self.render_elements(painter.clone());
+        self.render_elements(painter.clone(), to_screen);
 
         let from_screen = to_screen.inverse();
 
@@ -302,20 +312,10 @@ impl Painting {
             response.mark_changed();
         }
 
-        let shapes = self
-            .lines
-            .iter()
-            .filter(|line| line.0.len() >= 2)
-            .map(|line| {
-                let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, line.1)
-            });
-
-        painter.extend(shapes);
+        self.render_elements(painter.clone(), to_screen);
 
         response
     }
-
 
     pub fn ui_content_arrows(
         &mut self,
@@ -331,44 +331,40 @@ impl Painting {
         );
         image.paint_at(ui, response.rect);
 
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx()
+                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
-        self.render_elements(painter.clone());
-        if !self.lines.is_empty() {
-            let shapes = self
-                .lines
-                .iter()
-                .filter(|line| line.0.len() >= 2)
-                .map(|line| {
-                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, line.1)
-                });
+        self.render_elements(painter.clone(), to_screen);
 
-            painter.extend(shapes);
-        }
-
-        if ui.input(|i| i.pointer.any_pressed()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.starting_point.x == -1.0
-            && self.starting_point.y == -1.0{
-                self.starting_point=pos.unwrap();
+        if ui.input(|i| i.pointer.any_pressed()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.starting_point.x == -1.0
+                && self.starting_point.y == -1.0
+            {
+                self.starting_point = pos.unwrap();
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.final_point.x == -1.0
-            && self.final_point.y == -1.0
-            && self.starting_point.x != -1.0
-            && self.starting_point.y != -1.0{
-                self.final_point=pos.unwrap();
+        if ui.input(|i| i.pointer.any_released()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.final_point.x == -1.0
+                && self.final_point.y == -1.0
+                && self.starting_point.x != -1.0
+                && self.starting_point.y != -1.0
+            {
+                self.final_point = pos.unwrap();
             }
         }
-       
+
         if self.final_point.x != -1.0
             && self.final_point.y != -1.0
             && self.starting_point.x != -1.0
@@ -381,12 +377,10 @@ impl Painting {
             self.last_type_added.push(PpOptions::Arrow);
         }
 
-        self.render_elements(painter.clone());
+        self.render_elements(painter.clone(), to_screen);
 
         response
     }
-
- 
 
     pub fn ui_content_circles(
         &mut self,
@@ -403,40 +397,35 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx()
+                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx()
+                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
-        self.render_elements(painter.clone());
-        if !self.lines.is_empty() {
-            let shapes = self
-                .lines
-                .iter()
-                .filter(|line| line.0.len() >= 2)
-                .map(|line| {
-                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, line.1)
-                });
-            painter.extend(shapes);
-        }
+        self.render_elements(painter.clone(), to_screen);
 
-        
-        
-
-        if ui.input(|i| i.pointer.any_pressed()){
-            let pos=ui.input(|i| i.pointer.latest_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.circle_center.x == -1.0
-            && self.circle_center.y == -1.0{
+        if ui.input(|i| i.pointer.any_pressed()) {
+            let pos = ui.input(|i| i.pointer.latest_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.circle_center.x == -1.0
+                && self.circle_center.y == -1.0
+            {
                 self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
             }
         }
-           
-        
+
         if ui.input(|i| i.pointer.any_released())
             && self.circle_center.x != -1.0
             && self.circle_center.y != -1.0
@@ -454,12 +443,11 @@ impl Painting {
             self.last_type_added.push(PpOptions::Circle);
         }
 
-        self.render_elements(painter.clone());
+        self.render_elements(painter.clone(), to_screen);
 
         response
     }
 
-    
     pub fn ui_content_squares(
         &mut self,
         ui: &mut Ui,
@@ -475,44 +463,39 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx()
+                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
-        self.render_elements(painter.clone());
-        if !self.lines.is_empty() {
-            let shapes = self
-                .lines
-                .iter()
-                .filter(|line| line.0.len() >= 2)
-                .map(|line| {
-                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, line.1)
-                });
-            painter.extend(shapes);
-        }
+        self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.square_starting_point.x == -1.0
-            && self.square_starting_point.y == -1.0{
-                self.square_starting_point=pos.unwrap();
+        if ui.input(|i| i.pointer.any_pressed()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.square_starting_point.x == -1.0
+                && self.square_starting_point.y == -1.0
+            {
+                self.square_starting_point = pos.unwrap();
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.square_ending_point.x == -1.0
-            && self.square_ending_point.y == -1.0
-            && self.square_starting_point.x != -1.0
-            && self.square_starting_point.y != -1.0{
-                self.square_ending_point=pos.unwrap();
+        if ui.input(|i| i.pointer.any_released()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.square_ending_point.x == -1.0
+                && self.square_ending_point.y == -1.0
+                && self.square_starting_point.x != -1.0
+                && self.square_starting_point.y != -1.0
+            {
+                self.square_ending_point = pos.unwrap();
             }
         }
-
-       
 
         if self.square_starting_point.x != -1.0
             && self.square_starting_point.y != -1.0
@@ -530,13 +513,10 @@ impl Painting {
             self.last_type_added.push(PpOptions::Square);
         }
 
-        self.render_elements(painter.clone());
+        self.render_elements(painter.clone(), to_screen);
 
         response
     }
-
-    
-   
 
     pub fn ui_content_texts(
         &mut self,
@@ -553,52 +533,45 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
-        if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
-            ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Text);
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if (mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+        {
+            ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Text);
         }
-        self.render_elements(painter.clone());
-        if !self.lines.is_empty() {
-            let shapes = self
-                .lines
-                .iter()
-                .filter(|line| line.0.len() >= 2)
-                .map(|line| {
-                    let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, line.1)
-                });
-            painter.extend(shapes);
-        }
+        self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.text_starting_position.x == -1.0
-            && self.text_starting_position.y == -1.0{
-                self.text_starting_position=pos.unwrap();
+        if ui.input(|i| i.pointer.any_pressed()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.text_starting_position.x == -1.0
+                && self.text_starting_position.y == -1.0
+            {
+                self.text_starting_position = pos.unwrap();
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()){
-            let pos=ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none()==false && response.rect.contains(pos.unwrap())
-            && self.text_ending_position.x == -1.0
-            && self.text_ending_position.y == -1.0
-            && self.text_starting_position.x != -1.0
-            && self.text_starting_position.y != -1.0{
-                self.text_ending_position=pos.unwrap();
+        if ui.input(|i| i.pointer.any_released()) {
+            let pos = ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none() == false
+                && response.rect.contains(pos.unwrap())
+                && self.text_ending_position.x == -1.0
+                && self.text_ending_position.y == -1.0
+                && self.text_starting_position.x != -1.0
+                && self.text_starting_position.y != -1.0
+            {
+                self.text_ending_position = pos.unwrap();
             }
         }
-
-       
-        
 
         if self.text_starting_position.x != -1.0
             && self.text_starting_position.y != -1.0
             && self.text_ending_position.x != -1.0
             && self.text_ending_position.y != -1.0
         {
-            self.render_elements(painter.clone());
+            self.render_elements(painter.clone(), to_screen);
             if self.ready_to_write {
                 self.texts.push((
                     self.to_write_text.clone(),
@@ -616,10 +589,9 @@ impl Painting {
             }
         }
 
-        self.render_elements(painter.clone());
+        self.render_elements(painter.clone(), to_screen);
 
         response
-    
     }
 }
 impl Demo for Painting {
@@ -637,7 +609,7 @@ impl View for Painting {
         opt: PpOptions,
     ) -> Option<egui::Response> {
         let mut resp = None;
-        
+
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -684,10 +656,8 @@ impl View for Painting {
                     });
                 });
             }
-            
         }
 
         resp
     }
-
 }
