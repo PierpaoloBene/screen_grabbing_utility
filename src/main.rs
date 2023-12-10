@@ -78,7 +78,7 @@ fn main() -> Result<(), eframe::Error> {
     println!("{:?}", current_os);
 
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(640.0, 480.0)),
+        initial_window_size: Some(egui::vec2(680.0, 480.0)),
         transparent: true,
         ..Default::default()
     };
@@ -290,7 +290,7 @@ impl eframe::App for FirstWindow {
                     if ui
                         .add_sized(
                             [50., 50.],
-                            egui::Button::new(RichText::new("Settings").size(30.0)),
+                            egui::Button::new(RichText::new("⚙ Settings").size(30.0)),
                         )
                         .clicked()
                     {
@@ -305,9 +305,9 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap()*2.0);            
+            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap()*2.0);  
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());          
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-
             
             match self.selected_mode {
                 ModeOptions::Rectangle => {
