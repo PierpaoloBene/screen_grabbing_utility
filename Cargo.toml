@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.31"
 crossbeam-channel = "0.5.8"
+display-info = "0.4.3"
 eframe = "0.23.0"
 egui = "0.23.0"
 egui_extras = "0.23.0"

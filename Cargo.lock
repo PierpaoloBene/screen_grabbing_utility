@@ -2509,6 +2509,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "crossbeam-channel",
+ "display-info",
  "eframe",
  "egui 0.23.0",
  "egui_extras",

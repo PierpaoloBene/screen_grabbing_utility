@@ -9,7 +9,7 @@ use rfd::FileDialog;
 mod functions;
 use functions::first_window;
 
-
+use display_info::DisplayInfo;
 use eframe::{
     egui::{self, Color32, RichText},
     Frame,
@@ -163,6 +163,7 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+        
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
@@ -304,9 +305,9 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
-            
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap()*2.0);            
             frame.set_window_pos(egui::pos2(0.0, 0.0));
+
             
             match self.selected_mode {
                 ModeOptions::Rectangle => {
@@ -323,8 +324,9 @@ impl eframe::App for FirstWindow {
                                     && self.mouse_pos.unwrap()[1] == -1.0
                             }) {
                                 println!("salvo pressione");
-                                
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
+                                println!("{:?}", self.mouse_pos);
+                                println!("{:?}", DisplayInfo::from_point(self.mouse_pos.unwrap().x as i32,self.mouse_pos.unwrap().y as i32).unwrap());
                             }
                             if self.mouse_pos.unwrap()[0] != -1.0
                                 && self.mouse_pos.unwrap()[1] != -1.0
@@ -601,5 +603,6 @@ impl eframe::App for FirstWindow {
                 }
             });
         }
-    }
+    
+}
 }
