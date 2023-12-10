@@ -26,17 +26,17 @@ Cose da fare per il progetto:
 Aggiustamenti:
 - [ ] Rendering shapes in tempo reale e evitare sfasamenti;
 - [ ] Numeri fissi a cazzo per dimensioni finestra, prendendo dimensioni finestra da frame;
-- [ ] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
-- [ ] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
+- [] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
+- [] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
 - [ ] Capire come funziona la selected window di buffer
 - [ ] Aggiungere testo : “premere ctrl+D per fare screen” 
 
 
 Modulare:
-- Take_Screenshot: funzione a cui delegare la capture. (Width,height,current_os,rect_pos ,….)  DONE
-- Save_Screenot:  solo per fare il save;
-- Define_Rectangle: definire rettangolo  della mouse_pos ( da mettere dopo mouse_pos = ui.input) , da diff_x e diff_y DONE
-- Init: Funzione Central panel select window 1 da delegare.
-- Refactor_on_windows: da chiamare negli if current_os==windows, modifica il self height e with; DONE
-- Load_image : Funzione per caricare immagine. DONE
+- [x]Take_Screenshot: funzione a cui delegare la capture. (Width,height,current_os,rect_pos ,….)  
+- [ ]Save_Screenot:  solo per fare il save;
+- [x]Define_Rectangle: definire rettangolo  della mouse_pos ( da mettere dopo mouse_pos = ui.input) , da diff_x e diff_y 
+- [ ]Init: Funzione Central panel select window 1 da delegare.
+- [x]Refactor_on_windows: da chiamare negli if current_os==windows, modifica il self height e with; 
+- [x]Load_image : Funzione per caricare immagine. 
 

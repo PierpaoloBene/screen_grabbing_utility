@@ -1,4 +1,4 @@
-use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
+use egui::{emath, vec2, Color32, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, CursorIcon};
 
 
 
@@ -274,6 +274,12 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
+        let mouse_pos=ui.input(|i| i.pointer.interact_pos());
+            if ( mouse_pos.is_none()==false && response.rect.x_range().contains(mouse_pos.unwrap().x) && response.rect.y_range().contains(mouse_pos.unwrap().y)){
+                ui.ctx().output_mut(|i| i.cursor_icon=CursorIcon::Crosshair);
+            }
+        
+        
 
         self.render_elements(painter.clone());
 
@@ -338,24 +344,26 @@ impl Painting {
             painter.extend(shapes);
         }
 
-        if ui.input(|i| i.pointer.any_down())
+        if ui.input(|i| i.pointer.any_pressed()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.starting_point.x == -1.0
-            && self.starting_point.y == -1.0
-        {
-            let mut sp = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if sp.y > 60.0 {
-                self.starting_point = sp;
+            && self.starting_point.y == -1.0{
+                self.starting_point=pos.unwrap();
             }
         }
-        if ui.input(|i| i.pointer.any_released())
+
+        if ui.input(|i| i.pointer.any_released()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.final_point.x == -1.0
             && self.final_point.y == -1.0
-        {
-            let mut fp = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if fp.y > 60.0 {
-                self.final_point = fp;
+            && self.starting_point.x != -1.0
+            && self.starting_point.y != -1.0{
+                self.final_point=pos.unwrap();
             }
         }
+       
         if self.final_point.x != -1.0
             && self.final_point.y != -1.0
             && self.starting_point.x != -1.0
@@ -403,15 +411,19 @@ impl Painting {
             painter.extend(shapes);
         }
 
-        if ui.input(|i| i.pointer.any_down())
+        
+        
+
+        if ui.input(|i| i.pointer.any_pressed()){
+            let pos=ui.input(|i| i.pointer.latest_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.circle_center.x == -1.0
-            && self.circle_center.y == -1.0
-        {
-            let cc = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if cc.y > 60.0 {
-                self.circle_center = cc;
+            && self.circle_center.y == -1.0{
+                self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
             }
         }
+           
+        
         if ui.input(|i| i.pointer.any_released())
             && self.circle_center.x != -1.0
             && self.circle_center.y != -1.0
@@ -464,24 +476,27 @@ impl Painting {
             painter.extend(shapes);
         }
 
-        if ui.input(|i| i.pointer.any_down())
+        if ui.input(|i| i.pointer.any_pressed()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.square_starting_point.x == -1.0
-            && self.square_starting_point.y == -1.0
-        {
-            let ssp = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if ssp.y > 60.0 {
-                self.square_starting_point = ssp;
+            && self.square_starting_point.y == -1.0{
+                self.square_starting_point=pos.unwrap();
             }
         }
-        if ui.input(|i| i.pointer.any_released())
+
+        if ui.input(|i| i.pointer.any_released()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.square_ending_point.x == -1.0
             && self.square_ending_point.y == -1.0
-        {
-            let sep = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if sep.y > 60.0 {
-                self.square_ending_point = sep;
+            && self.square_starting_point.x != -1.0
+            && self.square_starting_point.y != -1.0{
+                self.square_ending_point=pos.unwrap();
             }
         }
+
+       
 
         if self.square_starting_point.x != -1.0
             && self.square_starting_point.y != -1.0
@@ -536,24 +551,28 @@ impl Painting {
             painter.extend(shapes);
         }
 
-        if ui.input(|i| i.pointer.any_down())
+        if ui.input(|i| i.pointer.any_pressed()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.text_starting_position.x == -1.0
-            && self.text_starting_position.y == -1.0
-        {
-            let tsp = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if tsp.y > 60.0 {
-                self.text_starting_position = tsp;
+            && self.text_starting_position.y == -1.0{
+                self.text_starting_position=pos.unwrap();
             }
         }
-        if ui.input(|i| i.pointer.any_released())
+
+        if ui.input(|i| i.pointer.any_released()){
+            let pos=ui.input(|i| i.pointer.interact_pos());
+            if pos.is_none()==false && response.rect.contains(pos.unwrap())
             && self.text_ending_position.x == -1.0
             && self.text_ending_position.y == -1.0
-        {
-            let tep = ui.input(|i| i.pointer.interact_pos().unwrap());
-            if tep.y > 60.0 {
-                self.text_ending_position = tep;
+            && self.text_starting_position.x != -1.0
+            && self.text_starting_position.y != -1.0{
+                self.text_ending_position=pos.unwrap();
             }
         }
+
+       
+        
 
         if self.text_starting_position.x != -1.0
             && self.text_starting_position.y != -1.0
