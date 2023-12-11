@@ -31,7 +31,14 @@ pub mod first_window {
                     self.screenshots_taken[i].width() as _,
                     self.screenshots_taken[i].height() as _,
                 ];
-                let pixels = self.screenshots_taken[i].as_flat_samples();
+                let mut pixels = self.screenshots_taken[i].as_flat_samples_mut();
+                // for mut p in pixels.as_mut_slice().into_iter(){
+                //     if *p>250{
+                //        *p= 10;
+                        
+                //     }
+                   
+                // }
                 let immagine: egui::ColorImage =
                     egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
@@ -118,6 +125,7 @@ pub mod first_window {
         }
 
         pub fn load_image(&mut self, ui: &mut egui::Ui) {
+            println!("{:?}", self.image_texture.clone().unwrap().as_raw());
             let img = ui.ctx().load_texture(
                 "ao",
                 ImageData::from(self.image_texture.clone().unwrap()),
