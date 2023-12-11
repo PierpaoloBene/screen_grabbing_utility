@@ -98,7 +98,7 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
-                screen_to_show:None,
+                screen_to_show: None,
                 image_name: None,
                 image_format: Some(ImageFormat::Jpg),
                 image_format_string: "jpg".to_string(),
@@ -132,7 +132,7 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
-    screen_to_show:Option<u32>,
+    screen_to_show: Option<u32>,
     image_name: Option<String>,
     image_format: Option<ImageFormat>,
     image_format_string: String,
@@ -162,10 +162,8 @@ struct FirstWindow {
     height: f32,
 }
 
-
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
-        
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
@@ -198,7 +196,6 @@ impl eframe::App for FirstWindow {
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
-                
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
@@ -300,27 +297,29 @@ impl eframe::App for FirstWindow {
                     }
                 });
                 ui.add_space(150.0);
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui|{
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     ui.label(RichText::new("CTRL+D to take a screenshot").size(30.0));
-                   
-               });
+                });
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap()*2.0);  
-            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());          
+            frame.set_window_size(frame.info().window_info.monitor_size.unwrap() * 2.0);
+            //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-            
+
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
                         .fixed_pos(egui::pos2(0.0, 0.0))
                         .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui|{
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                                 ui.label(RichText::new("ESC to go back").size(15.0));
-                               
-                           });
-                           
+                            });
+                            if ui.input(|i| i.pointer.is_moving()) {
+                                // println!("{:?}", self.mouse_pos);
+                                println!("{:?}", DisplayInfo::from_point(ui.input(|i| i.pointer.hover_pos().unwrap().x as i32),ui.input(|i| i.pointer.hover_pos().unwrap().y as i32)).unwrap());
+                            }
+
                             if ui.input(|i| {
                                 i.pointer.any_down()
                                     && self.mouse_pos.unwrap()[0] == -1.0
@@ -328,7 +327,14 @@ impl eframe::App for FirstWindow {
                             }) {
                                 println!("salvo pressione");
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                                self.screen_to_show=Some(DisplayInfo::from_point(self.mouse_pos.unwrap().x as i32,self.mouse_pos.unwrap().y as i32).unwrap().id);
+                                self.screen_to_show = Some(
+                                    DisplayInfo::from_point(
+                                        self.mouse_pos.unwrap().x as i32,
+                                        self.mouse_pos.unwrap().y as i32,
+                                    )
+                                    .unwrap()
+                                    .id,
+                                );
                                 // println!("{:?}", self.mouse_pos);
                                 // println!("{:?}", DisplayInfo::from_point(self.mouse_pos.unwrap().x as i32,self.mouse_pos.unwrap().y as i32).unwrap());
                             }
@@ -360,8 +366,8 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 3 {
             self.selected_window = 4;
         } else if self.selected_window == 4 {
-            self.take_screenshot();           
-            self.selected_window = 5; 
+            self.take_screenshot();
+            self.selected_window = 5;
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
 
@@ -377,13 +383,11 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(self.width, self.height));
             }
 
-           
             let mut paint_btn = None;
 
             let mut text_btn = None;
             let mut save_btn = None;
             let mut save_edit_btn = None;
-            
 
             egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
@@ -606,6 +610,5 @@ impl eframe::App for FirstWindow {
                 }
             });
         }
-    
-}
+    }
 }
