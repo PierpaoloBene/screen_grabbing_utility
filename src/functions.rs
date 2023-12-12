@@ -125,7 +125,7 @@ pub mod first_window {
         }
 
         pub fn load_image(&mut self, ui: &mut egui::Ui) {
-            println!("{:?}", self.image_texture.clone().unwrap().as_raw());
+            
             let img = ui.ctx().load_texture(
                 "ao",
                 ImageData::from(self.image_texture.clone().unwrap()),
