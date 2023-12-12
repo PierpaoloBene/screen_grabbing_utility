@@ -2,6 +2,7 @@ mod post_processing;
 use crate::post_processing::PpOptions;
 use crate::post_processing::View;
 use chrono;
+use egui::CursorIcon;
 use egui::ImageData;
 use egui::Response;
 use rfd::FileDialog;
@@ -199,7 +200,7 @@ impl eframe::App for FirstWindow {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
-                        .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
+                        .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0))).on_hover_text("Ctrl+D")
                         .clicked()
                     {
                         println!("premuto +");
@@ -208,7 +209,7 @@ impl eframe::App for FirstWindow {
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
-                        .width(200.0)
+                        .width(200.0)                        
                         .selected_text(
                             RichText::new(format!("{}", self.selected_mode_string)).size(30.0),
                         )
@@ -306,15 +307,17 @@ impl eframe::App for FirstWindow {
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap() * 2.0);
             //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-
+            
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
                         .fixed_pos(egui::pos2(0.0, 0.0))
                         .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                ui.label(RichText::new("ESC to go back").size(15.0));
+                            ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
+                                ui.label(RichText::new("ESC to go back").size(25.0));
                             });
+                            ui.ctx()
+                            .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
                             if ui.input(|i| i.pointer.is_moving()) {
                                 // println!("{:?}", self.mouse_pos);
                                 println!("{:?}", DisplayInfo::from_point(ui.input(|i| i.pointer.hover_pos().unwrap().x as i32),ui.input(|i| i.pointer.hover_pos().unwrap().y as i32)).unwrap());
