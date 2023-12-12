@@ -33,7 +33,7 @@ Aggiustamenti:
 - [x] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
 - [] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
 - [ ] Capire come funziona la selected window di buffer
-- [ ] Aggiungere testo : “premere ctrl+D per fare screen” 
+- [x] Aggiungere testo : “premere ctrl+D per fare screen” 
 
 
 Modulare:
