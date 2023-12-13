@@ -1,6 +1,7 @@
 pub mod first_window {
 
     use egui::ImageData;
+    use image::GenericImage;
     use screenshots::Screen;
 
     use crate::{FirstWindow, ModeOptions};
@@ -64,13 +65,14 @@ pub mod first_window {
                             }
                             // println!("{:?} {} {} ", self.rect_pos, self.height, self.width);
                             // println!("{} {} ", screen.display_info.width, screen.display_info.height);
-                            let image = screen.capture_area(
+                            let mut image = screen.capture_area(
                                 self.rect_pos[0] as i32,
                                 self.rect_pos[1] as i32,
                                 self.width as u32,
                                 self.height as u32,
                             );
                             if image.is_err() == false {
+                                let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
                                 self.screenshots_taken.push(image.unwrap());
                             }else{                                
                                 println!("{:?}", image);
