@@ -5,7 +5,9 @@ use chrono;
 use egui::CursorIcon;
 use egui::ImageData;
 use egui::Response;
+use image::Rgb;
 use rfd::FileDialog;
+use imageproc;
 
 mod functions;
 use functions::first_window;
@@ -109,6 +111,7 @@ fn main() -> Result<(), eframe::Error> {
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
+                image_buffer:None,
                 filepath: filepath,
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
@@ -143,6 +146,7 @@ struct FirstWindow {
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
+    image_buffer:Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     filepath: Option<PathBuf>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
@@ -464,7 +468,8 @@ impl eframe::App for FirstWindow {
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
-
+                            let caccona=imageproc::drawing::draw_hollow_circle(&self.image_buffer.clone().unwrap(), (300, 300), 18, image::Rgba([250,0,0,0]));
+                            let _=caccona.save("C:\\Users\\masci\\Desktop\\PoliTo\\Secondo_semestre\\Programmazione_di_sistema\\screen_grabbing_utility\\target\\prova.jpg");
                             let response = self
                                 .painting
                                 .ui(

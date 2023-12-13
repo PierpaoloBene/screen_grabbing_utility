@@ -1,7 +1,7 @@
 pub mod first_window {
 
     use egui::ImageData;
-    use image::GenericImage;
+   
     use screenshots::Screen;
 
     use crate::{FirstWindow, ModeOptions};
@@ -44,6 +44,7 @@ pub mod first_window {
                     egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
                 self.image_texture = Some(immagine);
+                self.image_buffer=Some(self.screenshots_taken[i].clone());
             }
         }
 
@@ -72,7 +73,7 @@ pub mod first_window {
                                 self.height as u32,
                             );
                             if image.is_err() == false {
-                                let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
+                                //let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
                                 self.screenshots_taken.push(image.unwrap());
                             }else{                                
                                 println!("{:?}", image);

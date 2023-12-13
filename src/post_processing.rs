@@ -1,4 +1,6 @@
 use egui::{emath, vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
+use image::{GenericImage, Pixel, Rgb};
+use imageproc;
 
 /// Something to view in the demo windows
 pub trait View {
@@ -121,6 +123,7 @@ impl Painting {
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
                 painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
+               
             }
         }
 
@@ -442,7 +445,6 @@ impl Painting {
             self.radius = -1.0;
             self.last_type_added.push(PpOptions::Circle);
         }
-
         self.render_elements(painter.clone(), to_screen);
 
         response
