@@ -473,7 +473,7 @@ impl eframe::App for FirstWindow {
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
-                                    &mut self.image_buffer.clone().unwrap(),
+                                    &mut self.image_buffer.as_mut().unwrap(),
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                 )
@@ -481,7 +481,7 @@ impl eframe::App for FirstWindow {
                                 .unwrap();
 
                             if save_btn.unwrap().clicked() {
-
+              
                                 self.image_name = Some(
                                     chrono::offset::Local::now()
                                         .format("%Y-%m-%d_%H_%M_%S")
@@ -489,12 +489,7 @@ impl eframe::App for FirstWindow {
                                 );
 
                                 let screens = Screen::all().unwrap();
-                                let mod_img = screens[0].capture_area(
-                                    response.rect.left_top()[0] as i32,
-                                    response.rect.left_top()[1] as i32 + 50,
-                                    response.rect.width() as u32,
-                                    response.rect.height() as u32,
-                                );
+                                let mod_img = self.image_buffer.clone() ;
 
                                 // for screen in screens {
                                 //     let mod_img = screen.capture_area(
@@ -504,7 +499,7 @@ impl eframe::App for FirstWindow {
                                 //         response.rect.height() as u32,
                                 //     );
 
-                                if mod_img.is_err() == false {
+                                if mod_img.is_none() == false {
                                     if self.current_os == "windows" {
                                         let _ = mod_img.unwrap().save(format!(
                                             "{}\\{}.{}",

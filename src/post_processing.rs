@@ -38,6 +38,8 @@ pub enum PpOptions {
 pub struct Painting {
     last_type_added: Vec<PpOptions>,
 
+    shift_squares: Option<Pos2>,
+    mult_factor: Option<(f32,f32)>,
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
@@ -70,7 +72,8 @@ impl Default for Painting {
     fn default() -> Self {
         Self {
             last_type_added: Vec::new(),
-
+            shift_squares: None,
+            mult_factor: None,
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
@@ -150,12 +153,8 @@ impl Painting {
                     let y_max = rect.y_range().max;
                     
                     if !self.linea_scritta {
-                    //    for i in x_min..x_max{
-                    //        for j in y_min..y_max{
-                    //             self.lines_pixels.push(Pos2::new(i as f32,j as f32));
-                    //        }
-                           
-                    //    }
+                       
+                        //println!("chiamo calc: {:?} , {:?}", Pos2::new(x_min,y_min),Pos2::new(x_max,y_max));
                         self.lines_pixels = self.calc_pixels_rect(Pos2::new(x_min, y_min), Pos2::new(x_max, y_max), stroke.width);
                         self.linea_scritta = true;
                     }
@@ -501,6 +500,11 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
+       // println!("{:?} {:?}", response.rect.min, response.rect.max);
+       // println!("{:?} {:?}", image_buffer.width(), image_buffer.height());
+        self.mult_factor = Some((image_buffer.width() as f32/response.rect.width(),image_buffer.height() as f32/response.rect.height()));
+
+        
         image.paint_at(ui, response.rect);
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
@@ -511,14 +515,24 @@ impl Painting {
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
         self.render_elements(painter.clone(), to_screen);
+        if ui.input(|i| i.pointer.is_moving()){
+            // println!("{:?}" ,ui.input(|i| i.pointer.interact_pos()));
+            // println!("{:?}" ,response.interact_pointer_pos());
+            // println!("{:?}" ,response.rect);
+        }
 
         if ui.input(|i| i.pointer.any_pressed()) {
-            let pos = ui.input(|i| i.pointer.interact_pos());
+            let pos = response.interact_pointer_pos();
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
                 && self.square_starting_point.x == -1.0
                 && self.square_starting_point.y == -1.0
-            {
+            {   
+     
+                println!("pos x :{:?}", pos.unwrap().x);
+                println!("pos y :{:?}", pos.unwrap().y);
+                println!("rect :{:?}", response.rect);
+                self.shift_squares = Some(Pos2::new(response.rect.min.x , response.rect.min.y )) ;
                 self.square_starting_point = pos.unwrap();
             }
         }
@@ -559,11 +573,11 @@ impl Painting {
             let image_pixel = image_buffer.get_pixel_mut(p.x as u32, p.y as u32);
 
             *image_pixel = image::Rgba([0 as u8, 255 as u8, 0 as u8, 255]);
-            println!("line position: [{},{}]", p.x,p.y);
+            
         
         }
 
-        image_buffer.save("./target/immaginona.jpg");
+  
 
         response
     }
@@ -599,6 +613,7 @@ impl Painting {
                 && self.text_starting_position.x == -1.0
                 && self.text_starting_position.y == -1.0
             {
+            
                 self.text_starting_position = pos.unwrap();
             }
         }
@@ -647,12 +662,15 @@ impl Painting {
 
     pub fn calc_pixels_rect(&mut self,start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
         let mut pixels: Vec<Pos2> = Vec::new();
+        //println!("chiamata calc: {:?} , {:?}", start, end);
         
-        let min_x = start.x.min(end.x) ;
-        let max_x = start.x.max(end.x) ;
-        let min_y = start.y.min(end.y) ;
-        let max_y = start.y.max(end.y) ;
+        let min_x = start.x.min(end.x) - self.shift_squares.unwrap().x;
+        let max_x = start.x.max(end.x) - self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
+        let min_y = start.y.min(end.y) - self.shift_squares.unwrap().y ;
+        let max_y = start.y.max(end.y) - self.shift_squares.unwrap().y * self.mult_factor.unwrap().1;
         
+        println!("min pos{:?} {:?} ", min_x,min_y);
+        print!("max pos :{:?} {:?}", max_x, max_y);
         // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
         for x in (min_x as i32 -(thickness/2.0)  as i32)..=(max_x as i32 +(thickness/2.0) as i32) {
             for i in 0..=((thickness/2.0) as i32) {
