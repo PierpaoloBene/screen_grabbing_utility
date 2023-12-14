@@ -1,5 +1,5 @@
 use egui::{emath, vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
-use image::{GenericImage, Pixel, Rgb};
+use image::{GenericImage, Pixel, Rgb, RgbaImage};
 use imageproc;
 
 /// Something to view in the demo windows
@@ -8,6 +8,7 @@ pub trait View {
         &mut self,
         ui: &mut egui::Ui,
         image: egui::Image,
+        image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
         opt: PpOptions,
     ) -> Option<egui::Response>;
@@ -40,7 +41,8 @@ pub struct Painting {
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
-
+    linea_scritta: bool,
+    lines_pixels: Vec<Pos2>,
     starting_point: Pos2,
     final_point: Pos2,
     arrows: Vec<(Pos2, Pos2, Stroke)>,
@@ -71,6 +73,9 @@ impl Default for Painting {
 
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+
+            linea_scritta: false,
+            lines_pixels: Vec::new(),
 
             starting_point: Pos2 { x: -1.0, y: -1.0 },
             final_point: Pos2 { x: -1.0, y: -1.0 },
@@ -106,6 +111,14 @@ impl Painting {
                 .filter(|line| line.0.len() >= 2)
                 .map(|line| {
                     let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
+                    // let (vecio, stroke) = line.clone();
+                    // if !self.linea_scritta {
+                    //     for posizione in vecio {
+                    //         self.lines_pixels.push(posizione);
+                    //     }
+                    //     self.linea_scritta = true;
+                    // }
+
                     egui::Shape::line(points, line.1)
                 });
             painter.extend(shapes);
@@ -123,12 +136,29 @@ impl Painting {
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
                 painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
-               
             }
         }
 
         if !self.squares.is_empty() || self.squares.len() == 0 {
             for point in self.squares.clone().into_iter() {
+                let (rect,stroke) = point;
+                    
+                    let x_min = rect.x_range().min;
+                    let x_max = rect.x_range().max;
+                      
+                    let y_min = rect.y_range().min;
+                    let y_max = rect.y_range().max;
+                    
+                    if !self.linea_scritta {
+                    //    for i in x_min..x_max{
+                    //        for j in y_min..y_max{
+                    //             self.lines_pixels.push(Pos2::new(i as f32,j as f32));
+                    //        }
+                           
+                    //    }
+                        self.lines_pixels = self.calc_pixels_rect(Pos2::new(x_min, y_min), Pos2::new(x_max, y_max), stroke.width);
+                        self.linea_scritta = true;
+                    }
                 painter.rect(point.0, 1.0, egui::Color32::TRANSPARENT, point.1);
             }
         }
@@ -274,7 +304,13 @@ impl Painting {
         }
     }
 
-    pub fn ui_content(&mut self, ui: &mut Ui, image: egui::Image, dim: Vec2) -> egui::Response {
+    pub fn ui_content(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
+        dim: Vec2,
+    ) -> egui::Response {
         println!("In ui_content");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -316,7 +352,7 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
-        
+
         response
     }
 
@@ -454,6 +490,7 @@ impl Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::Image,
+        image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
     ) -> egui::Response {
         println!("In ui_content squares");
@@ -516,6 +553,17 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
+
+
+        for p in self.lines_pixels.clone() {
+            let image_pixel = image_buffer.get_pixel_mut(p.x as u32, p.y as u32);
+
+            *image_pixel = image::Rgba([0 as u8, 255 as u8, 0 as u8, 255]);
+            println!("line position: [{},{}]", p.x,p.y);
+        
+        }
+
+        image_buffer.save("./target/immaginona.jpg");
 
         response
     }
@@ -595,7 +643,40 @@ impl Painting {
 
         response
     }
+
+
+    pub fn calc_pixels_rect(&mut self,start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
+        let mut pixels: Vec<Pos2> = Vec::new();
+        
+        let min_x = start.x.min(end.x) ;
+        let max_x = start.x.max(end.x) ;
+        let min_y = start.y.min(end.y) ;
+        let max_y = start.y.max(end.y) ;
+        
+        // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
+        for x in (min_x as i32 -(thickness/2.0)  as i32)..=(max_x as i32 +(thickness/2.0) as i32) {
+            for i in 0..=((thickness/2.0) as i32) {
+                pixels.push(Pos2 { x: x as f32, y: min_y - i as f32 });
+                pixels.push(Pos2 { x: x as f32, y: max_y + i as f32 });
+            }
+        }
+        
+        // Calcolo delle posizioni del contorno verticale sinistro e destro
+        for y in ((min_y  as i32 )..=(max_y  as i32 )) {
+            for i in 0..=((thickness.ceil()/2.0) as i32) {
+                pixels.push(Pos2 { x: min_x - i as f32, y: y as f32 });
+                pixels.push(Pos2 { x: max_x + i as f32, y: y as f32 });
+            }
+        }
+
+
+        pixels
+    }
+
 }
+
+       
+
 impl Demo for Painting {
     fn name(&self) -> &'static str {
         "🖊 Painting"
@@ -607,6 +688,7 @@ impl View for Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::widgets::Image,
+        image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
         opt: PpOptions,
     ) -> Option<egui::Response> {
@@ -618,7 +700,7 @@ impl View for Painting {
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        resp = Some(self.ui_content(ui, image, dim));
+                        resp = Some(self.ui_content(ui, image, image_buffer, dim));
                     });
                 });
             }
@@ -645,7 +727,7 @@ impl View for Painting {
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        resp = Some(self.ui_content_squares(ui, image, dim));
+                        resp = Some(self.ui_content_squares(ui, image, image_buffer,dim));
                     });
                 });
             }

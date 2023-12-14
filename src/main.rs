@@ -468,13 +468,12 @@ impl eframe::App for FirstWindow {
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
-                            let caccona=imageproc::drawing::draw_hollow_circle(&self.image_buffer.clone().unwrap(), (300, 300), 18, image::Rgba([250,0,0,0]));
-                            let _=caccona.save("C:\\Users\\masci\\Desktop\\PoliTo\\Secondo_semestre\\Programmazione_di_sistema\\screen_grabbing_utility\\target\\prova.jpg");
-                            let response = self
+                       let response = self
                                 .painting
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    &mut self.image_buffer.clone().unwrap(),
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                 )
@@ -482,6 +481,7 @@ impl eframe::App for FirstWindow {
                                 .unwrap();
 
                             if save_btn.unwrap().clicked() {
+
                                 self.image_name = Some(
                                     chrono::offset::Local::now()
                                         .format("%Y-%m-%d_%H_%M_%S")
