@@ -532,7 +532,7 @@ impl Painting {
                 println!("pos x :{:?}", pos.unwrap().x);
                 println!("pos y :{:?}", pos.unwrap().y);
                 println!("rect :{:?}", response.rect);
-                self.shift_squares = Some(Pos2::new(response.rect.min.x , response.rect.min.y )) ;
+                self.shift_squares = Some(Pos2::new(response.rect.left_top().x , response.rect.left_top().y )) ;
                 self.square_starting_point = pos.unwrap();
             }
         }
