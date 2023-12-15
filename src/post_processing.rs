@@ -204,7 +204,7 @@ impl Painting {
         self.last_type_added.pop();
     }
 
-    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
+    pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions, image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> egui::Response {
         println!("In ui_control");
         let mut res = None;
         match opt {
@@ -255,6 +255,7 @@ impl Painting {
             PpOptions::Circle => {
                 println!("In ui_control circles");
                 let mut back_btn = None;
+                let mut save_btn=None;
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
                     ui.separator();
@@ -264,12 +265,27 @@ impl Painting {
                             self.undo();
                         }
                     }
+                    
+                    save_btn=Some(ui.add(egui::Button::new("Finish editing")));
+                    if save_btn.unwrap().clicked() && !self.circles_pixels.is_empty(){
+                        for p in self.circles_pixels.clone() {
+                            for pi in p.0{
+                                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
+                                
+                                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                            }
+                            
+                        }
+                    }
+                    
+
                 })
                 .response
             }
             PpOptions::Square => {
                 println!("In ui_control squares");
                 let mut back_btn = None;
+                let mut save_btn=None;
                 ui.horizontal(|ui: &mut Ui| {
                     egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
                     ui.separator();
@@ -277,6 +293,18 @@ impl Painting {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
+                        }
+                    }
+                    save_btn=Some(ui.add(egui::Button::new("Finish editing")));
+                    if save_btn.unwrap().clicked() && !self.circles_pixels.is_empty(){
+                        for p in self.squares_pixels.clone() {
+                            for pi in p.0{
+                                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
+                
+                                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                
+                            }
+                            
                         }
                     }
                 })
@@ -502,14 +530,7 @@ impl Painting {
         }
         self.render_elements(painter.clone(), to_screen);
 
-        for p in self.circles_pixels.clone() {
-            for pi in p.0{
-                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
-                
-                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
-            }
-            
-        }
+        
 
 
         response
@@ -592,15 +613,7 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
-        for p in self.squares_pixels.clone() {
-            for pi in p.0{
-                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
-
-                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
-
-            }
-            
-        }
+        
 
         response
     }
@@ -765,7 +778,7 @@ impl View for Painting {
 
         match opt {
             PpOptions::Painting => {
-                self.ui_control(ui, opt);
+                self.ui_control(ui, opt, image_buffer);
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -774,7 +787,7 @@ impl View for Painting {
                 });
             }
             PpOptions::Arrow => {
-                self.ui_control(ui, opt);
+                self.ui_control(ui, opt,image_buffer);
                 ui.label("Paint an arrow with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -783,7 +796,7 @@ impl View for Painting {
                 });
             }
             PpOptions::Circle => {
-                self.ui_control(ui, opt);
+                self.ui_control(ui, opt,image_buffer);
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -792,7 +805,7 @@ impl View for Painting {
                 });
             }
             PpOptions::Square => {
-                self.ui_control(ui, opt);
+                self.ui_control(ui, opt, image_buffer);
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -801,7 +814,7 @@ impl View for Painting {
                 });
             }
             PpOptions::Text => {
-                self.ui_control(ui, opt);
+                self.ui_control(ui, opt, image_buffer);
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
