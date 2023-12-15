@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use egui::{emath, vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use image::{GenericImage, Pixel, Rgb, RgbaImage};
 use imageproc;
@@ -38,13 +40,13 @@ pub enum PpOptions {
 pub struct Painting {
     last_type_added: Vec<PpOptions>,
 
-    shift_squares: Option<Pos2>,
-    mult_factor: Option<(f32,f32)>,
+    
+    mult_factor: Option<(f32, f32)>,
     /// in 0-1 normalized coordinates
     lines: Vec<(Vec<Pos2>, Stroke)>,
     lines_stroke: Stroke,
-    linea_scritta: bool,
-    lines_pixels: Vec<Pos2>,
+    
+    
     starting_point: Pos2,
     final_point: Pos2,
     arrows: Vec<(Pos2, Pos2, Stroke)>,
@@ -54,11 +56,14 @@ pub struct Painting {
     radius: f32,
     circles: Vec<(Pos2, f32, Stroke)>,
     circles_stroke: Stroke,
+    circles_pixels: Vec<(Vec<Pos2>, Color32)>,
 
     square_starting_point: Pos2,
     square_ending_point: Pos2,
     squares_stroke: Stroke,
     squares: Vec<(Rect, Stroke)>,
+    squares_pixels: Vec<(Vec<Pos2>, Color32)>,
+    shift_squares: Option<Pos2>,
 
     text_starting_position: Pos2,
     text_ending_position: Pos2,
@@ -72,13 +77,13 @@ impl Default for Painting {
     fn default() -> Self {
         Self {
             last_type_added: Vec::new(),
-            shift_squares: None,
+            
             mult_factor: None,
             lines: Default::default(),
             lines_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
-            linea_scritta: false,
-            lines_pixels: Vec::new(),
+           
+            
 
             starting_point: Pos2 { x: -1.0, y: -1.0 },
             final_point: Pos2 { x: -1.0, y: -1.0 },
@@ -89,11 +94,14 @@ impl Default for Painting {
             radius: -1.0,
             circles: Vec::new(),
             circles_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
+            circles_pixels: Vec::new(),
 
             square_starting_point: Pos2 { x: -1.0, y: -1.0 },
             square_ending_point: Pos2 { x: -1.0, y: -1.0 },
             squares_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
             squares: Vec::new(),
+            squares_pixels: Vec::new(),
+            shift_squares: None,
 
             text_starting_position: Pos2 { x: -1.0, y: -1.0 },
             text_ending_position: Pos2 { x: -1.0, y: -1.0 },
@@ -139,25 +147,28 @@ impl Painting {
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
                 painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
+                let pixels=self.calc_pixels_circle(point.0, point.1, point.2.width);
+                self.circles_pixels.push((pixels, point.2.color));
             }
         }
 
         if !self.squares.is_empty() || self.squares.len() == 0 {
             for point in self.squares.clone().into_iter() {
-                let (rect,stroke) = point;
-                    
-                    let x_min = rect.x_range().min;
-                    let x_max = rect.x_range().max;
-                      
-                    let y_min = rect.y_range().min;
-                    let y_max = rect.y_range().max;
-                    
-                    if !self.linea_scritta {
-                       
-                        //println!("chiamo calc: {:?} , {:?}", Pos2::new(x_min,y_min),Pos2::new(x_max,y_max));
-                        self.lines_pixels = self.calc_pixels_rect(Pos2::new(x_min, y_min), Pos2::new(x_max, y_max), stroke.width);
-                        self.linea_scritta = true;
-                    }
+                let (rect, stroke) = point;
+
+                let x_min = rect.x_range().min;
+                let x_max = rect.x_range().max;
+
+                let y_min = rect.y_range().min;
+                let y_max = rect.y_range().max;
+
+                let pixels=self.calc_pixels_rect(
+                    Pos2::new(x_min, y_min),
+                    Pos2::new(x_max, y_max),
+                    stroke.width,
+                );
+                self.squares_pixels.push((pixels, point.1.color));
+
                 painter.rect(point.0, 1.0, egui::Color32::TRANSPARENT, point.1);
             }
         }
@@ -424,6 +435,7 @@ impl Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::Image,
+        image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
     ) -> egui::Response {
         println!("In ui_content circles");
@@ -434,6 +446,10 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
+        self.mult_factor = Some((
+            image_buffer.width() as f32 / response.rect.width(),
+            image_buffer.height() as f32 / response.rect.height(),
+        ));
         image.paint_at(ui, response.rect);
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
@@ -479,8 +495,22 @@ impl Painting {
             self.circle_center = Pos2 { x: -1.0, y: -1.0 };
             self.radius = -1.0;
             self.last_type_added.push(PpOptions::Circle);
+            self.shift_squares = Some(Pos2::new(
+                response.rect.left_top().x,
+                response.rect.left_top().y,
+            ));
         }
         self.render_elements(painter.clone(), to_screen);
+
+        for p in self.circles_pixels.clone() {
+            for pi in p.0{
+                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
+                
+                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+            }
+            
+        }
+
 
         response
     }
@@ -500,11 +530,11 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
-       // println!("{:?} {:?}", response.rect.min, response.rect.max);
-       // println!("{:?} {:?}", image_buffer.width(), image_buffer.height());
-        self.mult_factor = Some((image_buffer.width() as f32/response.rect.width(),image_buffer.height() as f32/response.rect.height()));
+        self.mult_factor = Some((
+            image_buffer.width() as f32 / response.rect.width(),
+            image_buffer.height() as f32 / response.rect.height(),
+        ));
 
-        
         image.paint_at(ui, response.rect);
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
@@ -515,11 +545,6 @@ impl Painting {
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
         self.render_elements(painter.clone(), to_screen);
-        if ui.input(|i| i.pointer.is_moving()){
-            // println!("{:?}" ,ui.input(|i| i.pointer.interact_pos()));
-            // println!("{:?}" ,response.interact_pointer_pos());
-            // println!("{:?}" ,response.rect);
-        }
 
         if ui.input(|i| i.pointer.any_pressed()) {
             let pos = response.interact_pointer_pos();
@@ -527,12 +552,11 @@ impl Painting {
                 && response.rect.contains(pos.unwrap())
                 && self.square_starting_point.x == -1.0
                 && self.square_starting_point.y == -1.0
-            {   
-     
-                println!("pos x :{:?}", pos.unwrap().x);
-                println!("pos y :{:?}", pos.unwrap().y);
-                println!("rect :{:?}", response.rect);
-                self.shift_squares = Some(Pos2::new(response.rect.left_top().x , response.rect.left_top().y )) ;
+            {
+                self.shift_squares = Some(Pos2::new(
+                    response.rect.left_top().x,
+                    response.rect.left_top().y,
+                ));
                 self.square_starting_point = pos.unwrap();
             }
         }
@@ -568,16 +592,15 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
+        for p in self.squares_pixels.clone() {
+            for pi in p.0{
+                let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
 
-        for p in self.lines_pixels.clone() {
-            let image_pixel = image_buffer.get_pixel_mut(p.x as u32, p.y as u32);
+                *image_pixel = image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
 
-            *image_pixel = image::Rgba([0 as u8, 255 as u8, 0 as u8, 255]);
+            }
             
-        
         }
-
-  
 
         response
     }
@@ -613,7 +636,6 @@ impl Painting {
                 && self.text_starting_position.x == -1.0
                 && self.text_starting_position.y == -1.0
             {
-            
                 self.text_starting_position = pos.unwrap();
             }
         }
@@ -659,41 +681,70 @@ impl Painting {
         response
     }
 
-
-    pub fn calc_pixels_rect(&mut self,start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
+    pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
         let mut pixels: Vec<Pos2> = Vec::new();
-        //println!("chiamata calc: {:?} , {:?}", start, end);
-        
+
         let min_x = start.x.min(end.x) - self.shift_squares.unwrap().x;
-        let max_x = start.x.max(end.x) - self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
-        let min_y = start.y.min(end.y) - self.shift_squares.unwrap().y ;
-        let max_y = start.y.max(end.y) - self.shift_squares.unwrap().y * self.mult_factor.unwrap().1;
-        
-        println!("min pos{:?} {:?} ", min_x,min_y);
-        print!("max pos :{:?} {:?}", max_x, max_y);
+        let max_x =
+            start.x.max(end.x) - self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
+        let min_y = start.y.min(end.y) - self.shift_squares.unwrap().y;
+        let max_y =
+            start.y.max(end.y) - self.shift_squares.unwrap().y * self.mult_factor.unwrap().1;
+
         // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
-        for x in (min_x as i32 -(thickness/2.0)  as i32)..=(max_x as i32 +(thickness/2.0) as i32) {
-            for i in 0..=((thickness/2.0) as i32) {
-                pixels.push(Pos2 { x: x as f32, y: min_y - i as f32 });
-                pixels.push(Pos2 { x: x as f32, y: max_y + i as f32 });
-            }
-        }
-        
-        // Calcolo delle posizioni del contorno verticale sinistro e destro
-        for y in ((min_y  as i32 )..=(max_y  as i32 )) {
-            for i in 0..=((thickness.ceil()/2.0) as i32) {
-                pixels.push(Pos2 { x: min_x - i as f32, y: y as f32 });
-                pixels.push(Pos2 { x: max_x + i as f32, y: y as f32 });
+        for x in
+            (min_x as i32 - (thickness / 2.0) as i32)..=(max_x as i32 + (thickness / 2.0) as i32)
+        {
+            for i in 0..=((thickness / 2.0) as i32) {
+                pixels.push(Pos2 {
+                    x: x as f32,
+                    y: min_y - i as f32,
+                });
+                pixels.push(Pos2 {
+                    x: x as f32,
+                    y: max_y + i as f32,
+                });
             }
         }
 
+        // Calcolo delle posizioni del contorno verticale sinistro e destro
+        for y in ((min_y as i32)..=(max_y as i32)) {
+            for i in 0..=((thickness.ceil() / 2.0) as i32) {
+                pixels.push(Pos2 {
+                    x: min_x - i as f32,
+                    y: y as f32,
+                });
+                pixels.push(Pos2 {
+                    x: max_x + i as f32,
+                    y: y as f32,
+                });
+            }
+        }
 
         pixels
     }
 
+    pub fn calc_pixels_circle(&mut self, center: Pos2, radius: f32, thickness: f32) -> Vec<Pos2> {
+        let mut points = Vec::new();
+    
+        let num_points = 10000; // Numero di punti per approssimare la circonferenza
+        //thickness=100.0;
+        let center_x=center.x-self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
+        let center_y=center.y-self.shift_squares.unwrap().y *self.mult_factor.unwrap().1;
+        for t in 0..(thickness*1.5) as i32{
+            for i in 0..num_points {
+                let angle = 2.0 * PI * (i as f32) / (num_points as f32);
+                let x = center_x + (radius - t as f32/ 2.0) * angle.cos();
+                let y = center_y + (radius - t as f32 / 2.0) * angle.sin();
+                let point = Pos2 { x, y };
+                points.push(point);
+            }
+        }
+        
+    
+        points
+    }
 }
-
-       
 
 impl Demo for Painting {
     fn name(&self) -> &'static str {
@@ -736,7 +787,7 @@ impl View for Painting {
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        resp = Some(self.ui_content_circles(ui, image, dim));
+                        resp = Some(self.ui_content_circles(ui, image, image_buffer, dim));
                     });
                 });
             }
@@ -745,7 +796,7 @@ impl View for Painting {
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        resp = Some(self.ui_content_squares(ui, image, image_buffer,dim));
+                        resp = Some(self.ui_content_squares(ui, image, image_buffer, dim));
                     });
                 });
             }
