@@ -457,7 +457,7 @@ impl eframe::App for FirstWindow {
 
                     match self.loading_state {
                         LoadingState::Loaded => {
-                            println!("fff");
+            
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);

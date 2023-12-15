@@ -205,7 +205,8 @@ impl Painting {
     }
 
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions, image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> egui::Response {
-        println!("In ui_control");
+       
+       // println!("In ui_control");
         let mut res = None;
         match opt {
             PpOptions::Painting => {
@@ -268,6 +269,7 @@ impl Painting {
                     
                     save_btn=Some(ui.add(egui::Button::new("Finish editing")));
                     if save_btn.unwrap().clicked() && !self.circles_pixels.is_empty(){
+                        
                         for p in self.circles_pixels.clone() {
                             for pi in p.0{
                                 let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
@@ -283,7 +285,7 @@ impl Painting {
                 .response
             }
             PpOptions::Square => {
-                println!("In ui_control squares");
+                //println!("In ui_control squares");
                 let mut back_btn = None;
                 let mut save_btn=None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -296,7 +298,7 @@ impl Painting {
                         }
                     }
                     save_btn=Some(ui.add(egui::Button::new("Finish editing")));
-                    if save_btn.unwrap().clicked() && !self.circles_pixels.is_empty(){
+                    if save_btn.unwrap().clicked() && !self.squares_pixels.is_empty(){
                         for p in self.squares_pixels.clone() {
                             for pi in p.0{
                                 let image_pixel = image_buffer.get_pixel_mut(pi.x as u32, pi.y as u32);
@@ -311,7 +313,7 @@ impl Painting {
                 .response
             }
             PpOptions::Text => {
-                println!("In ui_control texts");
+               // println!("In ui_control texts");
                 let mut write_btn = None;
                 let mut back_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -349,7 +351,7 @@ impl Painting {
         image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content");
+        //println!("In ui_content");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -359,6 +361,9 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
+        println!("response rect left top x : {}", response.rect.left_top().x);
+        println!("response rect left top y : {}", response.rect.left_top().y);
+        
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -466,7 +471,7 @@ impl Painting {
         image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content circles");
+       // println!("In ui_content circles");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -478,6 +483,8 @@ impl Painting {
             image_buffer.width() as f32 / response.rect.width(),
             image_buffer.height() as f32 / response.rect.height(),
         ));
+     
+        
         image.paint_at(ui, response.rect);
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
@@ -527,6 +534,7 @@ impl Painting {
                 response.rect.left_top().x,
                 response.rect.left_top().y,
             ));
+
         }
         self.render_elements(painter.clone(), to_screen);
 
@@ -543,7 +551,7 @@ impl Painting {
         image_buffer: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content squares");
+        //println!("In ui_content squares");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -557,7 +565,9 @@ impl Painting {
         ));
 
         image.paint_at(ui, response.rect);
+        
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        println!("mouse pos: {:?}", mouse_pos);
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
             && response.rect.y_range().contains(mouse_pos.unwrap().y))
@@ -569,11 +579,16 @@ impl Painting {
 
         if ui.input(|i| i.pointer.any_pressed()) {
             let pos = response.interact_pointer_pos();
+
+           
             if pos.is_none() == false
+    
                 && response.rect.contains(pos.unwrap())
                 && self.square_starting_point.x == -1.0
                 && self.square_starting_point.y == -1.0
             {
+                println!("posizione in cui ho premuto: {:?}", pos.unwrap());
+
                 self.shift_squares = Some(Pos2::new(
                     response.rect.left_top().x,
                     response.rect.left_top().y,
@@ -624,7 +639,7 @@ impl Painting {
         image: egui::Image,
         dim: Vec2,
     ) -> egui::Response {
-        println!("In ui_content texts");
+       // println!("In ui_content texts");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -697,13 +712,15 @@ impl Painting {
     pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
         let mut pixels: Vec<Pos2> = Vec::new();
 
-        let min_x = start.x.min(end.x) - self.shift_squares.unwrap().x;
+        let start_shifted = Pos2::new( (start.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().0, (start.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().0 ) ;
+        let end_shifted = Pos2::new((end.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().1, (end.y - self.shift_squares.unwrap().y ) * self.mult_factor.unwrap().1);
+        let min_x = start_shifted.x.min(end_shifted.x);
         let max_x =
-            start.x.max(end.x) - self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
-        let min_y = start.y.min(end.y) - self.shift_squares.unwrap().y;
+            start_shifted.x.max(end_shifted.x);
+        let min_y = start_shifted.y.min(end_shifted.y);
         let max_y =
-            start.y.max(end.y) - self.shift_squares.unwrap().y * self.mult_factor.unwrap().1;
-
+            start_shifted.y.max(end_shifted.y);
+        
         // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
         for x in
             (min_x as i32 - (thickness / 2.0) as i32)..=(max_x as i32 + (thickness / 2.0) as i32)
