@@ -712,6 +712,7 @@ impl Painting {
     pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
         let mut pixels: Vec<Pos2> = Vec::new();
 
+        let thickness_refactored = thickness *self.mult_factor.unwrap().0;
         let start_shifted = Pos2::new( (start.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().0, (start.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().0 ) ;
         let end_shifted = Pos2::new((end.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().1, (end.y - self.shift_squares.unwrap().y ) * self.mult_factor.unwrap().1);
         let min_x = start_shifted.x.min(end_shifted.x);
@@ -723,9 +724,9 @@ impl Painting {
         
         // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
         for x in
-            (min_x as i32 - (thickness / 2.0) as i32)..=(max_x as i32 + (thickness / 2.0) as i32)
+            (min_x as i32 - ((thickness_refactored / 2.0) as i32)..=(max_x as i32 + (thickness_refactored / 2.0) as i32))
         {
-            for i in 0..=((thickness / 2.0) as i32) {
+            for i in 0..=((thickness_refactored / 2.0) as i32) {
                 pixels.push(Pos2 {
                     x: x as f32,
                     y: min_y - i as f32,
@@ -739,7 +740,7 @@ impl Painting {
 
         // Calcolo delle posizioni del contorno verticale sinistro e destro
         for y in ((min_y as i32)..=(max_y as i32)) {
-            for i in 0..=((thickness.ceil() / 2.0) as i32) {
+            for i in 0..=((thickness_refactored/ 2.0) as i32) {
                 pixels.push(Pos2 {
                     x: min_x - i as f32,
                     y: y as f32,
@@ -759,13 +760,13 @@ impl Painting {
     
         let num_points = 10000; // Numero di punti per approssimare la circonferenza
         //thickness=100.0;
-        let center_x=center.x-self.shift_squares.unwrap().x * self.mult_factor.unwrap().0;
-        let center_y=center.y-self.shift_squares.unwrap().y *self.mult_factor.unwrap().1;
-        for t in 0..(thickness*1.5) as i32{
+        let center_x=(center.x-self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+        let center_y=(center.y-self.shift_squares.unwrap().y) *self.mult_factor.unwrap().1;
+        for t in 0..(thickness * self.mult_factor.unwrap().0) as i32{
             for i in 0..num_points {
                 let angle = 2.0 * PI * (i as f32) / (num_points as f32);
-                let x = center_x + (radius - t as f32/ 2.0) * angle.cos();
-                let y = center_y + (radius - t as f32 / 2.0) * angle.sin();
+                let x = center_x + ((radius*self.mult_factor.unwrap().0) - t as f32/ 2.0) * angle.cos();
+                let y = center_y + ((radius * self.mult_factor.unwrap().1) - t as f32 / 2.0) * angle.sin();
                 let point = Pos2 { x, y };
                 points.push(point);
             }
