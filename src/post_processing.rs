@@ -1,8 +1,7 @@
 use std::f32::consts::PI;
 
 use egui::{emath, vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
-use image::{GenericImage, Pixel, Rgb, RgbaImage};
-use imageproc;
+
 
 /// Something to view in the demo windows
 pub trait View {
@@ -161,15 +160,16 @@ impl Painting {
 
                 let y_min = rect.y_range().min;
                 let y_max = rect.y_range().max;
-
+                
                 let pixels=self.calc_pixels_rect(
                     Pos2::new(x_min, y_min),
                     Pos2::new(x_max, y_max),
                     stroke.width,
                 );
                 self.squares_pixels.push((pixels, point.1.color));
-
-                painter.rect(point.0, 1.0, egui::Color32::TRANSPARENT, point.1);
+                
+                painter.rect(point.0, 0.0, egui::Color32::TRANSPARENT, point.1);
+               
             }
         }
 
@@ -254,7 +254,7 @@ impl Painting {
                 .response
             }
             PpOptions::Circle => {
-                println!("In ui_control circles");
+                //println!("In ui_control circles");
                 let mut back_btn = None;
                 let mut save_btn=None;
                 ui.horizontal(|ui| {
@@ -361,8 +361,7 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
-        println!("response rect left top x : {}", response.rect.left_top().x);
-        println!("response rect left top y : {}", response.rect.left_top().y);
+
         
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
@@ -552,7 +551,7 @@ impl Painting {
         dim: Vec2,
     ) -> egui::Response {
         //println!("In ui_content squares");
-
+    
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -565,9 +564,10 @@ impl Painting {
         ));
 
         image.paint_at(ui, response.rect);
+        println!("pixel per point: {}", ui.ctx().pixels_per_point());
         
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        println!("mouse pos: {:?}", mouse_pos);
+
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
             && response.rect.y_range().contains(mouse_pos.unwrap().y))
@@ -587,7 +587,6 @@ impl Painting {
                 && self.square_starting_point.x == -1.0
                 && self.square_starting_point.y == -1.0
             {
-                println!("posizione in cui ho premuto: {:?}", pos.unwrap());
 
                 self.shift_squares = Some(Pos2::new(
                     response.rect.left_top().x,
@@ -712,6 +711,7 @@ impl Painting {
     pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
         let mut pixels: Vec<Pos2> = Vec::new();
 
+        
         let thickness_refactored = thickness *self.mult_factor.unwrap().0;
         let start_shifted = Pos2::new( (start.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().0, (start.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().0 ) ;
         let end_shifted = Pos2::new((end.x - self.shift_squares.unwrap().x ) * self.mult_factor.unwrap().1, (end.y - self.shift_squares.unwrap().y ) * self.mult_factor.unwrap().1);
@@ -724,23 +724,24 @@ impl Painting {
         
         // Calcolo delle posizioni del contorno orizzontale superiore e inferiore
         for x in
-            (min_x as i32 - ((thickness_refactored / 2.0) as i32)..=(max_x as i32 + (thickness_refactored / 2.0) as i32))
+        (min_x as i32 - ((thickness_refactored / 2.0) as i32)..=(max_x as i32 + (thickness_refactored / 2.0) as i32))
         {
-            for i in 0..=((thickness_refactored / 2.0) as i32) {
+            for i in ((-thickness_refactored/2.0) as i32)..=((thickness_refactored / 2.0) as i32) {
                 pixels.push(Pos2 {
                     x: x as f32,
-                    y: min_y - i as f32,
-                });
+                    y: min_y + i as f32,
+                }); // linea orizzontale superiore 
+
                 pixels.push(Pos2 {
                     x: x as f32,
                     y: max_y + i as f32,
-                });
+                });// linea orizzontale inferiore
             }
         }
 
         // Calcolo delle posizioni del contorno verticale sinistro e destro
         for y in ((min_y as i32)..=(max_y as i32)) {
-            for i in 0..=((thickness_refactored/ 2.0) as i32) {
+            for i in ((-thickness_refactored/2.0) as i32)..=((thickness_refactored/ 2.0) as i32) {
                 pixels.push(Pos2 {
                     x: min_x - i as f32,
                     y: y as f32,
