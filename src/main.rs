@@ -6,8 +6,8 @@ use egui::CursorIcon;
 use egui::ImageData;
 use egui::Response;
 use image::Rgb;
-use rfd::FileDialog;
 use imageproc;
+use rfd::FileDialog;
 
 mod functions;
 use functions::first_window;
@@ -111,7 +111,7 @@ fn main() -> Result<(), eframe::Error> {
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
-                image_buffer:None,
+                image_buffer: None,
                 filepath: filepath,
                 selected_mode: ModeOptions::Rectangle,
                 selected_mode_string: "Rectangle".to_string(),
@@ -130,6 +130,8 @@ fn main() -> Result<(), eframe::Error> {
                 painting: p,
                 width: 0.0,
                 height: 0.0,
+
+                pixels: Vec::new(),
             })
         }),
     )
@@ -146,7 +148,7 @@ struct FirstWindow {
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
-    image_buffer:Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
+    image_buffer: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     filepath: Option<PathBuf>,
     selected_mode: ModeOptions,
     selected_mode_string: String,
@@ -165,6 +167,8 @@ struct FirstWindow {
     painting: post_processing::Painting,
     width: f32,
     height: f32,
+
+    pixels: Vec<(Vec<Pos2>, Color32)>,
 }
 
 impl eframe::App for FirstWindow {
@@ -204,7 +208,8 @@ impl eframe::App for FirstWindow {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
                     if ui
-                        .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0))).on_hover_text("Ctrl+D")
+                        .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
+                        .on_hover_text("Ctrl+D")
                         .clicked()
                     {
                         println!("premuto +");
@@ -213,7 +218,7 @@ impl eframe::App for FirstWindow {
                     }
 
                     egui::ComboBox::from_id_source("mode_Combobox")
-                        .width(200.0)                        
+                        .width(200.0)
                         .selected_text(
                             RichText::new(format!("{}", self.selected_mode_string)).size(30.0),
                         )
@@ -311,7 +316,7 @@ impl eframe::App for FirstWindow {
             frame.set_window_size(frame.info().window_info.monitor_size.unwrap() * 2.0);
             //frame.set_window_size(frame.info().window_info.monitor_size.unwrap());
             frame.set_window_pos(egui::pos2(0.0, 0.0));
-            
+
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
@@ -321,10 +326,17 @@ impl eframe::App for FirstWindow {
                                 ui.label(RichText::new("ESC to go back").size(25.0));
                             });
                             ui.ctx()
-                            .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
+                                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
                             if ui.input(|i| i.pointer.is_moving()) {
                                 // println!("{:?}", self.mouse_pos);
-                                println!("{:?}", DisplayInfo::from_point(ui.input(|i| i.pointer.hover_pos().unwrap().x as i32),ui.input(|i| i.pointer.hover_pos().unwrap().y as i32)).unwrap());
+                                println!(
+                                    "{:?}",
+                                    DisplayInfo::from_point(
+                                        ui.input(|i| i.pointer.hover_pos().unwrap().x as i32),
+                                        ui.input(|i| i.pointer.hover_pos().unwrap().y as i32)
+                                    )
+                                    .unwrap()
+                                );
                             }
 
                             if ui.input(|i| {
@@ -457,7 +469,6 @@ impl eframe::App for FirstWindow {
 
                     match self.loading_state {
                         LoadingState::Loaded => {
-            
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
@@ -468,28 +479,47 @@ impl eframe::App for FirstWindow {
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
-                       let response = self
+                            let mut pxs = None;
+                            pxs = self
                                 .painting
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
-                                    &mut self.image_buffer.as_mut().unwrap(),
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                 )
-                                .clone()
-                                .unwrap();
+                                .clone();
+
+                            if pxs.is_none() == false {
+                                for p in pxs.clone().unwrap() {
+                                    self.pixels.push((p.0, p.1));
+                                }
+                            }
 
                             if save_btn.unwrap().clicked() {
-              
                                 self.image_name = Some(
                                     chrono::offset::Local::now()
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
 
+                                if self.pixels.is_empty() == false {
+                                    for p in self.pixels.clone() {
+                                        for pi in p.0 {
+                                            let image_pixel = self
+                                                .image_buffer
+                                                .as_mut()
+                                                .unwrap()
+                                                .get_pixel_mut(pi.x as u32, pi.y as u32);
+
+                                            *image_pixel =
+                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                                        }
+                                    }
+                                }
+
                                 let screens = Screen::all().unwrap();
-                                let mod_img = self.image_buffer.clone() ;
+                                let mod_img = self.image_buffer.clone();
 
                                 // for screen in screens {
                                 //     let mod_img = screen.capture_area(
@@ -534,14 +564,14 @@ impl eframe::App for FirstWindow {
                                 let dialog = FileDialog::new().save_file();
 
                                 let screens = Screen::all().unwrap();
-                                let mod_img = screens[0].capture_area(
-                                    response.rect.left_top()[0] as i32,
-                                    response.rect.left_top()[1] as i32 + 50,
-                                    response.rect.width() as u32,
-                                    response.rect.height() as u32,
-                                );
-
-                                if mod_img.is_err() == false {
+                                // let mod_img = screens[0].capture_area(
+                                //     response. unwrap().rect.left_top()[0] as i32,
+                                //     response.unwrap().rect.left_top()[1] as i32 + 50,
+                                //     response.unwrap().rect.width() as u32,
+                                //     response.unwrap().rect.height() as u32,
+                                // );
+                                let mod_img = self.image_buffer.clone();
+                                if mod_img.is_none() == false {
                                     let _ = mod_img.unwrap().save(format!(
                                         "{}.{}",
                                         dialog
