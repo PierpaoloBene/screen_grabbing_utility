@@ -502,7 +502,7 @@ impl eframe::App for FirstWindow {
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-                            println!("mult fact in main {:?}", self.mult_factor);
+                           
                             if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 {
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));

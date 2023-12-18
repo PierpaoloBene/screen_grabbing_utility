@@ -625,7 +625,7 @@ impl Painting {
             image.size().unwrap().x as f32 / response.rect.width(),
             image.size().unwrap().y as f32 / response.rect.height(),
         ));
-        println!("mult fact in pp {:?}", self.mult_factor);
+        
         *mult_fact=self.mult_factor;
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
