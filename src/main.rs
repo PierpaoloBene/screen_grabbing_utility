@@ -485,14 +485,16 @@ impl eframe::App for FirstWindow {
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
+                            let mut arr=None;
                             let mut id = None;
                             let mut txt = None;
                             let mut sqrs = None;
                             let mut crcls=None;
                             let mut response=None;
                             
+                            
 
-                            (pxs, id, txt, sqrs, crcls,response) = self
+                            (pxs, arr, id, txt, sqrs, crcls,response) = self
                                 .painting
                                 .ui(
                                     ui,
@@ -502,18 +504,22 @@ impl eframe::App for FirstWindow {
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-
+                            
                             if pxs.is_none() == true && id.is_none() == false && id.unwrap() == 3 {
                                 self.square_pixels = sqrs.clone().unwrap();
                             } else if pxs.is_none()==true && id.is_none()==false && id.unwrap()==2{
                                 self.circle_pixels=crcls.clone().unwrap();
                             }
-                            else if pxs.is_none() == false
+                            else if pxs.is_none() == true
+                                && arr.is_none()==false
                                 && id.is_none() == false
                                 && id.unwrap() == 1
                             {
-                                for p in pxs.clone().unwrap() {
+                                println!("salvo freccie");
+                                
+                                for p in arr.clone().unwrap() {                                    
                                     self.arrow_pixels.push((p.0, p.1));
+                                    println!("{:?}", self.arrow_pixels.len());
                                 }
                             } else if pxs.is_none() == true
                                 && id.is_none() == false
@@ -601,6 +607,7 @@ impl eframe::App for FirstWindow {
                                 }
 
                                 if self.arrow_pixels.is_empty() == false {
+                                    println!("disegno freccie");
                                     for p in self.arrow_pixels.clone() {
                                         let head = p.0[1];
                                         for pi in p.0 {

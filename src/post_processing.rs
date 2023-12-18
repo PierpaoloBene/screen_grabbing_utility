@@ -16,6 +16,7 @@ pub trait View {
         opt: PpOptions,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
+        Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
@@ -146,9 +147,9 @@ impl Painting {
                     vec2(point.1.x - point.0.x, point.1.y - point.0.y),
                     point.2,
                 );
-                // let pixels = self
-                //     .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
-                // self.arrows_pixels.push((pixels, point.2.color));
+                let pixels = self
+                    .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
+                self.arrows_pixels.push((pixels, point.2.color));
             }
         }
 
@@ -871,6 +872,7 @@ impl View for Painting {
         opt: PpOptions,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
+        Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
@@ -878,6 +880,7 @@ impl View for Painting {
         Option<Response>
     ) {
         let mut pix = None;
+        let mut arr=None;
         let mut id = None;
         let mut txt = None;
         let mut sqrs = None;
@@ -899,7 +902,7 @@ impl View for Painting {
                 ui.label("Paint an arrow with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        pix = self.ui_content_arrows(ui, image, dim);
+                        arr = self.ui_content_arrows(ui, image, dim);
                         id = Some(1);
                     });
                 });
@@ -936,6 +939,6 @@ impl View for Painting {
             }
         }
 
-        (pix, id, txt, sqrs, crcls,response)
+        (pix, arr, id, txt, sqrs, crcls,response)
     }
 }
