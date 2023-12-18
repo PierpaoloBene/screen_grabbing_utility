@@ -5,8 +5,10 @@ use chrono;
 use egui::CursorIcon;
 use egui::ImageData;
 use egui::Response;
+use egui::Rgba;
 use image::Rgb;
 use imageproc;
+use imageproc::drawing::draw_line_segment;
 use rfd::FileDialog;
 
 mod functions;
@@ -480,7 +482,8 @@ impl eframe::App for FirstWindow {
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
-                            pxs = self
+                            let mut id=None;
+                            (pxs, id) = self
                                 .painting
                                 .ui(
                                     ui,
@@ -490,7 +493,7 @@ impl eframe::App for FirstWindow {
                                 )
                                 .clone();
 
-                            if pxs.is_none() == false {
+                            if pxs.is_none() == false && id.is_none()==false && id.unwrap()!=1 {
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));
                                 }
@@ -502,6 +505,17 @@ impl eframe::App for FirstWindow {
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
+                                
+                                if id.is_none()==false && id.unwrap()==1{
+                                    println!("ciao");
+                                    for p in pxs.clone().unwrap(){
+                                        let head= p.0[1];
+                                        for pi in p.0{
+                                            imageproc::drawing::draw_line_segment_mut( self.image_buffer.as_mut().unwrap(), (pi.x, pi.y), (head.x,head.y), image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]));
+                                        }
+                                    }
+                                   
+                                }
 
                                 if self.pixels.is_empty() == false {
                                     for p in self.pixels.clone() {

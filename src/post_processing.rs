@@ -6,6 +6,8 @@ use egui::{
 };
 use imageproc::drawing::draw_line_segment;
 
+use crate::Shapes;
+
 /// Something to view in the demo windows
 pub trait View {
     fn ui(
@@ -15,7 +17,7 @@ pub trait View {
 
         dim: Vec2,
         opt: PpOptions,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>>;
+    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>);
 }
 
 /// Something to view
@@ -384,7 +386,10 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
-
+        self.mult_factor = Some((
+            image.size().unwrap().x as f32 / response.rect.width(),
+            image.size().unwrap().y as f32 / response.rect.height(),
+        ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -430,7 +435,11 @@ impl Painting {
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
             self.last_type_added.push(PpOptions::Arrow);
         }
-
+        self.shift_squares = Some(Pos2::new(
+            response.rect.left_top().x,
+            response.rect.left_top().y,
+        ));
+        
         self.render_elements(painter.clone(), to_screen);
 
         Some(self.arrows_pixels.clone())
@@ -749,20 +758,18 @@ impl Painting {
     pub fn calc_pixels_arrow(&mut self, origin: Pos2, vec: Vec2) -> Vec<Pos2> {
         let mut pixels = Vec::new();
 
+        let new_origin=Pos2::new(((origin.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0), ((origin.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1));
         let rot = Rot2::from_angle(std::f32::consts::TAU / 10.0);
         let tip_length = vec.length() / 4.0;
-        let tip = origin + vec;
+
+        let tip = new_origin + vec;
         let dir = vec.normalized();
-        let num_points=10000;
-        for i in 0..num_points{
-            let x=origin.x+ (i as f32 / num_points as f32);
-            let y=origin.y + (i as f32 / num_points as f32);
-            pixels.push(Pos2{x:x, y:y});
-        }
-        // pixels.push([origin, tip]);
-        // pixels.push([tip, tip - tip_length * (rot * dir)]);
-        // pixels.push([tip, tip - tip_length * (rot.inverse() * dir)]);
-        pixels
+       
+        pixels.push([new_origin, tip]);
+        pixels.push([tip, tip - tip_length * (rot * dir)]);
+        pixels.push([tip, tip - tip_length * (rot.inverse() * dir)]);
+        
+        pixels.concat()
     }
 
     
@@ -783,8 +790,9 @@ impl View for Painting {
 
         dim: Vec2,
         opt: PpOptions,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
+    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>) {
         let mut pix = None;
+        let mut id = None;
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -792,6 +800,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content(ui, image, dim);
+                        id=Some(0);
                     });
                 });
             }
@@ -801,6 +810,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_arrows(ui, image, dim);
+                        id=Some(1);
                     });
                 });
             }
@@ -810,6 +820,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_circles(ui, image, dim);
+                        id=Some(2);
                     });
                 });
             }
@@ -819,6 +830,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_squares(ui, image, dim);
+                        id=Some(3);
                     });
                 });
             }
@@ -828,11 +840,12 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_texts(ui, image, dim);
+                        id=Some(4);
                     });
                 });
             }
         }
 
-        pix
+        (pix,id)
     }
 }
