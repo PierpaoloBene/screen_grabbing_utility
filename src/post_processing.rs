@@ -5,7 +5,6 @@ use egui::{
     vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2,
 };
 
-
 /// Something to view in the demo windows
 pub trait View {
     fn ui(
@@ -15,7 +14,11 @@ pub trait View {
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
-    ) ->  (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>);
+    ) -> (
+        Option<Vec<(Vec<Pos2>, Color32)>>,
+        Option<i32>,
+        Option<(String, Color32, Pos2)>,
+    );
 }
 
 /// Something to view
@@ -322,7 +325,6 @@ impl Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::Image,
-
         dim: Vec2,
     ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
         //println!("In ui_content");
@@ -335,7 +337,14 @@ impl Painting {
         );
 
         image.paint_at(ui, response.rect);
-
+        self.mult_factor = Some((
+            image.size().unwrap().x as f32 / response.rect.width(),
+            image.size().unwrap().y as f32 / response.rect.height(),
+        ));
+        self.shift_squares = Some(Pos2::new(
+            response.rect.left_top().x,
+            response.rect.left_top().y,
+        ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -356,7 +365,9 @@ impl Painting {
         let mut current_line = &mut self.lines.last_mut().unwrap().0;
 
         if let Some(pointer_pos) = response.interact_pointer_pos() {
+           
             let canvas_pos = from_screen * pointer_pos;
+            
             if current_line.last() != Some(&canvas_pos) {
                 current_line.push(canvas_pos);
                 response.mark_changed();
@@ -367,8 +378,20 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
+        let mut ret = Vec::new();
 
-        Some(self.circles_pixels.clone())
+        for l in self.lines.clone().into_iter() {
+            let clr = l.1.color;
+            let mut lns=l.0.into_iter().map(|f| from_screen.inverse().transform_pos(f));
+            let mut retlns=Vec::new();
+            for mut li in lns.into_iter(){
+                let ps=Pos2::new((li.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0, (li.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1);
+                retlns.push(ps);
+            }
+            ret.push((retlns, clr));
+        }
+
+        Some(ret)
     }
 
     pub fn ui_content_arrows(
@@ -437,7 +460,7 @@ impl Painting {
             response.rect.left_top().x,
             response.rect.left_top().y,
         ));
-        
+
         self.render_elements(painter.clone(), to_screen);
 
         Some(self.arrows_pixels.clone())
@@ -607,7 +630,7 @@ impl Painting {
         image: egui::Image,
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
-    ) ->  Option<(String, Color32, Pos2)> {
+    ) -> Option<(String, Color32, Pos2)> {
         // println!("In ui_content texts");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -625,8 +648,8 @@ impl Painting {
             image.size().unwrap().x as f32 / response.rect.width(),
             image.size().unwrap().y as f32 / response.rect.height(),
         ));
-        
-        *mult_fact=self.mult_factor;
+
+        *mult_fact = self.mult_factor;
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -684,11 +707,18 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
-       
-        let new_pos=Pos2::new((self.text_starting_position.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0,
-        (self.text_starting_position.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1);
-        Some((self.to_write_text.to_string(), self.texts_stroke.color , new_pos))
 
+        let new_pos = Pos2::new(
+            (self.text_starting_position.x - self.shift_squares.unwrap().x)
+                * self.mult_factor.unwrap().0,
+            (self.text_starting_position.y - self.shift_squares.unwrap().y)
+                * self.mult_factor.unwrap().1,
+        );
+        Some((
+            self.to_write_text.to_string(),
+            self.texts_stroke.color,
+            new_pos,
+        ))
     }
 
     pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
@@ -770,23 +800,26 @@ impl Painting {
     pub fn calc_pixels_arrow(&mut self, origin: Pos2, vec: Vec2) -> Vec<Pos2> {
         let mut pixels = Vec::new();
 
-        let new_vec = Vec2{x: vec.x * self.mult_factor.unwrap().0 ,y: vec.y * self.mult_factor.unwrap().1};
-        let new_origin=Pos2::new(((origin.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0), ((origin.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1));
+        let new_vec = Vec2 {
+            x: vec.x * self.mult_factor.unwrap().0,
+            y: vec.y * self.mult_factor.unwrap().1,
+        };
+        let new_origin = Pos2::new(
+            ((origin.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0),
+            ((origin.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1),
+        );
         let rot = Rot2::from_angle(std::f32::consts::TAU / 10.0);
         let tip_length = new_vec.length() / 4.0;
 
         let tip = new_origin + new_vec;
         let dir = vec.normalized();
-       
+
         pixels.push([new_origin, tip]);
         pixels.push([tip, tip - tip_length * (rot * dir)]);
         pixels.push([tip, tip - tip_length * (rot.inverse() * dir)]);
-        
+
         pixels.concat()
     }
-
-    
-    
 }
 
 impl Demo for Painting {
@@ -803,10 +836,14 @@ impl View for Painting {
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
-    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>) {
+    ) -> (
+        Option<Vec<(Vec<Pos2>, Color32)>>,
+        Option<i32>,
+        Option<(String, Color32, Pos2)>,
+    ) {
         let mut pix = None;
         let mut id = None;
-        let mut txt=None;
+        let mut txt = None;
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -814,7 +851,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content(ui, image, dim);
-                        id=Some(0);
+                        id = Some(0);
                     });
                 });
             }
@@ -824,7 +861,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_arrows(ui, image, dim);
-                        id=Some(1);
+                        id = Some(1);
                     });
                 });
             }
@@ -834,7 +871,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_circles(ui, image, dim);
-                        id=Some(2);
+                        id = Some(2);
                     });
                 });
             }
@@ -844,7 +881,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         pix = self.ui_content_squares(ui, image, dim);
-                        id=Some(3);
+                        id = Some(3);
                     });
                 });
             }
@@ -854,12 +891,12 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         txt = self.ui_content_texts(ui, image, mult_fact, dim);
-                        id=Some(4);
+                        id = Some(4);
                     });
                 });
             }
         }
 
-        (pix,id, txt)
+        (pix, id, txt)
     }
 }
