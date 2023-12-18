@@ -495,8 +495,8 @@ impl eframe::App for FirstWindow {
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-                           
-                            if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 {
+                            
+                            if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 && id.unwrap()!=0 {
                                 
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));
@@ -520,6 +520,7 @@ impl eframe::App for FirstWindow {
                                     txt.unwrap().0,
                                 ));
                             }else if pxs.is_none()==false && id.is_none()==false && id.unwrap()==0{
+                               
                                 self.line_pixels=pxs.clone().unwrap();
                             }
 
@@ -580,18 +581,26 @@ impl eframe::App for FirstWindow {
                                 }
 
                                 if self.line_pixels.is_empty()==false{
-                                   for p in self.pixels.clone() {
-                                        for pi in p.0 {
-                                            
-                                            let image_pixel = self
-                                                .image_buffer
-                                                .as_mut()
-                                                .unwrap()
-                                                .get_pixel_mut(pi.x as u32, pi.y as u32);
+                                    
+                                   for p in self.line_pixels.clone() {
+                                        println!("{}", p.0.len());
+                                        if p.0.is_empty()==false{
 
-                                            *image_pixel =
-                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                                        
+                                        for j in 0..p.0.len()-1 {
+                                            println!("{}", j);
+                                            let start=p.0[j];
+                                            let end=p.0[j+1];
+                                            println!("start {:?} end {:?}", start, end);
+                                            imageproc::drawing::draw_line_segment_mut(
+                                                self.image_buffer.as_mut().unwrap(),
+                                                (start.x, start.y),
+                                                (end.x, end.y),
+                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
+                                            );
+                                            
                                         }
+                                    }
                                     }
                                 }
 

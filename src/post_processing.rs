@@ -390,6 +390,7 @@ impl Painting {
             }
             ret.push((retlns, clr));
         }
+        //println!("{:?}", ret);
 
         Some(ret)
     }
