@@ -3,6 +3,7 @@ use crate::post_processing::PpOptions;
 use crate::post_processing::View;
 use chrono;
 use egui::CursorIcon;
+use egui::FontImage;
 use egui::ImageData;
 use egui::Response;
 use egui::Rgba;
@@ -10,6 +11,7 @@ use image::Rgb;
 use imageproc;
 use imageproc::drawing::draw_line_segment;
 use rfd::FileDialog;
+use rusttype::Font;
 
 mod functions;
 use functions::first_window;
@@ -134,8 +136,8 @@ fn main() -> Result<(), eframe::Error> {
                 height: 0.0,
 
                 pixels: Vec::new(),
-                arrow_pixels:Vec::new(),
-                
+                arrow_pixels: Vec::new(),
+                text_pixels: Vec::new(),
             })
         }),
     )
@@ -174,6 +176,7 @@ struct FirstWindow {
 
     pixels: Vec<(Vec<Pos2>, Color32)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
+    text_pixels: Vec<(Pos2, Color32, String)>,
 }
 
 impl eframe::App for FirstWindow {
@@ -485,8 +488,9 @@ impl eframe::App for FirstWindow {
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
-                            let mut id=None;
-                            (pxs, id) = self
+                            let mut id = None;
+                            let mut txt = None;
+                            (pxs, id, txt) = self
                                 .painting
                                 .ui(
                                     ui,
@@ -496,15 +500,26 @@ impl eframe::App for FirstWindow {
                                 )
                                 .clone();
 
-                            if pxs.is_none() == false && id.is_none()==false && id.unwrap()!=1 {
+                            if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 {
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));
                                 }
-                            }else if pxs.is_none() == false && id.is_none()==false && id.unwrap()==1{
+                            } else if pxs.is_none() == false
+                                && id.is_none() == false
+                                && id.unwrap() == 1
+                            {
                                 for p in pxs.clone().unwrap() {
                                     self.arrow_pixels.push((p.0, p.1));
                                 }
-                                
+                            } else if pxs.is_none() == true
+                                && id.is_none() == false
+                                && id.unwrap() == 4
+                            {
+                                self.text_pixels.push((
+                                    txt.clone().unwrap().2,
+                                    txt.clone().unwrap().1,
+                                    txt.unwrap().0,
+                                ));
                             }
 
                             if save_btn.unwrap().clicked() {
@@ -513,8 +528,7 @@ impl eframe::App for FirstWindow {
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
-                                
-                                
+
                                 if self.pixels.is_empty() == false {
                                     for p in self.pixels.clone() {
                                         for pi in p.0 {
@@ -530,12 +544,35 @@ impl eframe::App for FirstWindow {
                                     }
                                 }
 
-                                if self.arrow_pixels.is_empty()==false{
-                                    for p in self.arrow_pixels.clone(){
-                                        let head= p.0[1];
-                                        for pi in p.0{
-                                            imageproc::drawing::draw_line_segment_mut( self.image_buffer.as_mut().unwrap(), (pi.x, pi.y), (head.x,head.y), image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]));
+                                if self.arrow_pixels.is_empty() == false {
+                                    for p in self.arrow_pixels.clone() {
+                                        let head = p.0[1];
+                                        for pi in p.0 {
+                                            imageproc::drawing::draw_line_segment_mut(
+                                                self.image_buffer.as_mut().unwrap(),
+                                                (pi.x, pi.y),
+                                                (head.x, head.y),
+                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
+                                            );
                                         }
+                                    }
+                                }
+
+                                if self.text_pixels.is_empty() == false {
+                                    let font_data: &[u8] =
+                                        include_bytes!("../DejaVuSansMono.ttf");
+                                    let font: Font<'static> = Font::try_from_bytes(font_data).unwrap();
+                                    for t in self.text_pixels.clone() {
+                                        println!("{:?}", self.text_pixels.clone().len());
+                                        imageproc::drawing::draw_text_mut(
+                                            self.image_buffer.as_mut().unwrap(),
+                                            image::Rgba([t.1.r(), t.1.g(), t.1.b(), t.1.a()]),
+                                            t.0.x as i32,
+                                            t.0.y as i32,
+                                            rusttype::Scale { x: 20.0, y: 20.0 },
+                                            &font,
+                                            &t.2,
+                                        );
                                     }
                                 }
 

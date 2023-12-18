@@ -17,7 +17,7 @@ pub trait View {
 
         dim: Vec2,
         opt: PpOptions,
-    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>);
+    ) ->  (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>);
 }
 
 /// Something to view
@@ -608,7 +608,7 @@ impl Painting {
         ui: &mut Ui,
         image: egui::Image,
         dim: Vec2,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
+    ) ->  Option<(String, Color32, Pos2)> {
         // println!("In ui_content texts");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -618,6 +618,14 @@ impl Painting {
             response.rect,
         );
         image.paint_at(ui, response.rect);
+        self.shift_squares = Some(Pos2::new(
+            response.rect.left_top().x,
+            response.rect.left_top().y,
+        ));
+        self.mult_factor = Some((
+            image.size().unwrap().x as f32 / response.rect.width(),
+            image.size().unwrap().y as f32 / response.rect.height(),
+        ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -676,7 +684,11 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
-        Some(self.circles_pixels.clone())
+       
+        let new_pos=Pos2::new((self.text_starting_position.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0,
+        (self.text_starting_position.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1);
+        Some((self.to_write_text.to_string(), self.texts_stroke.color , new_pos))
+
     }
 
     pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
@@ -790,9 +802,10 @@ impl View for Painting {
 
         dim: Vec2,
         opt: PpOptions,
-    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>) {
+    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>) {
         let mut pix = None;
         let mut id = None;
+        let mut txt=None;
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -839,13 +852,13 @@ impl View for Painting {
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        pix = self.ui_content_texts(ui, image, dim);
+                        txt = self.ui_content_texts(ui, image, dim);
                         id=Some(4);
                     });
                 });
             }
         }
 
-        (pix,id)
+        (pix,id, txt)
     }
 }
