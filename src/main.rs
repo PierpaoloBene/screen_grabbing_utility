@@ -139,6 +139,7 @@ fn main() -> Result<(), eframe::Error> {
                 pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
                 text_pixels: Vec::new(),
+                line_pixels:Vec::new(),
             })
         }),
     )
@@ -179,6 +180,7 @@ struct FirstWindow {
     pixels: Vec<(Vec<Pos2>, Color32)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
+    line_pixels:Vec<(Vec<Pos2>, Color32)>,
 }
 
 impl eframe::App for FirstWindow {
@@ -492,6 +494,7 @@ impl eframe::App for FirstWindow {
                             let mut pxs = None;
                             let mut id = None;
                             let mut txt = None;
+                            
                             (pxs, id, txt) = self
                                 .painting
                                 .ui(
@@ -502,8 +505,9 @@ impl eframe::App for FirstWindow {
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-                            println!("mult fact in main {:?}", self.mult_factor);
+                           
                             if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 {
+                                
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));
                                 }
@@ -511,7 +515,9 @@ impl eframe::App for FirstWindow {
                                 && id.is_none() == false
                                 && id.unwrap() == 1
                             {
+                                
                                 for p in pxs.clone().unwrap() {
+                                    
                                     self.arrow_pixels.push((p.0, p.1));
                                 }
                             } else if pxs.is_none() == true
@@ -523,6 +529,8 @@ impl eframe::App for FirstWindow {
                                     txt.clone().unwrap().1,
                                     txt.unwrap().0,
                                 ));
+                            }else if pxs.is_none()==false && id.is_none()==false && id.unwrap()==0{
+                                self.line_pixels=pxs.clone().unwrap();
                             }
 
                             if save_btn.unwrap().clicked() {
@@ -531,10 +539,12 @@ impl eframe::App for FirstWindow {
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
-
+                                
                                 if self.pixels.is_empty() == false {
+                                   
                                     for p in self.pixels.clone() {
                                         for pi in p.0 {
+                                            
                                             let image_pixel = self
                                                 .image_buffer
                                                 .as_mut()
@@ -547,7 +557,7 @@ impl eframe::App for FirstWindow {
                                     }
                                 }
 
-                                if self.arrow_pixels.is_empty() == false {
+                                if self.arrow_pixels.is_empty() == false {                                    
                                     for p in self.arrow_pixels.clone() {
                                         let head = p.0[1];
                                         for pi in p.0 {
@@ -576,6 +586,22 @@ impl eframe::App for FirstWindow {
                                             &font,
                                             &t.2,
                                         );
+                                    }
+                                }
+
+                                if self.line_pixels.is_empty()==false{
+                                   for p in self.pixels.clone() {
+                                        for pi in p.0 {
+                                            
+                                            let image_pixel = self
+                                                .image_buffer
+                                                .as_mut()
+                                                .unwrap()
+                                                .get_pixel_mut(pi.x as u32, pi.y as u32);
+
+                                            *image_pixel =
+                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                                        }
                                     }
                                 }
 
