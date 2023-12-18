@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use egui::{
     emath::{self, Rot2},
-    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2,
+    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response,
 };
 
 /// Something to view in the demo windows
@@ -19,7 +19,8 @@ pub trait View {
         Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
-        Option<Vec<(Pos2, f32, Stroke)>>
+        Option<Vec<(Pos2, f32, Stroke)>>,
+        Option<Response>
     );
 }
 
@@ -328,7 +329,7 @@ impl Painting {
         ui: &mut Ui,
         image: egui::Image,
         dim: Vec2,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
+    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>,Option<Response>){
         //println!("In ui_content");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -398,7 +399,7 @@ impl Painting {
         }
         //println!("{:?}", ret);
 
-        Some(ret)
+        (Some(ret),Some(response))
     }
 
     pub fn ui_content_arrows(
@@ -873,20 +874,22 @@ impl View for Painting {
         Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
-        Option<Vec<(Pos2, f32, Stroke)>>
+        Option<Vec<(Pos2, f32, Stroke)>>,
+        Option<Response>
     ) {
         let mut pix = None;
         let mut id = None;
         let mut txt = None;
         let mut sqrs = None;
         let mut crcls=None;
+        let mut response=None;
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        pix = self.ui_content(ui, image, dim);
+                        (pix,response) = self.ui_content(ui, image, dim);
                         id = Some(0);
                     });
                 });
@@ -933,6 +936,6 @@ impl View for Painting {
             }
         }
 
-        (pix, id, txt, sqrs, crcls)
+        (pix, id, txt, sqrs, crcls,response)
     }
 }
