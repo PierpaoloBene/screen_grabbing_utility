@@ -134,6 +134,7 @@ fn main() -> Result<(), eframe::Error> {
                 painting: p,
                 width: 0.0,
                 height: 0.0,
+                mult_factor: None, 
 
                 pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
@@ -173,6 +174,7 @@ struct FirstWindow {
     painting: post_processing::Painting,
     width: f32,
     height: f32,
+    mult_factor: Option<(f32, f32)>,
 
     pixels: Vec<(Vec<Pos2>, Color32)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
@@ -495,11 +497,12 @@ impl eframe::App for FirstWindow {
                                 .ui(
                                     ui,
                                     egui::Image::new(self.image.as_ref().unwrap()).shrink_to_fit(),
+                                    &mut self.mult_factor,
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-
+                            println!("mult fact in main {:?}", self.mult_factor);
                             if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 {
                                 for p in pxs.clone().unwrap() {
                                     self.pixels.push((p.0, p.1));
@@ -563,13 +566,13 @@ impl eframe::App for FirstWindow {
                                         include_bytes!("../DejaVuSansMono.ttf");
                                     let font: Font<'static> = Font::try_from_bytes(font_data).unwrap();
                                     for t in self.text_pixels.clone() {
-                                        println!("{:?}", self.text_pixels.clone().len());
+                                       
                                         imageproc::drawing::draw_text_mut(
                                             self.image_buffer.as_mut().unwrap(),
                                             image::Rgba([t.1.r(), t.1.g(), t.1.b(), t.1.a()]),
                                             t.0.x as i32,
                                             t.0.y as i32,
-                                            rusttype::Scale { x: 20.0, y: 20.0 },
+                                            rusttype::Scale { x: 20.0 * self.mult_factor.unwrap().0, y: 20.0*self.mult_factor.unwrap().1 },
                                             &font,
                                             &t.2,
                                         );

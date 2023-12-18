@@ -4,9 +4,7 @@ use egui::{
     emath::{self, Rot2},
     vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2,
 };
-use imageproc::drawing::draw_line_segment;
 
-use crate::Shapes;
 
 /// Something to view in the demo windows
 pub trait View {
@@ -14,7 +12,7 @@ pub trait View {
         &mut self,
         ui: &mut egui::Ui,
         image: egui::Image,
-
+        mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
     ) ->  (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>);
@@ -607,6 +605,7 @@ impl Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::Image,
+        mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
     ) ->  Option<(String, Color32, Pos2)> {
         // println!("In ui_content texts");
@@ -626,6 +625,8 @@ impl Painting {
             image.size().unwrap().x as f32 / response.rect.width(),
             image.size().unwrap().y as f32 / response.rect.height(),
         ));
+        println!("mult fact in pp {:?}", self.mult_factor);
+        *mult_fact=self.mult_factor;
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -683,7 +684,6 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
-
        
         let new_pos=Pos2::new((self.text_starting_position.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0,
         (self.text_starting_position.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1);
@@ -800,7 +800,7 @@ impl View for Painting {
         &mut self,
         ui: &mut Ui,
         image: egui::widgets::Image,
-
+        mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
     ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<i32>, Option<(String, Color32, Pos2)>) {
@@ -853,7 +853,7 @@ impl View for Painting {
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        txt = self.ui_content_texts(ui, image, dim);
+                        txt = self.ui_content_texts(ui, image, mult_fact, dim);
                         id=Some(4);
                     });
                 });
