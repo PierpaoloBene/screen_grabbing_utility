@@ -339,17 +339,7 @@ impl eframe::App for FirstWindow {
                             });
                             ui.ctx()
                                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
-                            if ui.input(|i| i.pointer.is_moving()) {
-                                // println!("{:?}", self.mouse_pos);
-                                println!(
-                                    "{:?}",
-                                    DisplayInfo::from_point(
-                                        ui.input(|i| i.pointer.hover_pos().unwrap().x as i32),
-                                        ui.input(|i| i.pointer.hover_pos().unwrap().y as i32)
-                                    )
-                                    .unwrap()
-                                );
-                            }
+                            
 
                             if ui.input(|i| {
                                 i.pointer.any_down()
