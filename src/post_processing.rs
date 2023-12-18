@@ -18,7 +18,9 @@ pub trait View {
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<i32>,
         Option<(String, Color32, Pos2)>,
+
         Option<Response>,
+
     );
 }
 
@@ -144,17 +146,17 @@ impl Painting {
                     vec2(point.1.x - point.0.x, point.1.y - point.0.y),
                     point.2,
                 );
-                let pixels = self
-                    .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
-                self.arrows_pixels.push((pixels, point.2.color));
+                // let pixels = self
+                //     .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
+                // self.arrows_pixels.push((pixels, point.2.color));
             }
         }
 
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
                 painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
-                let pixels = self.calc_pixels_circle(point.0, point.1, point.2.width);
-                self.circles_pixels.push((pixels, point.2.color));
+                // let pixels = self.calc_pixels_circle(point.0, point.1, point.2.width);
+                // self.circles_pixels.push((pixels, point.2.color));
             }
         }
 
@@ -168,12 +170,12 @@ impl Painting {
                 let y_min = rect.y_range().min;
                 let y_max = rect.y_range().max;
 
-                let pixels = self.calc_pixels_rect(
-                    Pos2::new(x_min, y_min),
-                    Pos2::new(x_max, y_max),
-                    stroke.width,
-                );
-                self.squares_pixels.push((pixels, point.1.color));
+                // let pixels = self.calc_pixels_rect(
+                //     Pos2::new(x_min, y_min),
+                //     Pos2::new(x_max, y_max),
+                //     stroke.width,
+                // );
+                // self.squares_pixels.push((pixels, point.1.color));
 
                 painter.rect(point.0, 0.0, egui::Color32::TRANSPARENT, point.1);
             }
@@ -366,9 +368,8 @@ impl Painting {
         let mut current_line = &mut self.lines.last_mut().unwrap().0;
 
         if let Some(pointer_pos) = response.interact_pointer_pos() {
-           
             let canvas_pos = from_screen * pointer_pos;
-            
+
             if current_line.last() != Some(&canvas_pos) {
                 current_line.push(canvas_pos);
                 response.mark_changed();
@@ -383,10 +384,15 @@ impl Painting {
 
         for l in self.lines.clone().into_iter() {
             let clr = l.1.color;
-            let mut lns=l.0.into_iter().map(|f| from_screen.inverse().transform_pos(f));
-            let mut retlns=Vec::new();
-            for mut li in lns.into_iter(){
-                let ps=Pos2::new((li.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0, (li.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1);
+            let mut lns =
+                l.0.into_iter()
+                    .map(|f| from_screen.inverse().transform_pos(f));
+            let mut retlns = Vec::new();
+            for mut li in lns.into_iter() {
+                let ps = Pos2::new(
+                    (li.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (li.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
                 retlns.push(ps);
             }
             ret.push((retlns, clr));
@@ -474,7 +480,7 @@ impl Painting {
         image: egui::Image,
 
         dim: Vec2,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
+    ) -> Option<Vec<(Pos2, f32, Stroke)>> {
         // println!("In ui_content circles");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -539,8 +545,14 @@ impl Painting {
             ));
         }
         self.render_elements(painter.clone(), to_screen);
-
-        Some(self.circles_pixels.clone())
+        let mut crcls=Vec::new();
+        for c in self.circles.clone(){
+            let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center=Pos2::new(center_x, center_y);
+            crcls.push((new_center, c.1, c.2));
+        }
+        Some(crcls.clone())
     }
 
     pub fn ui_content_squares(
@@ -549,7 +561,7 @@ impl Painting {
         image: egui::Image,
 
         dim: Vec2,
-    ) -> Option<Vec<(Vec<Pos2>, Color32)>> {
+    ) -> Option<Vec<(Rect, Stroke)>> {
         //println!("In ui_content squares");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -623,7 +635,25 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
-        Some(self.squares_pixels.clone())
+        //Some(self.squares_pixels.clone())
+        let mut sqrs = Vec::new();
+        for s in self.squares.clone() {
+            let min = Pos2::new(
+                (s.0.left_top().x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                (s.0.left_top().y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+            );
+            let max = Pos2::new(
+                (s.0.right_bottom().x - self.shift_squares.unwrap().x)
+                    * self.mult_factor.unwrap().0,
+                (s.0.right_bottom().y - self.shift_squares.unwrap().y)
+                    * self.mult_factor.unwrap().1,
+            );
+
+            let r = egui::Rect::from_min_max(min, max);
+
+            sqrs.push((r, s.1));
+        }
+        Some(sqrs.clone())
     }
 
     pub fn ui_content_texts(
@@ -843,11 +873,15 @@ impl View for Painting {
         Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Response>,
+
+      
     ) {
         let mut pix = None;
         let mut id = None;
         let mut txt = None;
+
         let mut response=None;
+
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -874,7 +908,7 @@ impl View for Painting {
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        pix = self.ui_content_circles(ui, image, dim);
+                        crcls = self.ui_content_circles(ui, image, dim);
                         id = Some(2);
                     });
                 });
@@ -884,7 +918,7 @@ impl View for Painting {
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        pix = self.ui_content_squares(ui, image, dim);
+                        sqrs = self.ui_content_squares(ui, image, dim);
                         id = Some(3);
                     });
                 });
@@ -901,6 +935,8 @@ impl View for Painting {
             }
         }
 
+
         (pix, id, txt,response)
+
     }
 }

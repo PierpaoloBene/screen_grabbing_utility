@@ -134,12 +134,14 @@ fn main() -> Result<(), eframe::Error> {
                 painting: p,
                 width: 0.0,
                 height: 0.0,
+
                 mult_factor: None, 
                 cut_clicked: false,
                 pixels: Vec::new(),
+
                 arrow_pixels: Vec::new(),
                 text_pixels: Vec::new(),
-                line_pixels:Vec::new(),
+                line_pixels: Vec::new(),
             })
         }),
     )
@@ -176,11 +178,13 @@ struct FirstWindow {
     width: f32,
     height: f32,
     mult_factor: Option<(f32, f32)>,
+
     cut_clicked: bool,
     pixels: Vec<(Vec<Pos2>, Color32)>,
+
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
-    line_pixels:Vec<(Vec<Pos2>, Color32)>,
+    line_pixels: Vec<(Vec<Pos2>, Color32)>,
 }
 
 impl eframe::App for FirstWindow {
@@ -339,7 +343,6 @@ impl eframe::App for FirstWindow {
                             });
                             ui.ctx()
                                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
-                            
 
                             if ui.input(|i| {
                                 i.pointer.any_down()
@@ -486,9 +489,11 @@ impl eframe::App for FirstWindow {
                             let mut pxs = None;
                             let mut id = None;
                             let mut txt = None;
+
                             let mut response = None;
                             
                             (pxs, id, txt, response) = self
+
                                 .painting
                                 .ui(
                                     ui,
@@ -498,19 +503,17 @@ impl eframe::App for FirstWindow {
                                     self.pp_option.clone().unwrap(),
                                 )
                                 .clone();
-                            
-                            if pxs.is_none() == false && id.is_none() == false && id.unwrap() != 1 && id.unwrap()!=0 {
-                                
-                                for p in pxs.clone().unwrap() {
-                                    self.pixels.push((p.0, p.1));
-                                }
-                            } else if pxs.is_none() == false
+
+                            if pxs.is_none() == true && id.is_none() == false && id.unwrap() == 3 {
+                                self.square_pixels = sqrs.clone().unwrap();
+                            } else if pxs.is_none()==true && id.is_none()==false && id.unwrap()==2{
+                                self.circle_pixels=crcls.clone().unwrap();
+                            }
+                            else if pxs.is_none() == false
                                 && id.is_none() == false
                                 && id.unwrap() == 1
                             {
-                                
                                 for p in pxs.clone().unwrap() {
-                                    
                                     self.arrow_pixels.push((p.0, p.1));
                                 }
                             } else if pxs.is_none() == true
@@ -522,9 +525,11 @@ impl eframe::App for FirstWindow {
                                     txt.clone().unwrap().1,
                                     txt.unwrap().0,
                                 ));
-                            }else if pxs.is_none()==false && id.is_none()==false && id.unwrap()==0{
-                               
-                                self.line_pixels=pxs.clone().unwrap();
+                            } else if pxs.is_none() == false
+                                && id.is_none() == false
+                                && id.unwrap() == 0
+                            {
+                                self.line_pixels = pxs.clone().unwrap();
                             }
 
                             if save_btn.unwrap().clicked() {
@@ -534,24 +539,69 @@ impl eframe::App for FirstWindow {
                                         .to_string(),
                                 );
                                 
-                                if self.pixels.is_empty() == false {
-                                   
-                                    for p in self.pixels.clone() {
-                                        for pi in p.0 {
-                                            
-                                            let image_pixel = self
-                                                .image_buffer
-                                                .as_mut()
-                                                .unwrap()
-                                                .get_pixel_mut(pi.x as u32, pi.y as u32);
+                                if self.circle_pixels.is_empty() == false {
+                                    
+                                    
+                                    for c in self.circle_pixels.clone() {
+                                        imageproc::drawing::draw_hollow_circle_mut(
+                                            self.image_buffer.as_mut().unwrap(),
+                                             (c.0.x as i32, c.0.y as i32),
+                                              c.1 as i32,
+                                              image::Rgba([
+                                                c.2.color.r(),
+                                                c.2.color.g(),
+                                                c.2.color.b(),
+                                                c.2.color.a(),
+                                            ]));
+                                        
+                                        // let image_pixel = self
+                                        //     .image_buffer
+                                        //     .as_mut()
+                                        //     .unwrap()
+                                        //     .get_pixel_mut(pi.x as u32, pi.y as u32);
 
-                                            *image_pixel =
-                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
-                                        }
+                                        // *image_pixel =
+                                        //     image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
                                     }
+                                   
                                 }
 
-                                if self.arrow_pixels.is_empty() == false {                                    
+
+                                if self.square_pixels.is_empty() == false {
+                                    let mut i = 0;
+                             
+                                    for p in self.square_pixels.clone() {
+                                        i += 1;
+                                        let w = p.0.width() as u32;
+                                        let h = p.0.height() as u32;
+                                        let rett = imageproc::rect::Rect::at(
+                                            p.0.left_top().x as i32,
+                                            p.0.left_top().y as i32,
+                                        )
+                                        .of_size(w, h);
+                                        imageproc::drawing::draw_hollow_rect_mut(
+                                            self.image_buffer.as_mut().unwrap(),
+                                            rett,
+                                            image::Rgba([
+                                                p.1.color.r(),
+                                                p.1.color.g(),
+                                                p.1.color.b(),
+                                                p.1.color.a(),
+                                            ]),
+                                        );
+                                        // let image_pixel = self
+                                        //     .image_buffer
+                                        //     .as_mut()
+                                        //     .unwrap()
+                                        //     .get_pixel_mut(pi.x as u32, pi.y as u32);
+
+                                        // *image_pixel =
+                                        //     image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]);
+                                    }
+                                    println!("{}", i);
+                                }
+
+                                if self.arrow_pixels.is_empty() == false {
                                     for p in self.arrow_pixels.clone() {
                                         let head = p.0[1];
                                         for pi in p.0 {
@@ -566,45 +616,50 @@ impl eframe::App for FirstWindow {
                                 }
 
                                 if self.text_pixels.is_empty() == false {
+
                                     let font_data: &[u8] =
                                         include_bytes!("../DejaVuSansMono.ttf");
                                         
                                     let font: Font<'static> = Font::try_from_bytes(font_data).unwrap();
+
                                     for t in self.text_pixels.clone() {
-                                       
                                         imageproc::drawing::draw_text_mut(
                                             self.image_buffer.as_mut().unwrap(),
                                             image::Rgba([t.1.r(), t.1.g(), t.1.b(), t.1.a()]),
                                             t.0.x as i32,
                                             t.0.y as i32,
-                                            rusttype::Scale { x: 20.0 * self.mult_factor.unwrap().0, y: 20.0*self.mult_factor.unwrap().1 },
+                                            rusttype::Scale {
+                                                x: 20.0 * self.mult_factor.unwrap().0,
+                                                y: 20.0 * self.mult_factor.unwrap().1,
+                                            },
                                             &font,
                                             &t.2,
                                         );
                                     }
                                 }
 
-                                if self.line_pixels.is_empty()==false{
-                                    
-                                   for p in self.line_pixels.clone() {
+                                if self.line_pixels.is_empty() == false {
+                                    for p in self.line_pixels.clone() {
                                         println!("{}", p.0.len());
-                                        if p.0.is_empty()==false{
-
-                                        
-                                        for j in 0..p.0.len()-1 {
-                                            println!("{}", j);
-                                            let start=p.0[j];
-                                            let end=p.0[j+1];
-                                            println!("start {:?} end {:?}", start, end);
-                                            imageproc::drawing::draw_line_segment_mut(
-                                                self.image_buffer.as_mut().unwrap(),
-                                                (start.x, start.y),
-                                                (end.x, end.y),
-                                                image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
-                                            );
-                                            
+                                        if p.0.is_empty() == false {
+                                            for j in 0..p.0.len() - 1 {
+                                                println!("{}", j);
+                                                let start = p.0[j];
+                                                let end = p.0[j + 1];
+                                                println!("start {:?} end {:?}", start, end);
+                                                imageproc::drawing::draw_line_segment_mut(
+                                                    self.image_buffer.as_mut().unwrap(),
+                                                    (start.x, start.y),
+                                                    (end.x, end.y),
+                                                    image::Rgba([
+                                                        p.1.r(),
+                                                        p.1.g(),
+                                                        p.1.b(),
+                                                        p.1.a(),
+                                                    ]),
+                                                );
+                                            }
                                         }
-                                    }
                                     }
                                 }
 
