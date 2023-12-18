@@ -134,11 +134,10 @@ fn main() -> Result<(), eframe::Error> {
                 painting: p,
                 width: 0.0,
                 height: 0.0,
+                mult_factor: None,
 
-                mult_factor: None, 
-                cut_clicked: false,
-                pixels: Vec::new(),
-
+                circle_pixels: Vec::new(),
+                square_pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
                 text_pixels: Vec::new(),
                 line_pixels: Vec::new(),
@@ -179,9 +178,8 @@ struct FirstWindow {
     height: f32,
     mult_factor: Option<(f32, f32)>,
 
-    cut_clicked: bool,
-    pixels: Vec<(Vec<Pos2>, Color32)>,
-
+    circle_pixels: Vec<(Pos2, f32, Stroke)>,
+    square_pixels: Vec<(Rect, Stroke)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
     line_pixels: Vec<(Vec<Pos2>, Color32)>,
@@ -412,7 +410,6 @@ impl eframe::App for FirstWindow {
             let mut text_btn = None;
             let mut save_btn = None;
             let mut save_edit_btn = None;
-            let mut crop_btn=None;
 
             egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
@@ -471,7 +468,6 @@ impl eframe::App for FirstWindow {
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
-                        crop_btn= Some(ui.add(egui::Button::new("Cut")));
                     });
 
                     match self.loading_state {
@@ -489,11 +485,10 @@ impl eframe::App for FirstWindow {
                             let mut pxs = None;
                             let mut id = None;
                             let mut txt = None;
+                            let mut sqrs = None;
+                            let mut crcls=None;
 
-                            let mut response = None;
-                            
-                            (pxs, id, txt, response) = self
-
+                            (pxs, id, txt, sqrs, crcls) = self
                                 .painting
                                 .ui(
                                     ui,
@@ -616,12 +611,9 @@ impl eframe::App for FirstWindow {
                                 }
 
                                 if self.text_pixels.is_empty() == false {
-
-                                    let font_data: &[u8] =
-                                        include_bytes!("../DejaVuSansMono.ttf");
-                                        
-                                    let font: Font<'static> = Font::try_from_bytes(font_data).unwrap();
-
+                                    let font_data: &[u8] = include_bytes!("../DejaVuSansMono.ttf");
+                                    let font: Font<'static> =
+                                        Font::try_from_bytes(font_data).unwrap();
                                     for t in self.text_pixels.clone() {
                                         imageproc::drawing::draw_text_mut(
                                             self.image_buffer.as_mut().unwrap(),
@@ -729,22 +721,6 @@ impl eframe::App for FirstWindow {
                                         self.image_format_string,
                                     ));
                                 }
-                            }
-                            
-                            if crop_btn.unwrap().clicked() || self.cut_clicked==true{
-                                self.cut_clicked=true;
-                                egui::Window::new("cut")
-                                .title_bar(false)
-                                .default_pos(response.unwrap().rect.left_top())
-                                .vscroll(false)
-                                .resizable(true)
-                                .default_size(dim)
-                                .show(ctx, |ui| {
-                                    ui.allocate_space(ui.available_size());
-                                    
-                                });
-
-                                
                             }
                         }
                         LoadingState::NotLoaded => {
