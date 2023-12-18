@@ -414,6 +414,7 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
+        
         image.paint_at(ui, response.rect);
         self.mult_factor = Some((
             image.size().unwrap().x as f32 / response.rect.width(),
