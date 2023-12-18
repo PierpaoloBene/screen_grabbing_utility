@@ -758,11 +758,12 @@ impl Painting {
     pub fn calc_pixels_arrow(&mut self, origin: Pos2, vec: Vec2) -> Vec<Pos2> {
         let mut pixels = Vec::new();
 
+        let new_vec = Vec2{x: vec.x * self.mult_factor.unwrap().0 ,y: vec.y * self.mult_factor.unwrap().1};
         let new_origin=Pos2::new(((origin.x-self.shift_squares.unwrap().x)*self.mult_factor.unwrap().0), ((origin.y-self.shift_squares.unwrap().y)*self.mult_factor.unwrap().1));
         let rot = Rot2::from_angle(std::f32::consts::TAU / 10.0);
-        let tip_length = vec.length() / 4.0;
+        let tip_length = new_vec.length() / 4.0;
 
-        let tip = new_origin + vec;
+        let tip = new_origin + new_vec;
         let dir = vec.normalized();
        
         pixels.push([new_origin, tip]);
