@@ -552,7 +552,8 @@ impl Painting {
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
             let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
             let new_center=Pos2::new(center_x, center_y);
-            crcls.push((new_center, c.1, c.2));
+            let new_radius=c.1*self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
         }
         Some(crcls.clone())
     }
