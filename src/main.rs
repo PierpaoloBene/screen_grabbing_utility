@@ -486,7 +486,6 @@ impl eframe::App for FirstWindow {
                             }
                             let mut pxs = None;
                             let mut arr=None;
-                            let mut id = None;
                             let mut txt = None;
                             let mut sqrs = None;
                             let mut crcls=None;
@@ -494,7 +493,7 @@ impl eframe::App for FirstWindow {
                             
                             
 
-                            (pxs, arr, id, txt, sqrs, crcls,response) = self
+                            (pxs, arr, txt, sqrs, crcls,response) = self
                                 .painting
                                 .ui(
                                     ui,
@@ -505,37 +504,39 @@ impl eframe::App for FirstWindow {
                                 )
                                 .clone();
                             
-                            if pxs.is_none() == true && id.is_none() == false && id.unwrap() == 3 {
-                                self.square_pixels = sqrs.clone().unwrap();
-                            } else if pxs.is_none()==true && id.is_none()==false && id.unwrap()==2{
-                                self.circle_pixels=crcls.clone().unwrap();
-                            }
-                            else if pxs.is_none() == true
-                                && arr.is_none()==false
-                                && id.is_none() == false
-                                && id.unwrap() == 1
-                            {
-                                println!("salvo freccie");
-                                
-                                for p in arr.clone().unwrap() {                                    
-                                    self.arrow_pixels.push((p.0, p.1));
-                                    println!("{:?}", self.arrow_pixels.len());
+                                match self.pp_option.clone().unwrap() {
+                                    PpOptions::Painting => {
+                                        if pxs.is_none() == false {
+                                            self.line_pixels = pxs.clone().unwrap();
+                                        }
+                                    }
+                                    PpOptions::Arrow => {
+                                        if pxs.is_none() == false {
+                                            for p in pxs.clone().unwrap() {
+                                                self.arrow_pixels.push((p.0, p.1));
+                                            }
+                                        }
+                                    }
+                                    PpOptions::Circle => {
+                                        if crcls.is_none() == false {
+                                            self.circle_pixels = crcls.clone().unwrap();
+                                        }
+                                    }
+                                    PpOptions::Square => {
+                                        if sqrs.is_none() == false {
+                                            self.square_pixels = sqrs.clone().unwrap();
+                                        }
+                                    }
+                                    PpOptions::Text => {
+                                        if txt.is_none() == false {
+                                            self.text_pixels.push((
+                                                txt.clone().unwrap().2,
+                                                txt.clone().unwrap().1,
+                                                txt.unwrap().0,
+                                            ));
+                                        }
+                                    }
                                 }
-                            } else if pxs.is_none() == true
-                                && id.is_none() == false
-                                && id.unwrap() == 4
-                            {
-                                self.text_pixels.push((
-                                    txt.clone().unwrap().2,
-                                    txt.clone().unwrap().1,
-                                    txt.unwrap().0,
-                                ));
-                            } else if pxs.is_none() == false
-                                && id.is_none() == false
-                                && id.unwrap() == 0
-                            {
-                                self.line_pixels = pxs.clone().unwrap();
-                            }
 
                             if save_btn.unwrap().clicked() {
                                 self.image_name = Some(

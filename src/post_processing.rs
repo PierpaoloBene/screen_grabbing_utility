@@ -17,7 +17,6 @@ pub trait View {
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
-        Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
         Option<Vec<(Pos2, f32, Stroke)>>,
@@ -156,28 +155,12 @@ impl Painting {
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
                 painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
-                // let pixels = self.calc_pixels_circle(point.0, point.1, point.2.width);
-                // self.circles_pixels.push((pixels, point.2.color));
+                
             }
         }
 
         if !self.squares.is_empty() || self.squares.len() == 0 {
             for point in self.squares.clone().into_iter() {
-                let (rect, stroke) = point;
-
-                let x_min = rect.x_range().min;
-                let x_max = rect.x_range().max;
-
-                let y_min = rect.y_range().min;
-                let y_max = rect.y_range().max;
-
-                // let pixels = self.calc_pixels_rect(
-                //     Pos2::new(x_min, y_min),
-                //     Pos2::new(x_max, y_max),
-                //     stroke.width,
-                // );
-                // self.squares_pixels.push((pixels, point.1.color));
-
                 painter.rect(point.0, 0.0, egui::Color32::TRANSPARENT, point.1);
             }
         }
@@ -874,7 +857,6 @@ impl View for Painting {
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
-        Option<i32>,
         Option<(String, Color32, Pos2)>,
         Option<Vec<(Rect, Stroke)>>,
         Option<Vec<(Pos2, f32, Stroke)>>,
@@ -882,7 +864,6 @@ impl View for Painting {
     ) {
         let mut pix = None;
         let mut arr=None;
-        let mut id = None;
         let mut txt = None;
         let mut sqrs = None;
         let mut crcls=None;
@@ -894,7 +875,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (pix,response) = self.ui_content(ui, image, dim);
-                        id = Some(0);
+                       
                     });
                 });
             }
@@ -904,7 +885,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         arr = self.ui_content_arrows(ui, image, dim);
-                        id = Some(1);
+                        
                     });
                 });
             }
@@ -914,7 +895,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         crcls = self.ui_content_circles(ui, image, dim);
-                        id = Some(2);
+                       
                     });
                 });
             }
@@ -924,7 +905,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         sqrs = self.ui_content_squares(ui, image, dim);
-                        id = Some(3);
+                        
                     });
                 });
             }
@@ -934,12 +915,12 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         txt = self.ui_content_texts(ui, image, mult_fact, dim);
-                        id = Some(4);
+                        
                     });
                 });
             }
         }
 
-        (pix, arr, id, txt, sqrs, crcls,response)
+        (pix, arr, txt, sqrs, crcls,response)
     }
 }
