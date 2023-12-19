@@ -2,6 +2,7 @@ pub mod first_window {
 
     use egui::ImageData;
    
+    use rusttype::Font;
     use screenshots::Screen;
 
     use crate::{FirstWindow, ModeOptions};
@@ -32,6 +33,7 @@ pub mod first_window {
                     self.screenshots_taken[i].width() as _,
                     self.screenshots_taken[i].height() as _,
                 ];
+                
                 let mut pixels = self.screenshots_taken[i].as_flat_samples_mut();
                 // for mut p in pixels.as_mut_slice().into_iter(){
                 //     if *p>250{
@@ -135,6 +137,114 @@ pub mod first_window {
                 Default::default(),
             );
             self.image = Some(img);
+        }
+
+        pub fn edit_image(&mut self){
+            if self.circle_pixels.is_empty() == false {
+                                    
+                                    
+                for c in self.circle_pixels.clone() {
+                    imageproc::drawing::draw_hollow_circle_mut(
+                        self.image_buffer.as_mut().unwrap(),
+                         (c.0.x as i32, c.0.y as i32),
+                          c.1 as i32,
+                          image::Rgba([
+                            c.2.color.r(),
+                            c.2.color.g(),
+                            c.2.color.b(),
+                            c.2.color.a(),
+                        ]));
+                 
+                }
+               
+            }
+
+
+            if self.square_pixels.is_empty() == false {
+                let mut i = 0;
+         
+                for p in self.square_pixels.clone() {
+                    i += 1;
+                    let w = p.0.width() as u32;
+                    let h = p.0.height() as u32;
+                    let rett = imageproc::rect::Rect::at(
+                        p.0.left_top().x as i32,
+                        p.0.left_top().y as i32,
+                    )
+                    .of_size(w, h);
+                    imageproc::drawing::draw_hollow_rect_mut(
+                        self.image_buffer.as_mut().unwrap(),
+                        rett,
+                        image::Rgba([
+                            p.1.color.r(),
+                            p.1.color.g(),
+                            p.1.color.b(),
+                            p.1.color.a(),
+                        ]),
+                    );
+                }
+                println!("{}", i);
+            }
+
+            if self.arrow_pixels.is_empty() == false {
+                println!("disegno freccie");
+                for p in self.arrow_pixels.clone() {
+                    let head = p.0[1];
+                    for pi in p.0 {
+                        imageproc::drawing::draw_line_segment_mut(
+                            self.image_buffer.as_mut().unwrap(),
+                            (pi.x, pi.y),
+                            (head.x, head.y),
+                            image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
+                        );
+                    }
+                }
+            }
+
+            if self.text_pixels.is_empty() == false {
+                let font_data: &[u8] = include_bytes!("../DejaVuSansMono.ttf");
+                let font: Font<'static> =
+                    Font::try_from_bytes(font_data).unwrap();
+                for t in self.text_pixels.clone() {
+                    imageproc::drawing::draw_text_mut(
+                        self.image_buffer.as_mut().unwrap(),
+                        image::Rgba([t.1.r(), t.1.g(), t.1.b(), t.1.a()]),
+                        t.0.x as i32,
+                        t.0.y as i32,
+                        rusttype::Scale {
+                            x: 20.0 * self.mult_factor.unwrap().0,
+                            y: 20.0 * self.mult_factor.unwrap().1,
+                        },
+                        &font,
+                        &t.2,
+                    );
+                }
+            }
+
+            if self.line_pixels.is_empty() == false {
+                for p in self.line_pixels.clone() {
+                    println!("{}", p.0.len());
+                    if p.0.is_empty() == false {
+                        for j in 0..p.0.len() - 1 {
+                            println!("{}", j);
+                            let start = p.0[j];
+                            let end = p.0[j + 1];
+                            println!("start {:?} end {:?}", start, end);
+                            imageproc::drawing::draw_line_segment_mut(
+                                self.image_buffer.as_mut().unwrap(),
+                                (start.x, start.y),
+                                (end.x, end.y),
+                                image::Rgba([
+                                    p.1.r(),
+                                    p.1.g(),
+                                    p.1.b(),
+                                    p.1.a(),
+                                ]),
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 }
