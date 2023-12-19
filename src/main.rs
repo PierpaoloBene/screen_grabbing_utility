@@ -2,16 +2,20 @@ mod post_processing;
 use crate::post_processing::PpOptions;
 use crate::post_processing::View;
 use chrono;
+use egui::ColorImage;
 use egui::CursorIcon;
 use egui::FontImage;
+use egui::Image;
 use egui::ImageData;
 use egui::Response;
 use egui::Rgba;
+use image::EncodableLayout;
 use image::Rgb;
 use imageproc;
 use imageproc::drawing::draw_line_segment;
 use rfd::FileDialog;
 use rusttype::Font;
+use arboard::Clipboard;
 
 mod functions;
 use functions::first_window;
@@ -410,7 +414,9 @@ impl eframe::App for FirstWindow {
             let mut text_btn = None;
             let mut save_btn = None;
             let mut save_edit_btn = None;
+            let mut copy_btn=None;
             let mut crop_btn=None;
+
 
             egui::CentralPanel::default().show(ctx, |_ui| {
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
@@ -469,6 +475,7 @@ impl eframe::App for FirstWindow {
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
+                        copy_btn = Some(ui.add(egui::Button::new("Copy")));
                         crop_btn=Some(ui.add(egui::Button::new("Cut")));
                     });
 
@@ -616,6 +623,13 @@ impl eframe::App for FirstWindow {
                                     ));
                                 }
                             }
+                            if copy_btn.unwrap().clicked(){
+                                self.edit_image();
+                                let mut clipboard = Clipboard::new().unwrap();
+                                let w=self.image_buffer.clone().unwrap().width() as usize;
+                                let h=self.image_buffer.clone().unwrap().height() as usize;clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
+                            }
+
                             if crop_btn.unwrap().clicked() || self.cut_clicked==true{
                                 self.cut_clicked=true;
                                 egui::Window::new("cut")
