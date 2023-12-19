@@ -600,6 +600,7 @@ impl eframe::App for FirstWindow {
                                 //     response.unwrap().rect.width() as u32,
                                 //     response.unwrap().rect.height() as u32,
                                 // );
+                                self.edit_image();
                                 let mod_img = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
                                     let _ = mod_img.unwrap().save(format!(
