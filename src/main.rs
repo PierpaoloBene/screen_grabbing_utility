@@ -633,8 +633,7 @@ impl eframe::App for FirstWindow {
                             if crop_btn.unwrap().clicked() || self.cut_clicked==true{
                                 self.cut_clicked=true;
                                 egui::Window::new("cut")
-                                .default_width(dim[0])
-                                .default_width(dim[1])
+                                .default_size(dim)
                                 .pivot(egui::Align2::LEFT_TOP)
                                 .title_bar(false)
                                 .default_pos(response.unwrap().rect.left_top())
