@@ -148,7 +148,10 @@ impl Painting {
                 );
                 let pixels = self
                     .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
-                self.arrows_pixels.push((pixels, point.2.color));
+                if !self.arrows_pixels.contains(&(pixels.clone(), point.2.color)){
+                    self.arrows_pixels.push((pixels, point.2.color));
+                }
+                
             }
         }
 
@@ -181,6 +184,9 @@ impl Painting {
         match self.last_type_added.last().unwrap() {
             PpOptions::Arrow => {
                 self.arrows.remove(self.arrows.len() - 1);
+              
+                self.arrows_pixels.remove(self.arrows_pixels.len()-1);
+                
             }
             PpOptions::Circle => {
                 self.circles.remove(self.circles.len() - 1);
