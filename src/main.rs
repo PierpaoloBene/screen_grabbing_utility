@@ -640,6 +640,19 @@ impl eframe::App for FirstWindow {
 
                             if crop_btn.unwrap().clicked() || self.cut_clicked==true{
                                 self.cut_clicked=true;
+                                
+                            egui::Window::new("precut")
+                            .constraint_to(response.clone().unwrap().rect)
+                            .default_width(dim[0]-0.0)//da modificare
+                            .default_height(dim[1]-0.0)//da modificare
+                            .title_bar(false)
+                            .vscroll(false)
+                            .resizable(false)
+                            .frame(egui::Frame::none()
+                                     .fill(Color32::from_rgba_unmultiplied(0, 0, 0, 0))
+                                     )
+                            .show(ctx, |ui|{
+                                ui.allocate_space(ui.available_size());
                                 egui::Window::new("cut")
                                 .constraint_to(response.clone().unwrap().rect)
                                 .default_width(dim[0]-0.0)//da modificare
@@ -649,7 +662,7 @@ impl eframe::App for FirstWindow {
                                 .vscroll(false)
                                 .resizable(true)
                                 .frame(egui::Frame::none()
-                                     .fill(egui::Color32::TRANSPARENT)
+                                     .fill(egui::Color32::from_rgba_unmultiplied(50, 50, 50, 50))
                                      .stroke(Stroke::new(20.0, egui::Color32::BLACK))
                                      )
                                 .show(ctx, |ui| {
@@ -658,6 +671,8 @@ impl eframe::App for FirstWindow {
 
                                     
                                 });
+
+                            });
 
                                 if finish_crop.unwrap().clicked(){
                                     self.cut_clicked=false;
