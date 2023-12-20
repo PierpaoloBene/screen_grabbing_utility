@@ -150,6 +150,7 @@ fn main() -> Result<(), eframe::Error> {
                 arrow_pixels: Vec::new(),
                 text_pixels: Vec::new(),
                 line_pixels: Vec::new(),
+                save:false,
             })
         }),
     )
@@ -193,6 +194,7 @@ struct FirstWindow {
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
     line_pixels: Vec<(Vec<Pos2>, Color32)>,
+    save:bool,
 }
 
 impl eframe::App for FirstWindow {
@@ -516,9 +518,10 @@ impl eframe::App for FirstWindow {
                                     &mut self.mult_factor,
                                     dim,
                                     self.pp_option.clone().unwrap(),
+                                    self.save,
                                 )
                                 .clone();
-                            
+                                self.save=false;
                                 match self.pp_option.clone().unwrap() {
                                     PpOptions::Painting => {
                                         if pxs.is_none() == false {
@@ -544,16 +547,13 @@ impl eframe::App for FirstWindow {
                                     }
                                     PpOptions::Text => {
                                         if txt.is_none() == false {
-                                            self.text_pixels.push((
-                                                txt.clone().unwrap().2,
-                                                txt.clone().unwrap().1,
-                                                txt.unwrap().0,
-                                            ));
+                                            self.text_pixels=txt.clone().unwrap();
                                         }
                                     }
                                 }
 
                             if save_btn.unwrap().clicked() {
+                                self.save=true;
                                 self.image_name = Some(
                                     chrono::offset::Local::now()
                                         .format("%Y-%m-%d_%H_%M_%S")

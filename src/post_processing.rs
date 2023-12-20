@@ -14,10 +14,11 @@ pub trait View {
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
+        save:bool,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
-        Option<(String, Color32, Pos2)>,
+        Option<Vec<(Pos2, Color32, String)>>,
         Option<Vec<(Rect, Stroke)>>,
         Option<Vec<(Pos2, f32, Stroke)>>,
         Option<Response>
@@ -47,6 +48,7 @@ pub enum PpOptions {
 }
 pub struct Painting {
     last_type_added: Vec<PpOptions>,
+    
 
     mult_factor: Option<(f32, f32)>,
     /// in 0-1 normalized coordinates
@@ -63,13 +65,11 @@ pub struct Painting {
     radius: f32,
     circles: Vec<(Pos2, f32, Stroke)>,
     circles_stroke: Stroke,
-    circles_pixels: Vec<(Vec<Pos2>, Color32)>,
 
     square_starting_point: Pos2,
     square_ending_point: Pos2,
     squares_stroke: Stroke,
     squares: Vec<(Rect, Stroke)>,
-    squares_pixels: Vec<(Vec<Pos2>, Color32)>,
     shift_squares: Option<Pos2>,
 
     text_starting_position: Pos2,
@@ -84,6 +84,7 @@ impl Default for Painting {
     fn default() -> Self {
         Self {
             last_type_added: Vec::new(),
+            
 
             mult_factor: None,
             lines: Default::default(),
@@ -99,13 +100,12 @@ impl Default for Painting {
             radius: -1.0,
             circles: Vec::new(),
             circles_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
-            circles_pixels: Vec::new(),
+
 
             square_starting_point: Pos2 { x: -1.0, y: -1.0 },
             square_ending_point: Pos2 { x: -1.0, y: -1.0 },
             squares_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
             squares: Vec::new(),
-            squares_pixels: Vec::new(),
             shift_squares: None,
 
             text_starting_position: Pos2 { x: -1.0, y: -1.0 },
@@ -157,8 +157,7 @@ impl Painting {
 
         if !self.circles.is_empty() {
             for point in self.circles.clone().into_iter() {
-                painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);
-                
+                painter.circle(point.0, point.1, egui::Color32::TRANSPARENT, point.2);                
             }
         }
 
@@ -183,10 +182,8 @@ impl Painting {
     fn undo(&mut self) {
         match self.last_type_added.last().unwrap() {
             PpOptions::Arrow => {
-                self.arrows.remove(self.arrows.len() - 1);
-              
-                self.arrows_pixels.remove(self.arrows_pixels.len()-1);
-                
+                self.arrows.remove(self.arrows.len() - 1);              
+                self.arrows_pixels.remove(self.arrows_pixels.len()-1);                
             }
             PpOptions::Circle => {
                 self.circles.remove(self.circles.len() - 1);
@@ -439,6 +436,7 @@ impl Painting {
                 && self.final_point.y == -1.0
                 && self.starting_point.x != -1.0
                 && self.starting_point.y != -1.0
+                
             {
                 self.final_point = pos.unwrap();
             }
@@ -454,6 +452,7 @@ impl Painting {
             self.starting_point = Pos2 { x: -1.0, y: -1.0 };
             self.final_point = Pos2 { x: -1.0, y: -1.0 };
             self.last_type_added.push(PpOptions::Arrow);
+            
         }
         self.shift_squares = Some(Pos2::new(
             response.rect.left_top().x,
@@ -654,7 +653,7 @@ impl Painting {
         image: egui::Image,
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
-    ) -> Option<(String, Color32, Pos2)> {
+    ) -> Option<Vec<(Pos2, Color32, String)>> {
         // println!("In ui_content texts");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
@@ -731,18 +730,18 @@ impl Painting {
         }
 
         self.render_elements(painter.clone(), to_screen);
-
-        let new_pos = Pos2::new(
-            (self.text_starting_position.x - self.shift_squares.unwrap().x)
-                * self.mult_factor.unwrap().0,
-            (self.text_starting_position.y - self.shift_squares.unwrap().y)
-                * self.mult_factor.unwrap().1,
-        );
-        Some((
-            self.to_write_text.to_string(),
-            self.texts_stroke.color,
-            new_pos,
-        ))
+        let mut txt=Vec::new();
+        for t in self.texts.clone(){
+            let new_pos = Pos2::new(
+                (t.1.x - self.shift_squares.unwrap().x)
+                    * self.mult_factor.unwrap().0,
+                (t.1.y - self.shift_squares.unwrap().y)
+                    * self.mult_factor.unwrap().1,
+            );
+            txt.push((new_pos,  t.3.color, t.0 ));
+        }
+        
+        Some(txt.clone())
     }
 
     // pub fn calc_pixels_rect(&mut self, start: Pos2, end: Pos2, thickness: f32) -> Vec<Pos2> {
@@ -860,10 +859,11 @@ impl View for Painting {
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
         opt: PpOptions,
+        save:bool,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
-        Option<(String, Color32, Pos2)>,
+        Option<Vec<(Pos2, Color32, String)>>,
         Option<Vec<(Rect, Stroke)>>,
         Option<Vec<(Pos2, f32, Stroke)>>,
         Option<Response>
@@ -874,6 +874,9 @@ impl View for Painting {
         let mut sqrs = None;
         let mut crcls=None;
         let mut response=None;
+        if save{
+            self.last_type_added.clear();
+        }
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
