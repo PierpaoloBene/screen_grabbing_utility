@@ -48,6 +48,7 @@ pub enum PpOptions {
 }
 pub struct Painting {
     last_type_added: Vec<PpOptions>,
+    last_type_removed:Vec<PpOptions>,
     
 
     mult_factor: Option<(f32, f32)>,
@@ -58,24 +59,28 @@ pub struct Painting {
     starting_point: Pos2,
     final_point: Pos2,
     arrows: Vec<(Pos2, Pos2, Stroke)>,
+    removed_arrows:Vec<(Pos2, Pos2, Stroke)>,
     arrows_stroke: Stroke,
     arrows_pixels: Vec<(Vec<Pos2>, Color32)>,
 
     circle_center: Pos2,
     radius: f32,
     circles: Vec<(Pos2, f32, Stroke)>,
+    removed_circles: Vec<(Pos2, f32, Stroke)>,
     circles_stroke: Stroke,
 
     square_starting_point: Pos2,
     square_ending_point: Pos2,
     squares_stroke: Stroke,
     squares: Vec<(Rect, Stroke)>,
+    removed_squares:Vec<(Rect, Stroke)>,
     shift_squares: Option<Pos2>,
 
     text_starting_position: Pos2,
     text_ending_position: Pos2,
     texts_stroke: Stroke,
     texts: Vec<(String, Pos2, Pos2, Stroke)>,
+    removed_texts: Vec<(String, Pos2, Pos2, Stroke)>,
     to_write_text: String,
     ready_to_write: bool,
 }
@@ -84,7 +89,8 @@ impl Default for Painting {
     fn default() -> Self {
         Self {
             last_type_added: Vec::new(),
-            
+            last_type_removed:Vec::new(),  
+                    
 
             mult_factor: None,
             lines: Default::default(),
@@ -93,12 +99,14 @@ impl Default for Painting {
             starting_point: Pos2 { x: -1.0, y: -1.0 },
             final_point: Pos2 { x: -1.0, y: -1.0 },
             arrows: Vec::new(),
+            removed_arrows:Vec::new(),
             arrows_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
             arrows_pixels: Vec::new(),
 
             circle_center: Pos2 { x: -1.0, y: -1.0 },
             radius: -1.0,
             circles: Vec::new(),
+            removed_circles:Vec::new(),
             circles_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
 
 
@@ -106,11 +114,13 @@ impl Default for Painting {
             square_ending_point: Pos2 { x: -1.0, y: -1.0 },
             squares_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
             squares: Vec::new(),
+            removed_squares:Vec::new(),
             shift_squares: None,
 
             text_starting_position: Pos2 { x: -1.0, y: -1.0 },
             text_ending_position: Pos2 { x: -1.0, y: -1.0 },
             texts: Vec::new(),
+            removed_texts:Vec::new(),
             texts_stroke: Stroke::new(1.0, Color32::from_rgb(25, 200, 100)),
             to_write_text: "Write something".to_string(),
             ready_to_write: false,
@@ -182,21 +192,60 @@ impl Painting {
     fn undo(&mut self) {
         match self.last_type_added.last().unwrap() {
             PpOptions::Arrow => {
-                self.arrows.remove(self.arrows.len() - 1);              
-                self.arrows_pixels.remove(self.arrows_pixels.len()-1);                
+                let rem=self.arrows.pop().unwrap();
+                self.removed_arrows.push(rem);
+                //self.arrows.remove(self.arrows.len() - 1);              
+                self.arrows_pixels.remove(self.arrows_pixels.len()-1);    
+                self.last_type_removed.push(PpOptions::Arrow);            
             }
             PpOptions::Circle => {
-                self.circles.remove(self.circles.len() - 1);
+                let rem=self.circles.pop().unwrap();
+                self.removed_circles.push(rem);
+                //self.circles.remove(self.circles.len() - 1);
+                self.last_type_removed.push(PpOptions::Circle);  
             }
             PpOptions::Square => {
-                self.squares.remove(self.squares.len() - 1);
+                let rem=self.squares.pop().unwrap();
+                self.removed_squares.push(rem);
+                //self.squares.remove(self.squares.len() - 1);
+                self.last_type_removed.push(PpOptions::Square);  
             }
             PpOptions::Text => {
-                self.texts.remove(self.texts.len() - 1);
+                let rem=self.texts.pop().unwrap();
+                self.removed_texts.push(rem);
+               // self.texts.remove(self.texts.len() - 1);
+               self.last_type_removed.push(PpOptions::Text);  
             }
             _ => {}
         }
         self.last_type_added.pop();
+    }
+    fn redo(&mut self) {
+        match self.last_type_removed.last().unwrap() {
+            PpOptions::Arrow => {
+                let rem=self.removed_arrows.pop().unwrap();
+                self.arrows.push(rem);        
+                self.last_type_added.push(PpOptions::Arrow);      
+                //self.arrows_pixels.remove(self.arrows_pixels.len()-1);                
+            }
+            PpOptions::Circle => {
+                let rem=self.removed_circles.pop().unwrap();
+                self.circles.push(rem);
+                self.last_type_added.push(PpOptions::Circle); 
+            }
+            PpOptions::Square => {
+                let rem=self.removed_squares.pop().unwrap();
+                self.squares.push(rem);
+                self.last_type_added.push(PpOptions::Square); 
+            }
+            PpOptions::Text => {
+                let rem=self.removed_texts.pop().unwrap();
+                self.texts.push(rem);
+                self.last_type_added.push(PpOptions::Text); 
+            }
+            _ => {}
+        }
+        self.last_type_removed.pop();
     }
 
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
@@ -235,6 +284,7 @@ impl Painting {
             }
             PpOptions::Arrow => {
                 let mut back_btn = None;
+                let mut forward_btn = None;
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
                     ui.separator();
@@ -244,13 +294,19 @@ impl Painting {
                             self.undo();
                         }
                     }
+                    if self.last_type_removed.len()>0{
+                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        if forward_btn.unwrap().clicked() {
+                            self.redo();
+                        }
+                    }
                 })
                 .response
             }
             PpOptions::Circle => {
                 //println!("In ui_control circles");
                 let mut back_btn = None;
-
+                let mut forward_btn = None;
                 ui.horizontal(|ui| {
                     egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
                     ui.separator();
@@ -260,13 +316,19 @@ impl Painting {
                             self.undo();
                         }
                     }
+                    if self.last_type_removed.len()>0{
+                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        if forward_btn.unwrap().clicked() {
+                            self.redo();
+                        }
+                    }
                 })
                 .response
             }
             PpOptions::Square => {
                 //println!("In ui_control squares");
                 let mut back_btn = None;
-
+                let mut forward_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
                     egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
                     ui.separator();
@@ -276,6 +338,12 @@ impl Painting {
                             self.undo();
                         }
                     }
+                    if self.last_type_removed.len()>0{
+                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        if forward_btn.unwrap().clicked() {
+                            self.redo();
+                        }
+                    }
                 })
                 .response
             }
@@ -283,6 +351,7 @@ impl Painting {
                 // println!("In ui_control texts");
                 let mut write_btn = None;
                 let mut back_btn = None;
+                let mut forward_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
                     egui::stroke_ui(ui, &mut self.texts_stroke, "Stroke");
                     ui.separator();
@@ -302,6 +371,12 @@ impl Painting {
                         back_btn = Some(ui.add(egui::Button::new("Undo")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
+                        }
+                    }
+                    if self.last_type_removed.len()>0{
+                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        if forward_btn.unwrap().clicked() {
+                            self.redo();
                         }
                     }
                 })
