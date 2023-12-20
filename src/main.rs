@@ -9,8 +9,12 @@ use egui::Image;
 use egui::ImageData;
 use egui::Response;
 use egui::Rgba;
+use egui::Style;
+use image::DynamicImage;
 use image::EncodableLayout;
+use image::ImageBuffer;
 use image::Rgb;
+use image::imageops::crop;
 use imageproc;
 use imageproc::drawing::draw_line_segment;
 use rfd::FileDialog;
@@ -140,6 +144,7 @@ fn main() -> Result<(), eframe::Error> {
                 height: 0.0,
                 mult_factor: None,
                 cut_clicked: false,
+                finished_cut: false,
                 circle_pixels: Vec::new(),
                 square_pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
@@ -182,6 +187,7 @@ struct FirstWindow {
     height: f32,
     mult_factor: Option<(f32, f32)>,
     cut_clicked: bool,
+    finished_cut: bool,
     circle_pixels: Vec<(Pos2, f32, Stroke)>,
     square_pixels: Vec<(Rect, Stroke)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
@@ -416,6 +422,7 @@ impl eframe::App for FirstWindow {
             let mut save_edit_btn = None;
             let mut copy_btn=None;
             let mut crop_btn=None;
+            let mut finish_crop=None;
 
 
             egui::CentralPanel::default().show(ctx, |_ui| {
@@ -477,6 +484,7 @@ impl eframe::App for FirstWindow {
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
                         copy_btn = Some(ui.add(egui::Button::new("Copy")));
                         crop_btn=Some(ui.add(egui::Button::new("Cut")));
+                        finish_crop=Some(ui.add(egui::Button::new("Finish Your Cut")));
                     });
 
                     match self.loading_state {
@@ -498,7 +506,7 @@ impl eframe::App for FirstWindow {
                             let mut crcls=None;
                             let mut response=None;
                             
-                            
+                        
 
                             (pxs, arr, txt, sqrs, crcls,response) = self
                                 .painting
@@ -633,19 +641,34 @@ impl eframe::App for FirstWindow {
                             if crop_btn.unwrap().clicked() || self.cut_clicked==true{
                                 self.cut_clicked=true;
                                 egui::Window::new("cut")
-                                .default_size(dim)
-                                .pivot(egui::Align2::LEFT_TOP)
+                                .constraint_to(response.clone().unwrap().rect)
+                                .default_width(dim[0]-0.0)//da modificare
+                                .default_height(dim[1]-0.0)//da modificare
                                 .title_bar(false)
-                                .default_pos(response.unwrap().rect.left_top())
+                                .default_pos(response.clone().unwrap().rect.left_top())
                                 .vscroll(false)
                                 .resizable(true)
+                                .frame(egui::Frame::none()
+                                     .fill(egui::Color32::TRANSPARENT)
+                                     .stroke(Stroke::new(20.0, egui::Color32::BLACK))
+                                     )
                                 .show(ctx, |ui| {
                                     ui.allocate_space(ui.available_size());
+                                    println!("pos_left_top_corner:{:},{:}  , pos_right_bottom_corner:{:},{:}",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().right_bottom().y);
+
                                     
                                 });
 
+                                if finish_crop.unwrap().clicked(){
+                                    self.cut_clicked=false;
+                                    self.finished_cut=true;
+
+                                }
+                               
+
                                 
                             }
+                            
                         }
                         LoadingState::NotLoaded => {
                             for _i in [0, self.screenshots_taken.len() - 1] {
