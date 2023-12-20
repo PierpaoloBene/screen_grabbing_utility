@@ -527,9 +527,9 @@ impl eframe::App for FirstWindow {
                                     }
                                     PpOptions::Arrow => {
                                         if arr.is_none() == false {
-                                            for p in arr.clone().unwrap() {
-                                                self.arrow_pixels.push((p.0, p.1));
-                                            }
+                                           
+                                        self.arrow_pixels=arr.clone().unwrap();
+                                            
                                         }
                                     }
                                     PpOptions::Circle => {
