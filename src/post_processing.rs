@@ -289,13 +289,13 @@ impl Painting {
                     egui::stroke_ui(ui, &mut self.arrows_stroke, "Stroke");
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        back_btn = Some(ui.add(egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        forward_btn = Some(ui.add(egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
@@ -311,13 +311,13 @@ impl Painting {
                     egui::stroke_ui(ui, &mut self.circles_stroke, "Stroke");
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        back_btn = Some(ui.add(egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        forward_btn = Some(ui.add(egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
@@ -333,13 +333,13 @@ impl Painting {
                     egui::stroke_ui(ui, &mut self.squares_stroke, "Stroke");
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        back_btn = Some(ui.add(egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        forward_btn = Some(ui.add(egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
@@ -368,13 +368,13 @@ impl Painting {
                         self.ready_to_write = true;
                     }
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("Undo")));
+                        back_btn = Some(ui.add(egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("Redo")));
+                        forward_btn = Some(ui.add(egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
