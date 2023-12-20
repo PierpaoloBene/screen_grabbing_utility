@@ -607,7 +607,7 @@ impl eframe::App for FirstWindow {
                             }
                             if save_edit_btn.unwrap().clicked() {
                                 let dialog = FileDialog::new().save_file();
-
+                                self.save=true;
                                 let screens = Screen::all().unwrap();
                                 // let mod_img = screens[0].capture_area(
                                 //     response. unwrap().rect.left_top()[0] as i32,
