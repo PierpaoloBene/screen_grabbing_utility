@@ -958,8 +958,9 @@ impl View for Painting {
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                      
                         (pix,response) = self.ui_content(ui, image, dim);
-                       
+                               
                     });
                 });
             }
@@ -969,7 +970,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         arr = self.ui_content_arrows(ui, image, dim);
-                        
+                       
                     });
                 });
             }
