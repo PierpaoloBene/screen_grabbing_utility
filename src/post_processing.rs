@@ -395,6 +395,9 @@ impl Painting {
         //println!("In ui_content");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        println!("dim {:?}", dim);
+        println!("response {:?}", response.rect.size());
+        
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -958,8 +961,10 @@ impl View for Painting {
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                      
+                      ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
                         (pix,response) = self.ui_content(ui, image, dim);
+                      })
+                        
                                
                     });
                 });
