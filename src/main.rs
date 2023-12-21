@@ -662,10 +662,44 @@ impl eframe::App for FirstWindow {
                                 .vscroll(false)
                                 .resizable(true)
                                 .frame(egui::Frame::none()
-                                     .fill(egui::Color32::from_rgba_unmultiplied(50, 50, 50, 50))
-                                     .stroke(Stroke::new(20.0, egui::Color32::BLACK))
+                                     .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
+                                     .stroke(Stroke::new(20.0, egui::Color32::WHITE))
                                      )
                                 .show(ctx, |ui| {
+                                     //2 linee verticali
+                                     ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(5.0, Color32::WHITE),
+                                        16.0, 4.0));
+
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(5.0, Color32::WHITE),
+                                        16.0, 4.0));
+
+                                    //2 linee orizzontali
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33)],
+                                        Stroke::new(5.0, Color32::WHITE),
+                                        16.0, 4.0));
+
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66)],
+                                        Stroke::new(5.0, Color32::WHITE),
+                                        16.0, 4.0));
+
                                     ui.allocate_space(ui.available_size());
                                     println!("pos_left_top_corner:{:},{:}  , pos_right_bottom_corner:{:},{:}",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().right_bottom().y);
 
