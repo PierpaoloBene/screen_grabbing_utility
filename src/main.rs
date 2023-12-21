@@ -404,14 +404,15 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5;
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
-            
-            
+            if self.width>1900.0{
+                self.width=1440.0;
+            }
             
             if self.width <= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(1000.0, 500.0)); 
             } else if self.width <= 1000.0 && self.height >= 500.0 {
                 frame.set_window_size(Vec2::new(1000.0, self.height));
-            } else if self.width >= 1000.0 && self.height <= 500.0 {
+            } else if self.width >= 1000.0 && self.height <= 500.0 {                
                 frame.set_window_size(Vec2::new(self.width, 500.0));
             } else if self.width >= 1200.0 && self.height >= 700.0 {
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
@@ -493,15 +494,32 @@ impl eframe::App for FirstWindow {
 
                     match self.loading_state {
                         LoadingState::Loaded => {
+                            
                             let dim: Vec2;
-                            if self.width >= 1200.0 && self.height >= 700.0 {
-                                dim = Vec2::new(1200.0, 700.0);
-                            } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                dim = Vec2::new(1200.0, self.height);
-                            } else if self.width <= 1200.0 && self.height >= 700.0 {
-                                dim = Vec2::new(self.width, 700.0);
+                            let mut w=self.width;
+                            let mut h=self.height;
+
+                            if self.width >= 1100.0 && self.height >= 600.0 {
+                                //funziona
+                                println!("entrambe le dimensioni enormi");
+                                dim = Vec2::new(w-w*0.4, h-h*0.4);
+                            }else if self.width >= 1600.0 && self.height <= 600.0 {
+                                //da sistemare
+                                println!("molto largo");
+                                dim = Vec2::new(w-w*0.25, self.height);
+                            }
+                             else if self.width >= 1100.0 && self.height <= 600.0 {
+                                //funziona
+                                println!("largo");
+                                dim = Vec2::new(w-w*0.1, self.height);
+                            }
+                             else if self.width <= 1100.0 && self.height >= 600.0 {
+                                //funziona
+                                println!("lungo");
+                                dim = Vec2::new(self.width, h-h*0.35);
                             } else {
-                                dim = Vec2::new(self.width, self.height);
+                                println!("normale");
+                                dim = Vec2::new(w, h);
                             }
                             let mut pxs = None;
                             let mut arr=None;
@@ -658,7 +676,7 @@ impl eframe::App for FirstWindow {
                                     h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.5;
                                     frame.set_window_size(Vec2::new(w, h));
                                 } else if self.width >= 1200.0 && self.height >= 700.0 {
-                                    frame.set_window_size(Vec2::new(w, h));
+                                    frame.set_window_size(Vec2::new(w-w*0.3, h));
                                 } else {
                                     frame.set_window_size(Vec2::new(w, h));
                                 }
@@ -679,9 +697,11 @@ impl eframe::App for FirstWindow {
                             .show(ctx, |ui|{
                                 ui.allocate_space(ui.available_size());
                                 egui::Window::new("cut")
-                                .constraint_to(egui::Rect::from_min_size(response.clone().unwrap().rect.left_top(), dim))
-                                .default_width(response.clone().unwrap().rect.x_range().span())//da modificare
-                                .default_height(response.clone().unwrap().rect.y_range().span())//da modificare
+                                
+                                
+                                .constraint_to(egui::Rect::from_min_size(response.clone().unwrap().rect.left_top(), Vec2::new(response.clone().unwrap().rect.width(), response.clone().unwrap().rect.height())))
+                                .default_width(response.clone().unwrap().rect.width())//da modificare
+                                .default_height(response.clone().unwrap().rect.height())//da modificare
                                 .title_bar(false)
                                 .default_pos(response.clone().unwrap().rect.left_top())
                                 .vscroll(false)
@@ -726,11 +746,13 @@ impl eframe::App for FirstWindow {
                                        10.0, 5.0));
 
                                    ui.allocate_space(ui.available_size());
-                                   println!("pos_left_top_corner:{:?}  , pos_right_bottom_corner:{:?}",ui.available_rect_before_wrap().left_top(),ui.available_rect_before_wrap().right_bottom());
+                                  // println!("pos_left_top_corner:{:?}  , pos_right_bottom_corner:{:?}",ui.available_rect_before_wrap().left_top(),ui.available_rect_before_wrap().right_bottom());
                                   //println!(" width finestra {:?} height finstra {:?}",ui.available_rect_before_wrap().width() ,ui.available_rect_before_wrap().height());
 
-                                  println!("response left_top_corner:{:?}  , response right_bottom_corner:{:?}",response.clone().unwrap().rect.left_top(),response.clone().unwrap().rect.right_bottom());
-                                  
+                                  //println!("response left_top_corner:{:?}  , response right_bottom_corner:{:?}",response.clone().unwrap().rect.left_top(),response.clone().unwrap().rect.right_bottom());
+                                 
+                                  println!("im size {:?}", self.image.clone().unwrap().size());
+                                  println!("rect height {:?} window height {:?}", response.clone().unwrap().rect.height(), ui.available_rect_before_wrap().height());
                                });
                                
 
