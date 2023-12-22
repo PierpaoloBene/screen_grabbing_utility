@@ -121,6 +121,7 @@ fn main() -> Result<(), eframe::Error> {
                 pp_option: None,
                 current_os: current_os.to_string(),
                 multiplication_factor: None,
+                screen_size: None,
                 loading_state: LoadingState::NotLoaded,
                 image: None,
                 image_texture: None,
@@ -165,6 +166,7 @@ struct FirstWindow {
     pp_option: Option<PpOptions>,
     current_os: String,
     multiplication_factor: Option<f32>,
+    screen_size: Option<Vec2>,
     loading_state: LoadingState,
     image: Option<TextureHandle>,
     image_texture: Option<egui::ColorImage>,
@@ -203,6 +205,9 @@ impl eframe::App for FirstWindow {
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
+        if self.screen_size.is_none() {
+            self.screen_size = frame.info().window_info.monitor_size; 
+        } 
         match self.open_fw.try_recv() {
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
@@ -340,7 +345,7 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(frame.info().window_info.monitor_size.unwrap() * 2.0);
+            frame.set_window_size(self.screen_size.unwrap() * 2.0);
       
             frame.set_window_pos(egui::pos2(0.0, 0.0));
 
@@ -405,6 +410,7 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5;
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
+            frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
 
             println!("w={:} , h={:}",self.width,self.height);
             
@@ -415,14 +421,14 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(1100.0, self.height+self.height*0.3));
                 println!("2");
             } else if self.width >= 1000.0 && self.height <= 500.0 {
-                frame.set_window_size(Vec2::new(frame.info().window_info.monitor_size.unwrap().x, 600.0));
+                frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap(), 600.0));
                 println!("3");
             } else if self.width >= 1200.0 && self.height >= 700.0 {
                 println!("4");
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
             } else {
                 println!("5");
-                frame.set_window_size(Vec2::new(self.width+self.width, self.height+self.height*0.3));
+                frame.set_window_size(Vec2::new(self.width, self.height+self.height*0.3));
             }
 
            
@@ -505,7 +511,7 @@ impl eframe::App for FirstWindow {
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                dim = Vec2::new(frame.info().window_info.size.x-frame.info().window_info.size.x*0.01, self.height);
+                                dim = Vec2::new(self.screen_size.unwrap().x/self.multiplication_factor.unwrap() -self.screen_size.unwrap().x/self.multiplication_factor.unwrap()*0.01, self.height);
                             } else if self.width <= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(self.width, 700.0);
                             } else {
