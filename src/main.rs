@@ -146,13 +146,15 @@ fn main() -> Result<(), eframe::Error> {
                 height: 0.0,
                 mult_factor: None,
                 cut_clicked: false,
-                finished_cut: false,
+                
                 circle_pixels: Vec::new(),
                 square_pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
                 text_pixels: Vec::new(),
                 line_pixels: Vec::new(),
                 save:false,
+                to_cut_rect:None,
+                
             })
         }),
     )
@@ -191,13 +193,15 @@ struct FirstWindow {
     height: f32,
     mult_factor: Option<(f32, f32)>,
     cut_clicked: bool,
-    finished_cut: bool,
+    
     circle_pixels: Vec<(Pos2, f32, Stroke)>,
     square_pixels: Vec<(Rect, Stroke)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
     line_pixels: Vec<(Vec<Pos2>, Color32)>,
     save:bool,
+    to_cut_rect:Option<(Pos2, Pos2)>,
+    
 }
 
 impl eframe::App for FirstWindow {
@@ -428,7 +432,7 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
             } else {
                 println!("5");
-                frame.set_window_size(Vec2::new(self.width, self.height+self.height*0.3));
+                frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap()- self.screen_size.unwrap().x /self.multiplication_factor.unwrap()*0.001, self.screen_size.unwrap().y /self.multiplication_factor.unwrap()- self.screen_size.unwrap().y /self.multiplication_factor.unwrap()*0.01));
             }
 
            
@@ -509,11 +513,14 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
-                                dim = Vec2::new(1200.0, 700.0);
+                                
+                                dim = Vec2::new(self.width*0.7, self.height*0.7); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                dim = Vec2::new(self.screen_size.unwrap().x/self.multiplication_factor.unwrap() -self.screen_size.unwrap().x/self.multiplication_factor.unwrap()*0.01, self.height-self.height*0.01);
-                            } else if self.width <= 1200.0 && self.height >= 700.0 {
-                                dim = Vec2::new(self.width- self.width*0.2, self.screen_size.unwrap().y/self.multiplication_factor.unwrap()- self.screen_size.unwrap().y/self.multiplication_factor.unwrap()*0.2);
+                                
+                                dim = Vec2::new(self.width*0.7, self.height*0.7);
+                            } else if self.width <= 1200.0 && self.height >= 700.0 {                                                        
+                               
+                                dim = Vec2::new(self.width*0.6, self.height*0.6);
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
@@ -716,19 +723,26 @@ impl eframe::App for FirstWindow {
                                             Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66)],
                                         Stroke::new(2.0, Color32::WHITE),
                                         10.0, 5.0));
-
+                                    //println!("pos_left_top_corner:{:},{:}  , pos_left_bottom_corner:{:},{:} pos_right_top_corner={:?} pos_right_bottom_corner={:?} ",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().left_bottom().x,ui.available_rect_before_wrap().left_bottom().y, ui.available_size_before_wrap(), ui.available_size_before_wrap());
+                                    self.to_cut_rect= Some((ui.available_rect_before_wrap().left_top(), ui.available_rect_before_wrap().right_bottom()));
+                                    
                                     ui.allocate_space(ui.available_size());
-                                    println!("pos_left_top_corner:{:},{:}  , pos_right_bottom_corner:{:},{:}",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().right_bottom().y);
-
                                     
                                 });
+
 
                             });
 
                                 if finish_crop.unwrap().clicked(){
-                                    self.cut_clicked=false;
-                                    self.finished_cut=true;
 
+                                    self.cut_clicked=false;
+                                    
+                                    let di=DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
+                                    let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
+                                    let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
+                                    //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
+                                    let cutted=di.crop_imm((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x) as u32, (self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y) as u32, w as u32, h as u32);
+                                    println!("{:?}",cutted.save("./target/salvalaa.png"));
                                 }
                                
 
