@@ -511,9 +511,9 @@ impl eframe::App for FirstWindow {
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                dim = Vec2::new(self.screen_size.unwrap().x/self.multiplication_factor.unwrap() -self.screen_size.unwrap().x/self.multiplication_factor.unwrap()*0.01, self.height);
+                                dim = Vec2::new(self.screen_size.unwrap().x/self.multiplication_factor.unwrap() -self.screen_size.unwrap().x/self.multiplication_factor.unwrap()*0.01, self.height-self.height*0.01);
                             } else if self.width <= 1200.0 && self.height >= 700.0 {
-                                dim = Vec2::new(self.width, 700.0);
+                                dim = Vec2::new(self.width- self.width*0.2, self.screen_size.unwrap().y/self.multiplication_factor.unwrap()- self.screen_size.unwrap().y/self.multiplication_factor.unwrap()*0.2);
                             } else {
                                 dim = Vec2::new(self.width, self.height);
                             }
