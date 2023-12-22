@@ -676,7 +676,7 @@ impl eframe::App for FirstWindow {
                                     h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.5;
                                     frame.set_window_size(Vec2::new(w, h));
                                 } else if self.width >= 1200.0 && self.height >= 700.0 {
-                                    frame.set_window_size(Vec2::new(w-w*0.3, h));
+                                    frame.set_window_size(Vec2::new(w-w*0.15, h));
                                 } else {
                                     frame.set_window_size(Vec2::new(w, h));
                                 }
