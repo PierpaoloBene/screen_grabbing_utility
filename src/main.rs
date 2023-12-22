@@ -743,7 +743,7 @@ impl eframe::App for FirstWindow {
                                     let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
                                     let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
                                     //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
-                                    let cutted=di.crop_imm(((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap()) as u32, ((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap()) as u32, (w/self.shrink_fact.unwrap()) as u32, (h/self.shrink_fact.unwrap()) as u32);
+                                    let cutted=di.crop_imm((((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, (((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((w/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((h/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32);
                                     println!("{:?}",cutted.save("./target/salvalaa.png"));
                                 }
                                
