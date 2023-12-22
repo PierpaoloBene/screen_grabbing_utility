@@ -415,7 +415,7 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(1100.0, self.height+self.height*0.3));
                 println!("2");
             } else if self.width >= 1000.0 && self.height <= 500.0 {
-                frame.set_window_size(Vec2::new(self.width-self.width*0.1, 600.0));
+                frame.set_window_size(Vec2::new(frame.info().window_info.monitor_size.unwrap().x, 600.0));
                 println!("3");
             } else if self.width >= 1200.0 && self.height >= 700.0 {
                 println!("4");
@@ -505,7 +505,7 @@ impl eframe::App for FirstWindow {
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(1200.0, 700.0);
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                dim = Vec2::new(1200.0, self.height);
+                                dim = Vec2::new(frame.info().window_info.size.x-frame.info().window_info.size.x*0.01, self.height);
                             } else if self.width <= 1200.0 && self.height >= 700.0 {
                                 dim = Vec2::new(self.width, 700.0);
                             } else {
