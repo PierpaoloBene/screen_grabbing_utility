@@ -154,7 +154,7 @@ fn main() -> Result<(), eframe::Error> {
                 line_pixels: Vec::new(),
                 save:false,
                 to_cut_rect:None,
-                
+                shrink_fact:None,
             })
         }),
     )
@@ -201,6 +201,7 @@ struct FirstWindow {
     line_pixels: Vec<(Vec<Pos2>, Color32)>,
     save:bool,
     to_cut_rect:Option<(Pos2, Pos2)>,
+    shrink_fact:Option<f32>,
     
 }
 
@@ -513,15 +514,16 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
-                                
+                                self.shrink_fact=Some(0.7);
                                 dim = Vec2::new(self.width*0.7, self.height*0.7); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                
+                                self.shrink_fact=Some(0.7);
                                 dim = Vec2::new(self.width*0.7, self.height*0.7);
                             } else if self.width <= 1200.0 && self.height >= 700.0 {                                                        
-                               
-                                dim = Vec2::new(self.width*0.6, self.height*0.6);
+                               self.shrink_fact=Some(0.6);
+                                dim = Vec2::new(self.width*0.6 , self.height*0.6);
                             } else {
+                                self.shrink_fact=Some(1.0);
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
@@ -741,7 +743,7 @@ impl eframe::App for FirstWindow {
                                     let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
                                     let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
                                     //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
-                                    let cutted=di.crop_imm((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x) as u32, (self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y) as u32, w as u32, h as u32);
+                                    let cutted=di.crop_imm(((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap()) as u32, ((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap()) as u32, (w/self.shrink_fact.unwrap()) as u32, (h/self.shrink_fact.unwrap()) as u32);
                                     println!("{:?}",cutted.save("./target/salvalaa.png"));
                                 }
                                
