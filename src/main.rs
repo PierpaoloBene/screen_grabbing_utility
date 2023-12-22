@@ -2,6 +2,7 @@ mod post_processing;
 use crate::post_processing::PpOptions;
 use crate::post_processing::View;
 use chrono;
+use eframe::glow::PRIMITIVE_RESTART_INDEX;
 use egui::ColorImage;
 use egui::CursorIcon;
 use egui::FontImage;
@@ -404,21 +405,27 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5;
         } else if self.selected_window == 5 {
             frame.set_decorations(true);
-            if self.width>1900.0{
-                self.width=1440.0;
-            }
+
+            println!("w={:} , h={:}",self.width,self.height);
             
             if self.width <= 1000.0 && self.height <= 500.0 {
-                frame.set_window_size(Vec2::new(1000.0, 500.0)); 
+                frame.set_window_size(Vec2::new(1100.0, 600.0)); //1400 750
+                println!("1");
             } else if self.width <= 1000.0 && self.height >= 500.0 {
-                frame.set_window_size(Vec2::new(1000.0, self.height));
-            } else if self.width >= 1000.0 && self.height <= 500.0 {                
-                frame.set_window_size(Vec2::new(self.width, 500.0));
+                frame.set_window_size(Vec2::new(1100.0, self.height+self.height*0.3));
+                println!("2");
+            } else if self.width >= 1000.0 && self.height <= 500.0 {
+                frame.set_window_size(Vec2::new(self.width-self.width*0.1, 600.0));
+                println!("3");
             } else if self.width >= 1200.0 && self.height >= 700.0 {
+                println!("4");
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
             } else {
-                frame.set_window_size(Vec2::new(self.width, self.height));
+                println!("5");
+                frame.set_window_size(Vec2::new(self.width+self.width, self.height+self.height*0.3));
             }
+
+           
 
             let mut paint_btn = None;
 
@@ -494,32 +501,15 @@ impl eframe::App for FirstWindow {
 
                     match self.loading_state {
                         LoadingState::Loaded => {
-                            
                             let dim: Vec2;
-                            let mut w=self.width;
-                            let mut h=self.height;
-
-                            if self.width >= 1100.0 && self.height >= 600.0 {
-                                //funziona
-                                println!("entrambe le dimensioni enormi");
-                                dim = Vec2::new(w-w*0.4, h-h*0.4);
-                            }else if self.width >= 1600.0 && self.height <= 600.0 {
-                                //da sistemare
-                                println!("molto largo");
-                                dim = Vec2::new(w-w*0.25, self.height);
-                            }
-                             else if self.width >= 1100.0 && self.height <= 600.0 {
-                                //funziona
-                                println!("largo");
-                                dim = Vec2::new(w-w*0.1, self.height);
-                            }
-                             else if self.width <= 1100.0 && self.height >= 600.0 {
-                                //funziona
-                                println!("lungo");
-                                dim = Vec2::new(self.width, h-h*0.35);
+                            if self.width >= 1200.0 && self.height >= 700.0 {
+                                dim = Vec2::new(1200.0, 700.0);
+                            } else if self.width >= 1200.0 && self.height <= 700.0 {
+                                dim = Vec2::new(1200.0, self.height);
+                            } else if self.width <= 1200.0 && self.height >= 700.0 {
+                                dim = Vec2::new(self.width, 700.0);
                             } else {
-                                println!("normale");
-                                dim = Vec2::new(w, h);
+                                dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
                             let mut arr=None;
@@ -653,36 +643,13 @@ impl eframe::App for FirstWindow {
                             }
                             if copy_btn.unwrap().clicked(){
                                 self.edit_image();
-
                                 let mut clipboard = Clipboard::new().unwrap();
                                 let w=self.image_buffer.clone().unwrap().width() as usize;
-                                let h=self.image_buffer.clone().unwrap().height() as usize;
-                                clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
+                                let h=self.image_buffer.clone().unwrap().height() as usize;clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
                             }
 
-                            if crop_btn.unwrap().clicked() || self.cut_clicked==true{                                
+                            if crop_btn.unwrap().clicked() || self.cut_clicked==true{
                                 self.cut_clicked=true;
-                                let mut w=response.clone().unwrap().rect.x_range().span()+ response.clone().unwrap().rect.x_range().span()*0.2;
-                                let mut h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.2;
-                                
-                                if self.width <= 1000.0 && self.height <= 500.0 {
-                                    w=response.clone().unwrap().rect.x_range().span()+ response.clone().unwrap().rect.x_range().span()*0.5;
-                                    h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.5;
-                                    frame.set_window_size(Vec2::new(w, h)); 
-                                } else if self.width <= 1000.0 && self.height >= 500.0 {
-                                    w=response.clone().unwrap().rect.x_range().span()+ response.clone().unwrap().rect.x_range().span()*0.5;
-                                    frame.set_window_size(Vec2::new(w, h));
-                                } else if self.width >= 1000.0 && self.height <= 500.0 {
-                                    h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.5;
-                                    frame.set_window_size(Vec2::new(w, h));
-                                } else if self.width >= 1200.0 && self.height >= 700.0 {
-                                    frame.set_window_size(Vec2::new(w-w*0.15, h));
-                                } else {
-                                    frame.set_window_size(Vec2::new(w, h));
-                                }
-                                // let mut w=response.clone().unwrap().rect.x_range().span()+ response.clone().unwrap().rect.x_range().span()*0.2;
-                                // let mut h=response.clone().unwrap().rect.y_range().span()+response.clone().unwrap().rect.y_range().span()*0.2;
-                                // frame.set_window_size(Vec2::new(w, h));
                                 
                             egui::Window::new("precut")
                             .constraint_to(response.clone().unwrap().rect)
@@ -697,11 +664,9 @@ impl eframe::App for FirstWindow {
                             .show(ctx, |ui|{
                                 ui.allocate_space(ui.available_size());
                                 egui::Window::new("cut")
-                                
-                                
-                                .constraint_to(egui::Rect::from_min_size(response.clone().unwrap().rect.left_top(), Vec2::new(response.clone().unwrap().rect.width(), response.clone().unwrap().rect.height())))
-                                .default_width(response.clone().unwrap().rect.width())//da modificare
-                                .default_height(response.clone().unwrap().rect.height())//da modificare
+                                .constraint_to(response.clone().unwrap().rect)
+                                .default_width(dim[0]-0.0)//da modificare
+                                .default_height(dim[1]-0.0)//da modificare
                                 .title_bar(false)
                                 .default_pos(response.clone().unwrap().rect.left_top())
                                 .vscroll(false)
@@ -711,50 +676,46 @@ impl eframe::App for FirstWindow {
                                      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
                                      )
                                 .show(ctx, |ui| {
-                                    //2 linee verticali
+                                     //2 linee verticali
+                                     
+                                     ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
+
                                     ui.painter().add(
-                                       egui::Shape::dashed_line(
-                                       &[
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().left_top().y),
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().right_bottom().y)],
-                                       Stroke::new(2.0, Color32::WHITE),
-                                       10.0, 5.0));
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
 
-                                   ui.painter().add(
-                                       egui::Shape::dashed_line(
-                                       &[
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().left_top().y),
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().right_bottom().y)],
-                                       Stroke::new(2.0, Color32::WHITE),
-                                       10.0, 5.0));
+                                    //2 linee orizzontali
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
 
-                                   //2 linee orizzontali
-                                   ui.painter().add(
-                                       egui::Shape::dashed_line(
-                                       &[
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33),
-                                           Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33)],
-                                       Stroke::new(2.0, Color32::WHITE),
-                                       10.0, 5.0));
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
 
-                                   ui.painter().add(
-                                       egui::Shape::dashed_line(
-                                       &[
-                                           Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66),
-                                           Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66)],
-                                       Stroke::new(2.0, Color32::WHITE),
-                                       10.0, 5.0));
+                                    ui.allocate_space(ui.available_size());
+                                    println!("pos_left_top_corner:{:},{:}  , pos_right_bottom_corner:{:},{:}",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().right_bottom().y);
 
-                                   ui.allocate_space(ui.available_size());
-                                  // println!("pos_left_top_corner:{:?}  , pos_right_bottom_corner:{:?}",ui.available_rect_before_wrap().left_top(),ui.available_rect_before_wrap().right_bottom());
-                                  //println!(" width finestra {:?} height finstra {:?}",ui.available_rect_before_wrap().width() ,ui.available_rect_before_wrap().height());
-
-                                  //println!("response left_top_corner:{:?}  , response right_bottom_corner:{:?}",response.clone().unwrap().rect.left_top(),response.clone().unwrap().rect.right_bottom());
-                                 
-                                  println!("im size {:?}", self.image.clone().unwrap().size());
-                                  println!("rect height {:?} window height {:?}", response.clone().unwrap().rect.height(), ui.available_rect_before_wrap().height());
-                               });
-                               
+                                    
+                                });
 
                             });
 

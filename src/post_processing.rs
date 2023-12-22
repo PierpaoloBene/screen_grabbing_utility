@@ -395,9 +395,6 @@ impl Painting {
         //println!("In ui_content");
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
-        println!("dim {:?}", dim);
-        println!("response {:?}", response.rect.size());
-        
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -960,13 +957,20 @@ impl View for Painting {
                 self.ui_control(ui, opt);
                 ui.label("Paint with your mouse/touch!");
                 ui.vertical_centered(|ui| {
-                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                      ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
-                        (pix,response) = self.ui_content(ui, image, dim);
-                      })
-                        
+                    if  image.size().unwrap()[0] >= 1000.0 && image.size().unwrap()[1] <= 500.0 {
+                        ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
+                            egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                                (pix,response) = self.ui_content(ui, image, dim);
                                
-                    });
+                            });
+                        });
+                    }else{
+                        egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                            (pix,response) = self.ui_content(ui, image, dim);
+                           
+                        });
+                    }
+                    
                 });
             }
             PpOptions::Arrow => {
@@ -975,7 +979,7 @@ impl View for Painting {
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         arr = self.ui_content_arrows(ui, image, dim);
-                       
+                        
                     });
                 });
             }
