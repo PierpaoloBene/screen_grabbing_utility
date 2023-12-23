@@ -11,8 +11,8 @@ pub mod first_window {
         pub fn set_width_height(&mut self) {
             match self.selected_mode {
                 ModeOptions::Rectangle => {
-                    self.width = self.rect_pos_f[0] - self.rect_pos[0];
-                    self.height = self.rect_pos_f[1] - self.rect_pos[1];
+                    self.width = (self.rect_pos_f[0]) - (self.rect_pos[0]);
+                    self.height = (self.rect_pos_f[1]) - self.rect_pos[1];
                 }
                 ModeOptions::FullScreen => {
                     self.width = self.image_texture.clone().unwrap().size[0] as f32;
@@ -36,13 +36,7 @@ pub mod first_window {
                 ];
 
                 let mut pixels = self.screenshots_taken[i].as_flat_samples_mut();
-                // for mut p in pixels.as_mut_slice().into_iter(){
-                //     if *p>250{
-                //        *p= 10;
-
-                //     }
-
-                // }
+                
                 let immagine: egui::ColorImage =
                     egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
@@ -61,20 +55,24 @@ pub mod first_window {
                         if self.screen_to_show.is_none() == false
                             && screen.display_info.id == self.screen_to_show.unwrap()
                         {
-                            println!("{}", screen.display_info.scale_factor);
-                            // println!("{:?} {} {} ", self.rect_pos, self.height, self.width);
-                            // println!("{} {} ", screen.display_info.width, screen.display_info.height);
+                           
+                            
                             if screen.display_info.is_primary == false {
                                 self.rect_pos.x -= screen.display_info.width as f32;
                             }
-                            // println!("{:?} {} {} ", self.rect_pos, self.height, self.width);
-                            // println!("{} {} ", screen.display_info.width, screen.display_info.height);
+                            //  println!("{:?} {:?}", self.rect_pos, self.rect_pos_f);
+                            //  println!("{:?} {:?}", self.width, self.height);
+                            if self.rect_pos[0]<0.0{
+                                self.rect_pos[0]+=self.screen_size.unwrap()[0];
+                            }
                             let mut image = screen.capture_area(
                                 self.rect_pos[0] as i32,
                                 self.rect_pos[1] as i32,
-                                self.width as u32,
-                                self.height as u32,
+                                self.width as u32 ,
+                                self.height as u32 ,
                             );
+                            
+                            println!("{:?}",image.as_ref().unwrap().dimensions());
                             if image.is_err() == false {
                                 //let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
                                 self.screenshots_taken.push(image.unwrap());

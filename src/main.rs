@@ -361,13 +361,13 @@ impl eframe::App for FirstWindow {
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
 
-            println!("{:?} {:?}", self.screen_size, self.frame_initial_pos);
+           // println!("{:?} {:?}", self.screen_size, self.frame_initial_pos);
 
             frame.set_window_size(self.screen_size.unwrap());
             
 
             frame.set_window_pos(self.frame_initial_pos.unwrap());
-
+            self.multiplication_factor=frame.info().native_pixels_per_point;
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
@@ -386,14 +386,14 @@ impl eframe::App for FirstWindow {
                             }) {
                                 println!("salvo pressione");
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
-                                self.screen_to_show = Some(
-                                    DisplayInfo::from_point(
-                                        self.mouse_pos.unwrap().x as i32,
-                                        self.mouse_pos.unwrap().y as i32,
-                                    )
-                                    .unwrap()
-                                    .id,
-                                );
+                                // self.screen_to_show = Some(
+                                //     DisplayInfo::from_point(
+                                //         self.mouse_pos.unwrap().x as i32,
+                                //         self.mouse_pos.unwrap().y as i32,
+                                //     )
+                                //     .unwrap()
+                                //     .id,
+                                // );
                                 // println!("{:?}", self.mouse_pos);
                                 // println!("{:?}", DisplayInfo::from_point(self.mouse_pos.unwrap().x as i32,self.mouse_pos.unwrap().y as i32).unwrap());
                             }
@@ -857,7 +857,7 @@ impl eframe::App for FirstWindow {
                     self.screen_to_show=Some(screens[1].display_info.id);
                     self.screen_size=Some(Vec2::new(screens[1].display_info.width as f32, screens[1].display_info.height as f32));
                     self.frame_initial_pos=Some(Pos2::new(screens[1].display_info.x as f32, screens[1].display_info.y as f32));
-                    println!("{:?}",screens[1].display_info.scale_factor);
+                    println!("{:?}",screens[1].display_info);
                 }
                 }
                
