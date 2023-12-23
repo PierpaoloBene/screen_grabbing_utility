@@ -36,7 +36,7 @@ pub mod first_window {
                 ];
 
                 let mut pixels = self.screenshots_taken[i].as_flat_samples_mut();
-                
+
                 let immagine: egui::ColorImage =
                     egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
@@ -55,24 +55,21 @@ pub mod first_window {
                         if self.screen_to_show.is_none() == false
                             && screen.display_info.id == self.screen_to_show.unwrap()
                         {
-                           
-                            
                             if screen.display_info.is_primary == false {
                                 self.rect_pos.x -= screen.display_info.width as f32;
                             }
-                            //  println!("{:?} {:?}", self.rect_pos, self.rect_pos_f);
-                            //  println!("{:?} {:?}", self.width, self.height);
-                            if self.rect_pos[0]<0.0{
-                                self.rect_pos[0]+=self.screen_size.unwrap()[0];
+                           
+                            if self.rect_pos[0] < 0.0 {
+                                self.rect_pos[0] += self.screen_size.unwrap()[0];
                             }
                             let mut image = screen.capture_area(
                                 self.rect_pos[0] as i32,
                                 self.rect_pos[1] as i32,
-                                self.width as u32 ,
-                                self.height as u32 ,
+                                self.width as u32,
+                                self.height as u32,
                             );
-                            
-                            println!("{:?}",image.as_ref().unwrap().dimensions());
+
+                            println!("{:?}", image.as_ref().unwrap().dimensions());
                             if image.is_err() == false {
                                 //let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
                                 self.screenshots_taken.push(image.unwrap());
@@ -86,12 +83,15 @@ pub mod first_window {
                 ModeOptions::FullScreen => {
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
-                        let image = screen.capture();
+                        if screen.display_info.id==self.screen_to_show.unwrap(){
+                            let image = screen.capture();
                         if image.is_err() == false {
                             self.screenshots_taken.push(image.unwrap());
                         } else {
                             println!("{:?}", image);
                         }
+                        }
+                        
                     }
                     self.set_image_texture();
                     self.set_width_height();
