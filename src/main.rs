@@ -11,6 +11,8 @@ use egui::ImageData;
 use egui::Response;
 use egui::Rgba;
 use egui::Style;
+use egui::TextBuffer;
+use egui_notify::Toast;
 use image::DynamicImage;
 use image::EncodableLayout;
 use image::ImageBuffer;
@@ -21,7 +23,7 @@ use imageproc::drawing::draw_line_segment;
 use rfd::FileDialog;
 use rusttype::Font;
 use arboard::Clipboard;
-
+use egui_notify::Toasts;
 mod functions;
 use functions::first_window;
 
@@ -103,7 +105,8 @@ fn main() -> Result<(), eframe::Error> {
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
     let p = post_processing::Painting::default();
-
+    let mut toasts=Toasts::default();
+    
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
    let openfw = GlobalHotKeyEvent::receiver();
@@ -113,7 +116,8 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
-
+                toasts:Some(Toasts::default()),
+                show_toast:false,
                 number_of_screens:None,
                 screen_to_show: None,
                 frame_initial_pos:None,
@@ -163,6 +167,8 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
+    toasts:Option<Toasts>,
+    show_toast:bool,
     number_of_screens:Option<usize>,
     screen_to_show: Option<u32>,
     frame_initial_pos:Option<Pos2>,
@@ -211,6 +217,7 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+        
         let screens=Screen::all().unwrap();
         if self.screen_to_show.is_none(){
             self.screen_to_show=Some(screens[0].display_info.id);
@@ -259,6 +266,7 @@ impl eframe::App for FirstWindow {
                         .clicked()
                     {
                         println!("premuto +");
+                        
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         //self.screen_size = frame.info().clone().window_info.monitor_size; 
                         self.selected_window = 2;
@@ -368,6 +376,7 @@ impl eframe::App for FirstWindow {
 
             frame.set_window_pos(self.frame_initial_pos.unwrap());
             self.multiplication_factor=frame.info().native_pixels_per_point;
+                        
             match self.selected_mode {
                 ModeOptions::Rectangle => {
                     egui::Area::new("my_area")
@@ -428,11 +437,15 @@ impl eframe::App for FirstWindow {
             self.take_screenshot();
             self.selected_window = 5;
         } else if self.selected_window == 5 {
+            
+            
             frame.set_decorations(true);
             frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
-
-            println!("w={:} , h={:}",self.width,self.height);
             
+            println!("w={:} , h={:}",self.width,self.height);
+           
+                
+               
             if self.width <= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(1100.0, 600.0)); //1400 750
                 println!("1");
@@ -460,9 +473,15 @@ impl eframe::App for FirstWindow {
             let mut copy_btn=None;
             let mut crop_btn=None;
             let mut finish_crop=None;
-
-
+            if self.show_toast{
+                // self.toasts.dismiss_oldest_toast();
+                // self.toasts.info(format!("Image saved at {:?}", self.filepath)).set_duration(Some(Duration::from_secs(5)));
+                self.toasts.as_mut().unwrap().show(ctx); 
+                    
+            }
+            
             egui::CentralPanel::default().show(ctx, |_ui| {
+                
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
                     ui.horizontal(|ui| {
                         paint_btn = Some(ui.add(egui::Button::new("🖊 Paint")));
@@ -523,8 +542,9 @@ impl eframe::App for FirstWindow {
                         crop_btn=Some(ui.add(egui::Button::new("Cut")));
                         finish_crop=Some(ui.add(egui::Button::new("Finish Your Cut")));
                     });
-
+                    
                     match self.loading_state {
+                        
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
@@ -547,7 +567,7 @@ impl eframe::App for FirstWindow {
                             let mut crcls=None;
                             let mut response=None;
                             
-                        
+                            
 
                             (pxs, arr, txt, sqrs, crcls,response) = self
                                 .painting
@@ -560,7 +580,10 @@ impl eframe::App for FirstWindow {
                                     self.save,
                                 )
                                 .clone();
+                                
+                                  
                                 self.save=false;
+                                
                                 match self.pp_option.clone().unwrap() {
                                     PpOptions::Painting => {
                                         if pxs.is_none() == false {
@@ -592,13 +615,17 @@ impl eframe::App for FirstWindow {
                                 }
 
                             if save_btn.unwrap().clicked() {
+                                
                                 self.save=true;
+                               
                                 self.image_name = Some(
                                     chrono::offset::Local::now()
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
+                                self.toasts.as_mut().unwrap().success(format!("Image saved in ./screenshot/{}",self.image_name.clone().unwrap())).set_duration(Some(Duration::from_secs(5)));
                                 
+                                self.show_toast=true;
                                 self.edit_image();
 
                                 let screens = Screen::all().unwrap();
@@ -614,6 +641,8 @@ impl eframe::App for FirstWindow {
                                 //     );
 
                                 if mod_img.is_none() == false {
+                                    
+            
                                     if self.current_os == "windows" {
                                         let _ = mod_img.unwrap().save(format!(
                                             "{}\\{}.{}",
@@ -642,11 +671,16 @@ impl eframe::App for FirstWindow {
                                         ));
                                     }
                                 }
+                                
                                 //}
                             }
                             if save_edit_btn.unwrap().clicked() {
                                 let dialog = FileDialog::new().save_file();
                                 self.save=true;
+                                
+                                self.toasts.as_mut().unwrap().success(format!("Image saved in {}",dialog.clone().unwrap().to_str().unwrap())).set_duration(Some(Duration::from_secs(5)));
+                                
+                                self.show_toast=true;
                                 let screens = Screen::all().unwrap();
                                 // let mod_img = screens[0].capture_area(
                                 //     response. unwrap().rect.left_top()[0] as i32,
@@ -672,6 +706,9 @@ impl eframe::App for FirstWindow {
                             }
                             if copy_btn.unwrap().clicked(){
                                 self.edit_image();
+                                self.toasts.as_mut().unwrap().success("Image copied to clipboard" ).set_duration(Some(Duration::from_secs(5)));
+                                
+                                self.show_toast=true;
                                 let mut clipboard = Clipboard::new().unwrap();
                                 let w=self.image_buffer.clone().unwrap().width() as usize;
                                 let h=self.image_buffer.clone().unwrap().height() as usize;clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
@@ -842,33 +879,12 @@ impl eframe::App for FirstWindow {
                                 if finish_crop.unwrap().clicked(){
 
                                     self.cut_clicked=false;
-                                    if self.current_os=="windows"{
-                                        self.multiplication_factor=Some(1.0);
-                                    }
-                                    let di=DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
-                                    let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
-                                    let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
-                                    //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
-                                    let cutted=di.crop_imm((((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, (((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((w/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((h/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32);
-                                    let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgb8()));
-                                    let im_b = cutted.to_rgba8();
-                                    let ci = ColorImage::from_rgba_unmultiplied(
-                                        [im_b.dimensions().0 as usize, im_b.dimensions().1 as usize],
-                                        im_b.as_bytes(),
-                                    );
-                                    let new_img =
-                                        ui.ctx()
-                                        .load_texture("new image", ImageData::from(ci.clone()), Default::default());
-                                    self.image = Some(new_img);
-                                    self.width = self.image.clone().unwrap().size()[0] as f32;
-                                    self.height = self.image.clone().unwrap().size()[1] as f32;
-                                    println!("{:?}",cutted.save("./target/caccona.png"));
+                                    self.load_cutted_img(ui, response);
                                 }
                                
 
                                 
                             }
-                            
                         }
                         LoadingState::NotLoaded => {
                             for _i in [0, self.screenshots_taken.len() - 1] {
@@ -883,6 +899,7 @@ impl eframe::App for FirstWindow {
                         }
                     }
                 });
+               
             });
         } else if self.selected_window == 6 {
             let screens=Screen::all().unwrap();
