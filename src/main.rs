@@ -677,8 +677,22 @@ impl eframe::App for FirstWindow {
                                 let h=self.image_buffer.clone().unwrap().height() as usize;clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
                             }
 
-                            if crop_btn.unwrap().clicked() || self.cut_clicked==true{
+                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true){
                                 self.cut_clicked=true;
+                                let mut pos_bug_fixed=Pos2::new(0.0,0.0);
+
+                                if ui.input(|i| i.pointer.hover_pos().is_none()==false){
+                                    
+                                    ui.input(|i| 
+                                        pos_bug_fixed=i.pointer.hover_pos().unwrap()
+                                        );
+                                }
+
+                                
+                                if   pos_bug_fixed.x<=response.clone().unwrap().rect.right_top().x &&
+                                     pos_bug_fixed.x>=response.clone().unwrap().rect.left_top().x &&
+                                     pos_bug_fixed.y>=response.clone().unwrap().rect.left_top().y &&
+                                     pos_bug_fixed.y<=response.clone().unwrap().rect.right_bottom().y {
                                 
                             egui::Window::new("precut")
                             .constraint_to(response.clone().unwrap().rect)
@@ -686,19 +700,22 @@ impl eframe::App for FirstWindow {
                             .default_height(dim[1]-0.0)//da modificare
                             .title_bar(false)
                             .vscroll(false)
+                            .interactable(true)
                             .resizable(false)
                             .frame(egui::Frame::none()
                                      .fill(Color32::from_rgba_unmultiplied(0, 0, 0, 0))
                                      )
                             .show(ctx, |ui|{
                                 ui.allocate_space(ui.available_size());
+                                
                                 egui::Window::new("cut")
                                 .constraint_to(response.clone().unwrap().rect)
-                                .default_width(dim[0]-0.0)//da modificare
-                                .default_height(dim[1]-0.0)//da modificare
+                                .default_width(dim[0]-1.0)//da modificare
+                                .default_height(dim[1]-1.0)//da modificare
                                 .title_bar(false)
-                                .default_pos(response.clone().unwrap().rect.left_top())
+                                .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
                                 .vscroll(false)
+                                .interactable(true)
                                 .resizable(true)
                                 .frame(egui::Frame::none()
                                      .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
@@ -746,8 +763,81 @@ impl eframe::App for FirstWindow {
                                     
                                 });
 
+                            });
+                        }else{
+                            
+                            egui::Window::new("precut")
+                            .constraint_to(response.clone().unwrap().rect)
+                            .default_width(dim[0]-0.0)//da modificare
+                            .default_height(dim[1]-0.0)//da modificare
+                            .title_bar(false)
+                            .vscroll(false)
+                            .interactable(false)
+                            .resizable(false)
+                            .frame(egui::Frame::none()
+                                     .fill(Color32::from_rgba_unmultiplied(0, 0, 0, 0))
+                                     )
+                            .show(ctx, |ui|{
+                                ui.allocate_space(ui.available_size());
+                                
+                                egui::Window::new("cut")
+                                .constraint_to(response.clone().unwrap().rect)
+                                .default_width(dim[0]-1.0)//da modificare
+                                .default_height(dim[1]-1.0)//da modificare
+                                .title_bar(false)
+                                .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
+                                .vscroll(false)
+                                .resizable(false)
+                                .interactable(false)
+                                .frame(egui::Frame::none()
+                                     .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
+                                     .stroke(Stroke::new(1.0, egui::Color32::WHITE))
+                                     )
+                                .show(ctx, |ui| {
+                                     //2 linee verticali
+                                     
+                                     ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.33, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
+
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().left_top().y),
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x+(ui.available_rect_before_wrap().right_bottom().x-ui.available_rect_before_wrap().left_top().x)*0.66, ui.available_rect_before_wrap().right_bottom().y)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
+
+                                    //2 linee orizzontali
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.33)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
+
+                                    ui.painter().add(
+                                        egui::Shape::dashed_line(
+                                        &[
+                                            Pos2::new(ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66),
+                                            Pos2::new(ui.available_rect_before_wrap().right_bottom().x,ui.available_rect_before_wrap().left_top().y+(ui.available_rect_before_wrap().right_bottom().y-ui.available_rect_before_wrap().left_top().y)*0.66)],
+                                        Stroke::new(2.0, Color32::WHITE),
+                                        10.0, 5.0));
+                                    //println!("pos_left_top_corner:{:},{:}  , pos_left_bottom_corner:{:},{:} pos_right_top_corner={:?} pos_right_bottom_corner={:?} ",ui.available_rect_before_wrap().left_top().x,ui.available_rect_before_wrap().left_top().y,ui.available_rect_before_wrap().left_bottom().x,ui.available_rect_before_wrap().left_bottom().y, ui.available_size_before_wrap(), ui.available_size_before_wrap());
+                                    self.to_cut_rect= Some((ui.available_rect_before_wrap().left_top(), ui.available_rect_before_wrap().right_bottom()));
+                                    
+                                    ui.allocate_space(ui.available_size());
+                                    
+                                });
 
                             });
+
+                        }
 
                                 if finish_crop.unwrap().clicked(){
 
