@@ -357,7 +357,7 @@ impl eframe::App for FirstWindow {
             frame.set_decorations(false);
             frame.set_window_size(self.screen_size.unwrap());
       
-            frame.set_window_pos(egui::pos2(-1440.0, 173.0));
+            frame.set_window_pos(egui::pos2(0.0, 0.0));
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
