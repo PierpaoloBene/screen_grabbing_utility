@@ -113,8 +113,10 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
+
                 number_of_screens:None,
                 screen_to_show: None,
+                frame_initial_pos:None,
                 image_name: None,
                 image_format: Some(ImageFormat::Jpg),
                 image_format_string: "jpg".to_string(),
@@ -163,6 +165,7 @@ fn main() -> Result<(), eframe::Error> {
 struct FirstWindow {
     number_of_screens:Option<usize>,
     screen_to_show: Option<u32>,
+    frame_initial_pos:Option<Pos2>,
     image_name: Option<String>,
     image_format: Option<ImageFormat>,
     image_format_string: String,
@@ -211,6 +214,8 @@ impl eframe::App for FirstWindow {
         let screens=Screen::all().unwrap();
         if self.screen_to_show.is_none(){
             self.screen_to_show=Some(screens[0].display_info.id);
+            self.screen_size=Some(Vec2::new(screens[0].display_info.width as f32, screens[0].display_info.height as f32));
+            self.frame_initial_pos=Some(Pos2::new(screens[0].display_info.x as f32, screens[0].display_info.y as f32));
         }
         self.number_of_screens=Some(screens.len());
         if self.multiplication_factor.is_none() {
@@ -355,9 +360,13 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
+
+            println!("{:?} {:?}", self.screen_size, self.frame_initial_pos);
+
             frame.set_window_size(self.screen_size.unwrap());
-      
-            frame.set_window_pos(egui::pos2(0.0, 0.0));
+            
+
+            frame.set_window_pos(self.frame_initial_pos.unwrap());
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
@@ -824,9 +833,7 @@ impl eframe::App for FirstWindow {
                     self.image_format = Some(ImageFormat::Gif);
                     self.image_format_string = "gif".to_string();
                 }
-                if ui.button("Exit").clicked() {
-                    self.selected_window = 1;
-                }
+                ui.add(egui::Label::new("Select a monitor:"));
                 if ui
                     .add(egui::RadioButton::new(
                         self.screen_to_show==Some(screens[0].display_info.id),
@@ -835,9 +842,12 @@ impl eframe::App for FirstWindow {
                     .clicked()
                 {
                     self.screen_to_show=Some(screens[0].display_info.id);
-                    println!("{:?}", self.screen_to_show);
+                    self.screen_size=Some(Vec2::new(screens[0].display_info.width as f32, screens[0].display_info.height as f32));
+                    self.frame_initial_pos=Some(Pos2::new(screens[0].display_info.x as f32, screens[0].display_info.y as f32));
+                    println!("{:?}", screens[0].display_info.scale_factor);
                 }
-                if ui
+                if screens.len()==2{
+                    if ui
                     .add(egui::RadioButton::new(
                         self.screen_to_show==Some(screens[1].display_info.id),
                         "Secondary",
@@ -845,7 +855,15 @@ impl eframe::App for FirstWindow {
                     .clicked()
                 {
                     self.screen_to_show=Some(screens[1].display_info.id);
-                    println!("{:?}", self.screen_to_show);
+                    self.screen_size=Some(Vec2::new(screens[1].display_info.width as f32, screens[1].display_info.height as f32));
+                    self.frame_initial_pos=Some(Pos2::new(screens[1].display_info.x as f32, screens[1].display_info.y as f32));
+                    println!("{:?}",screens[1].display_info.scale_factor);
+                }
+                }
+               
+
+                if ui.button("Exit").clicked() {
+                    self.selected_window = 1;
                 }
 
             });
