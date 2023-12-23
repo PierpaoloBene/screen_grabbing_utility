@@ -106,14 +106,14 @@ fn main() -> Result<(), eframe::Error> {
 
     manager.register(hotkey_exit).unwrap();
     manager.register(hotkey_screen).unwrap();
-
-    let openfw = GlobalHotKeyEvent::receiver();
+   let openfw = GlobalHotKeyEvent::receiver();
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Box::new(FirstWindow {
+                number_of_screens:None,
                 screen_to_show: None,
                 image_name: None,
                 image_format: Some(ImageFormat::Jpg),
@@ -161,6 +161,7 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct FirstWindow {
+    number_of_screens:Option<usize>,
     screen_to_show: Option<u32>,
     image_name: Option<String>,
     image_format: Option<ImageFormat>,
@@ -207,6 +208,11 @@ struct FirstWindow {
 
 impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+        let screens=Screen::all().unwrap();
+        if self.screen_to_show.is_none(){
+            self.screen_to_show=Some(screens[0].display_info.id);
+        }
+        self.number_of_screens=Some(screens.len());
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
@@ -350,9 +356,9 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 2 {
             frame.set_decorations(false);
-            frame.set_window_size(self.screen_size.unwrap() * 2.0);
+            frame.set_window_size(self.screen_size.unwrap());
       
-            frame.set_window_pos(egui::pos2(0.0, 0.0));
+            frame.set_window_pos(egui::pos2(-1440.0, 173.0));
 
             match self.selected_mode {
                 ModeOptions::Rectangle => {
@@ -761,6 +767,7 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else if self.selected_window == 6 {
+            let screens=Screen::all().unwrap();
             egui::CentralPanel::default().show(ctx, |ui| {
                 if ui.button("Choose Path").clicked() {
                     self.filepath = FileDialog::new()
@@ -801,6 +808,27 @@ impl eframe::App for FirstWindow {
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }
+                if ui
+                    .add(egui::RadioButton::new(
+                        self.screen_to_show==Some(screens[0].display_info.id),
+                        "Primary",
+                    ))
+                    .clicked()
+                {
+                    self.screen_to_show=Some(screens[0].display_info.id);
+                    println!("{:?}", self.screen_to_show);
+                }
+                if ui
+                    .add(egui::RadioButton::new(
+                        self.screen_to_show==Some(screens[1].display_info.id),
+                        "Secondary",
+                    ))
+                    .clicked()
+                {
+                    self.screen_to_show=Some(screens[1].display_info.id);
+                    println!("{:?}", self.screen_to_show);
+                }
+
             });
         }
     }
