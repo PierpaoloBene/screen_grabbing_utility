@@ -417,22 +417,22 @@ impl eframe::App for FirstWindow {
             frame.set_decorations(true);
             frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
 
-            println!("w={:} , h={:}",self.width,self.height);
+            //println!("w={:} , h={:}",self.width,self.height);
             
             if self.width <= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(1100.0, 600.0)); //1400 750
-                println!("1");
+                //println!("1");
             } else if self.width <= 1000.0 && self.height >= 500.0 {
                 frame.set_window_size(Vec2::new(1100.0, self.height+self.height*0.3));
-                println!("2");
+                //println!("2");
             } else if self.width >= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap(), 600.0));
-                println!("3");
+                //println!("3");
             } else if self.width >= 1200.0 && self.height >= 700.0 {
-                println!("4");
+                //println!("4");
                 frame.set_window_size(Vec2::new(1300.0, 800.0));
             } else {
-                println!("5");
+                //println!("5");
                 frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap()- self.screen_size.unwrap().x /self.multiplication_factor.unwrap()*0.001, self.screen_size.unwrap().y /self.multiplication_factor.unwrap()- self.screen_size.unwrap().y /self.multiplication_factor.unwrap()*0.01));
             }
 
@@ -738,27 +738,7 @@ impl eframe::App for FirstWindow {
                                 if finish_crop.unwrap().clicked(){
 
                                     self.cut_clicked=false;
-                                    if self.current_os=="windows"{
-                                        self.multiplication_factor=Some(1.0);
-                                    }
-                                    let di=DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
-                                    let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
-                                    let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
-                                    //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
-                                    let cutted=di.crop_imm((((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, (((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((w/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((h/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32);
-                                    let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgb8()));
-                                    let im_b = cutted.to_rgba8();
-                                    let ci = ColorImage::from_rgba_unmultiplied(
-                                        [im_b.dimensions().0 as usize, im_b.dimensions().1 as usize],
-                                        im_b.as_bytes(),
-                                    );
-                                    let new_img =
-                                        ui.ctx()
-                                        .load_texture("new image", ImageData::from(ci.clone()), Default::default());
-                                    self.image = Some(new_img);
-                                    self.width = self.image.clone().unwrap().size()[0] as f32;
-                                    self.height = self.image.clone().unwrap().size()[1] as f32;
-                                    println!("{:?}",cutted.save("./target/caccona.png"));
+                                    self.load_cutted_img(ui, response);
                                 }
                                
 

@@ -1,7 +1,8 @@
 pub mod first_window {
 
-    use egui::ImageData;
+    use egui::{ImageData, Response, ColorImage};
 
+    use image::{DynamicImage, ImageBuffer, EncodableLayout};
     use rusttype::Font;
     use screenshots::Screen;
 
@@ -222,6 +223,34 @@ pub mod first_window {
                     }
                 }
             }
+        }
+        pub fn load_cutted_img(&mut self, ui:&mut egui::Ui, response: Option<Response>){
+            if self.current_os=="windows"{
+                // println!("{:?}", self.mult_factor);
+                // println!("{:?}", self.multiplication_factor);
+                // println!("{:?} {:?}", self.image.clone().unwrap().size()[0] as f32 / response.clone().unwrap().rect.width(),
+                // self.image.clone().unwrap().size()[1] as f32 / response.clone().unwrap().rect.height());
+                 self.multiplication_factor=Some(1.0);
+            }
+            let di=DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
+            let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
+            let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
+            //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
+            let cutted=di.crop_imm((((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, (((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((w/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((h/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32);
+            let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgba8()));
+            let im_b = cutted.to_rgba8();
+            let ci = ColorImage::from_rgba_unmultiplied(
+                [im_b.dimensions().0 as usize, im_b.dimensions().1 as usize],
+                im_b.as_bytes(),
+            );
+            let new_img =
+                ui.ctx()
+                .load_texture("new image", ImageData::from(ci.clone()), Default::default());
+            self.image = Some(new_img);
+            self.width = self.image.clone().unwrap().size()[0] as f32;
+            self.height = self.image.clone().unwrap().size()[1] as f32;
+            self.image_buffer=image_buffer_cutted.clone();
+            println!("{:?}",cutted.save("./target/caccona.png"));
         }
     }
 }

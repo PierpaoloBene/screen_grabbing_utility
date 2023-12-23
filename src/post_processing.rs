@@ -1014,7 +1014,8 @@ impl View for Painting {
                 });
             }
         }
-
+        
+        *mult_fact=self.mult_factor;
         (pix, arr, txt, sqrs, crcls,response)
     }
 }
