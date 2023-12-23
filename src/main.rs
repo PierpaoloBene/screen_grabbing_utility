@@ -260,7 +260,7 @@ impl eframe::App for FirstWindow {
                     {
                         println!("premuto +");
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
-                        self.screen_size = frame.info().clone().window_info.monitor_size; 
+                        //self.screen_size = frame.info().clone().window_info.monitor_size; 
                         self.selected_window = 2;
                     }
 
