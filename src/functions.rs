@@ -1,8 +1,8 @@
 pub mod first_window {
 
-    use egui::{ImageData, Response, ColorImage};
+    use egui::{ColorImage, ImageData, Response};
 
-    use image::{DynamicImage, ImageBuffer, EncodableLayout};
+    use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
     use screenshots::Screen;
 
@@ -88,13 +88,11 @@ pub mod first_window {
                 ModeOptions::FullScreen => {
                     //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
-                        if self.screen_to_show.is_none() == false
-                            && self.screen_to_show.unwrap() == screen.display_info.id
-                        {
-                            let image = screen.capture();
-                            if image.is_err() == false {
-                                self.screenshots_taken.push(image.unwrap());
-                            }
+                        let image = screen.capture();
+                        if image.is_err() == false {
+                            self.screenshots_taken.push(image.unwrap());
+                        } else {
+                            println!("{:?}", image);
                         }
                     }
                     self.set_image_texture();
@@ -171,7 +169,6 @@ pub mod first_window {
             }
 
             if self.arrow_pixels.is_empty() == false {
-               
                 for p in self.arrow_pixels.clone() {
                     let head = p.0[1];
                     for pi in p.0 {
@@ -206,13 +203,11 @@ pub mod first_window {
 
             if self.line_pixels.is_empty() == false {
                 for p in self.line_pixels.clone() {
-                    
                     if p.0.is_empty() == false {
                         for j in 0..p.0.len() - 1 {
-                            
                             let start = p.0[j];
                             let end = p.0[j + 1];
-                            
+
                             imageproc::drawing::draw_line_segment_mut(
                                 self.image_buffer.as_mut().unwrap(),
                                 (start.x, start.y),
@@ -224,19 +219,28 @@ pub mod first_window {
                 }
             }
         }
-        pub fn load_cutted_img(&mut self, ui:&mut egui::Ui, response: Option<Response>){
-            if self.current_os=="windows"{
+        pub fn load_cutted_img(&mut self, ui: &mut egui::Ui, response: Option<Response>) {
+            if self.current_os == "windows" {
                 // println!("{:?}", self.mult_factor);
                 // println!("{:?}", self.multiplication_factor);
                 // println!("{:?} {:?}", self.image.clone().unwrap().size()[0] as f32 / response.clone().unwrap().rect.width(),
                 // self.image.clone().unwrap().size()[1] as f32 / response.clone().unwrap().rect.height());
-                 self.multiplication_factor=Some(1.0);
+                self.multiplication_factor = Some(1.0);
             }
-            let di=DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
-            let w=f32::abs(self.to_cut_rect.unwrap().0.x-self.to_cut_rect.unwrap().1.x);
-            let h=f32::abs(self.to_cut_rect.unwrap().0.y-self.to_cut_rect.unwrap().1.y);
+            let di = DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
+            let w = f32::abs(self.to_cut_rect.unwrap().0.x - self.to_cut_rect.unwrap().1.x);
+            let h = f32::abs(self.to_cut_rect.unwrap().0.y - self.to_cut_rect.unwrap().1.y);
             //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
-            let cutted=di.crop_imm((((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, (((self.to_cut_rect.unwrap().0.y- response.clone().unwrap().rect.left_top().y)/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((w/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32, ((h/self.shrink_fact.unwrap())*self.multiplication_factor.unwrap()) as u32);
+            let cutted = di.crop_imm(
+                (((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)
+                    / self.shrink_fact.unwrap())
+                    * self.multiplication_factor.unwrap()) as u32,
+                (((self.to_cut_rect.unwrap().0.y - response.clone().unwrap().rect.left_top().y)
+                    / self.shrink_fact.unwrap())
+                    * self.multiplication_factor.unwrap()) as u32,
+                ((w / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
+                ((h / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
+            );
             let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgba8()));
             let im_b = cutted.to_rgba8();
             let ci = ColorImage::from_rgba_unmultiplied(
@@ -245,12 +249,12 @@ pub mod first_window {
             );
             let new_img =
                 ui.ctx()
-                .load_texture("new image", ImageData::from(ci.clone()), Default::default());
+                    .load_texture("new image", ImageData::from(ci.clone()), Default::default());
             self.image = Some(new_img);
             self.width = self.image.clone().unwrap().size()[0] as f32;
             self.height = self.image.clone().unwrap().size()[1] as f32;
-            self.image_buffer=image_buffer_cutted.clone();
-            println!("{:?}",cutted.save("./target/caccona.png"));
+            self.image_buffer = image_buffer_cutted.clone();
+            println!("{:?}", cutted.save("./target/caccona.png"));
         }
     }
 }
