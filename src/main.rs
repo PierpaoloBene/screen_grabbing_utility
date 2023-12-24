@@ -1,6 +1,9 @@
-mod post_processing;
-use crate::post_processing::PpOptions;
-use crate::post_processing::View;
+// mod post_processing;
+// use crate::post_processing::PpOptions;
+// use crate::post_processing::View;
+mod pp_no_stroke;
+use crate::pp_no_stroke::PpOptions;
+use crate::pp_no_stroke::View;
 use chrono;
 use eframe::glow::PRIMITIVE_RESTART_INDEX;
 use egui::ColorImage;
@@ -104,7 +107,8 @@ fn main() -> Result<(), eframe::Error> {
     let manager = GlobalHotKeyManager::new().unwrap();
     let hotkey_exit = HotKey::new(None, Code::Escape);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
-    let p = post_processing::Painting::default();
+    //let p = post_processing::Painting::default();
+    let p=pp_no_stroke::Painting::default();
     let mut toasts=Toasts::default();
     
     manager.register(hotkey_exit).unwrap();
@@ -198,14 +202,15 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
-    painting: post_processing::Painting,
+    //painting: post_processing::Painting,
+    painting: pp_no_stroke::Painting,
     width: f32,
     height: f32,
     mult_factor: Option<(f32, f32)>,
     cut_clicked: bool,
     cropped:bool,
-    circle_pixels: Vec<(Pos2, f32, Stroke)>,
-    square_pixels: Vec<(Rect, Stroke)>,
+    circle_pixels: Vec<(Pos2, f32, Color32)>,
+    square_pixels: Vec<(Rect, Color32)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
     text_pixels: Vec<(Pos2, Color32, String)>,
     line_pixels: Vec<(Vec<Pos2>, Color32)>,

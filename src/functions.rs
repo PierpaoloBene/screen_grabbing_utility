@@ -143,7 +143,7 @@ pub mod first_window {
                         self.image_buffer.as_mut().unwrap(),
                         (c.0.x as i32, c.0.y as i32),
                         c.1 as i32,
-                        image::Rgba([c.2.color.r(), c.2.color.g(), c.2.color.b(), c.2.color.a()]),
+                        image::Rgba([c.2.r(), c.2.g(), c.2.b(), c.2.a()]),
                     );
                 }
             }
@@ -161,7 +161,7 @@ pub mod first_window {
                     imageproc::drawing::draw_hollow_rect_mut(
                         self.image_buffer.as_mut().unwrap(),
                         rett,
-                        image::Rgba([p.1.color.r(), p.1.color.g(), p.1.color.b(), p.1.color.a()]),
+                        image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
                     );
                 }
                 println!("{}", i);
