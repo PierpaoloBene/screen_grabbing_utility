@@ -480,7 +480,7 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
-        println!("in arrows {:?}", cut_clicked);
+       
         
         image.paint_at(ui, response.rect);
         self.mult_factor = Some((
@@ -511,7 +511,7 @@ impl Painting {
         }
 
         if ui.input(|i| i.pointer.any_released()) && cut_clicked==false {
-            print!("salvo rilascio freccia");
+           
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
