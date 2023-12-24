@@ -679,24 +679,19 @@ impl eframe::App for FirstWindow {
                                 //}
                             }
                             if save_edit_btn.unwrap().clicked() {
-                                let dialog = FileDialog::new().save_file();
+                                let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
+                                println!("{:?}", dialog);
                                 self.save=true;
                                 
                                 self.toasts.as_mut().unwrap().success(format!("Image saved in {}",dialog.clone().unwrap().to_str().unwrap())).set_duration(Some(Duration::from_secs(5)));
                                 
                                 self.show_toast=true;
-                                let screens = Screen::all().unwrap();
-                                // let mod_img = screens[0].capture_area(
-                                //     response. unwrap().rect.left_top()[0] as i32,
-                                //     response.unwrap().rect.left_top()[1] as i32 + 50,
-                                //     response.unwrap().rect.width() as u32,
-                                //     response.unwrap().rect.height() as u32,
-                                // );
+                                
                                 self.edit_image(ui);
                                 let mod_img = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
                                     let _ = mod_img.unwrap().save(format!(
-                                        "{}.{}",
+                                        "{}",
                                         dialog
                                             .clone()
                                             .unwrap()
@@ -704,7 +699,7 @@ impl eframe::App for FirstWindow {
                                             .to_str()
                                             .unwrap()
                                             .to_string(),
-                                        self.image_format_string,
+                                       
                                     ));
                                 }
                             }
@@ -977,7 +972,7 @@ impl eframe::App for FirstWindow {
                     self.screen_to_show=Some(screens[1].display_info.id);
                     self.screen_size=Some(Vec2::new(screens[1].display_info.width as f32, screens[1].display_info.height as f32));
                     self.frame_initial_pos=Some(Pos2::new(screens[1].display_info.x as f32, screens[1].display_info.y as f32));
-                    println!("{:?}",screens[1].display_info);
+                   
                 }
                 }
                
