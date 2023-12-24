@@ -136,6 +136,7 @@ pub mod first_window {
         }
 
         pub fn edit_image(&mut self, ui:&mut egui::Ui) {
+            
             if self.circle_pixels.is_empty() == false {
                 for c in self.circle_pixels.clone() {
                     imageproc::drawing::draw_hollow_circle_mut(
@@ -216,6 +217,7 @@ pub mod first_window {
                     }
                 }
             }
+            
             let ci=ColorImage::from_rgba_unmultiplied(
                 [self.image_buffer.clone().unwrap().dimensions().0 as usize,self.image_buffer.clone().unwrap().dimensions().1 as usize],
             self.image_buffer.clone().unwrap().as_bytes() );

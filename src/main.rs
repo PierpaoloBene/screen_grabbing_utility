@@ -542,9 +542,8 @@ impl eframe::App for FirstWindow {
                         crop_btn=Some(ui.add(egui::Button::new("Cut")));
                         finish_crop=Some(ui.add(egui::Button::new("Finish Your Cut")));
                     });
-                    
-                    match self.loading_state {
-                        
+                   
+                    match self.loading_state {                        
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
@@ -616,7 +615,6 @@ impl eframe::App for FirstWindow {
                                 }
 
                             if save_btn.unwrap().clicked() {
-                                
                                 self.save=true;
                                
                                 self.image_name = Some(
@@ -717,7 +715,14 @@ impl eframe::App for FirstWindow {
 
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true){
                                 self.cut_clicked=true;
-                                self.edit_image(ui);
+                                if self.arrow_pixels.len()>0
+                                    || self.circle_pixels.len()>0
+                                    || self.square_pixels.len()>0
+                                    || self.text_pixels.len()>0
+                                    || self.line_pixels.len()>0{
+                                        self.edit_image(ui);
+                                    }
+                                
                                 let mut pos_bug_fixed=Pos2::new(0.0,0.0);
 
                                 if ui.input(|i| i.pointer.hover_pos().is_none()==false){
