@@ -152,7 +152,7 @@ fn main() -> Result<(), eframe::Error> {
                 height: 0.0,
                 mult_factor: None,
                 cut_clicked: false,
-                
+                cropped:false,
                 circle_pixels: Vec::new(),
                 square_pixels: Vec::new(),
                 arrow_pixels: Vec::new(),
@@ -203,7 +203,7 @@ struct FirstWindow {
     height: f32,
     mult_factor: Option<(f32, f32)>,
     cut_clicked: bool,
-    
+    cropped:bool,
     circle_pixels: Vec<(Pos2, f32, Stroke)>,
     square_pixels: Vec<(Rect, Stroke)>,
     arrow_pixels: Vec<(Vec<Pos2>, Color32)>,
@@ -578,12 +578,13 @@ impl eframe::App for FirstWindow {
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                     self.save,
+                                    self.cropped,
                                 )
                                 .clone();
                                 
                                   
                                 self.save=false;
-                                
+                                self.cropped=false;
                                 match self.pp_option.clone().unwrap() {
                                     PpOptions::Painting => {
                                         if pxs.is_none() == false {
@@ -880,6 +881,7 @@ impl eframe::App for FirstWindow {
 
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
+                                    self.cropped=true;
                                 }
                                
 
