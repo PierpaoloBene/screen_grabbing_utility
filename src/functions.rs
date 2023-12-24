@@ -1,6 +1,6 @@
 pub mod first_window {
 
-    use egui::{ColorImage, ImageData, Response};
+    use egui::{ColorImage, ImageData, Response, Ui};
 
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
@@ -135,7 +135,7 @@ pub mod first_window {
             self.image = Some(img);
         }
 
-        pub fn edit_image(&mut self) {
+        pub fn edit_image(&mut self, ui:&mut egui::Ui) {
             if self.circle_pixels.is_empty() == false {
                 for c in self.circle_pixels.clone() {
                     imageproc::drawing::draw_hollow_circle_mut(
@@ -216,6 +216,15 @@ pub mod first_window {
                     }
                 }
             }
+            let ci=ColorImage::from_rgba_unmultiplied(
+                [self.image_buffer.clone().unwrap().dimensions().0 as usize,self.image_buffer.clone().unwrap().dimensions().1 as usize],
+            self.image_buffer.clone().unwrap().as_bytes() );
+            let new_img =
+                ui.ctx()
+                    .load_texture("new image", ImageData::from(ci.clone()), Default::default());
+            self.image = Some(new_img);
+            self.save=true;
+
         }
         pub fn load_cutted_img(&mut self, ui: &mut egui::Ui, response: Option<Response>) {
             if self.current_os == "windows" {

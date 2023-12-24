@@ -15,7 +15,7 @@ pub trait View {
         dim: Vec2,
         opt: PpOptions,
         save:bool,
-        cropped:bool,
+        cut_clicked:bool,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
@@ -392,6 +392,7 @@ impl Painting {
         ui: &mut Ui,
         image: egui::Image,
         dim: Vec2,
+        cut_clicked:bool
     ) -> (Option<Vec<(Vec<Pos2>, Color32)>>,Option<Response>){
         //println!("In ui_content");
 
@@ -413,6 +414,7 @@ impl Painting {
         ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
+            
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
             && response.rect.y_range().contains(mouse_pos.unwrap().y))
         {
@@ -429,9 +431,9 @@ impl Painting {
         }
 
         let mut current_line = &mut self.lines.last_mut().unwrap().0;
-
-        if let Some(pointer_pos) = response.interact_pointer_pos() {
-            let canvas_pos = from_screen * pointer_pos;
+        let pointer_pos= response.interact_pointer_pos();
+        if pointer_pos.is_none()==false && cut_clicked==false {
+            let canvas_pos = from_screen * pointer_pos.unwrap();
 
             if current_line.last() != Some(&canvas_pos) {
                 current_line.push(canvas_pos);
@@ -470,6 +472,7 @@ impl Painting {
         ui: &mut Ui,
         image: egui::Image,
         dim: Vec2,
+        cut_clicked:bool
     ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<Response>) {
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
@@ -477,6 +480,7 @@ impl Painting {
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
             response.rect,
         );
+        println!("in arrows {:?}", cut_clicked);
         
         image.paint_at(ui, response.rect);
         self.mult_factor = Some((
@@ -493,9 +497,11 @@ impl Painting {
         }
         self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()) {
+        if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false{
+           
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
+            
                 && response.rect.contains(pos.unwrap())
                 && self.starting_point.x == -1.0
                 && self.starting_point.y == -1.0
@@ -504,7 +510,8 @@ impl Painting {
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()) {
+        if ui.input(|i| i.pointer.any_released()) && cut_clicked==false {
+            print!("salvo rilascio freccia");
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
@@ -546,6 +553,7 @@ impl Painting {
         image: egui::Image,
 
         dim: Vec2,
+        cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Stroke)>>, Option<Response>) {
         // println!("In ui_content circles");
 
@@ -561,14 +569,7 @@ impl Painting {
         ));
 
         image.paint_at(ui, response.rect);
-        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if (mouse_pos.is_none() == false
-            && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
-        {
-            ui.ctx()
-                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
-        }
+        
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         if (mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
@@ -579,7 +580,7 @@ impl Painting {
         }
         self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()) {
+        if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false{
             let pos = ui.input(|i| i.pointer.latest_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
@@ -591,6 +592,7 @@ impl Painting {
         }
 
         if ui.input(|i| i.pointer.any_released())
+            && cut_clicked==false
             && self.circle_center.x != -1.0
             && self.circle_center.y != -1.0
             && self.radius == -1.0
@@ -628,6 +630,7 @@ impl Painting {
         image: egui::Image,
 
         dim: Vec2,
+        cut_clicked:bool
     ) -> (Option<Vec<(Rect, Stroke)>>, Option<Response>) {
         //println!("In ui_content squares");
 
@@ -655,7 +658,7 @@ impl Painting {
         }
         self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()) {
+        if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false {
             let pos = response.interact_pointer_pos();
 
             if pos.is_none() == false
@@ -671,7 +674,7 @@ impl Painting {
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()) {
+        if ui.input(|i| i.pointer.any_released())  && cut_clicked==false {
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
@@ -729,6 +732,7 @@ impl Painting {
         image: egui::Image,
         mult_fact: &mut Option<(f32, f32)>,
         dim: Vec2,
+        cut_clicked:bool
     ) -> (Option<Vec<(Pos2, Color32, String)>>, Option<Response>) {
         // println!("In ui_content texts");
 
@@ -758,7 +762,7 @@ impl Painting {
         }
         self.render_elements(painter.clone(), to_screen);
 
-        if ui.input(|i| i.pointer.any_pressed()) {
+        if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false {
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
@@ -769,7 +773,7 @@ impl Painting {
             }
         }
 
-        if ui.input(|i| i.pointer.any_released()) {
+        if ui.input(|i| i.pointer.any_released())  && cut_clicked==false {
             let pos = ui.input(|i| i.pointer.interact_pos());
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
@@ -860,7 +864,7 @@ impl View for Painting {
         dim: Vec2,
         opt: PpOptions,
         save:bool,
-        cropped:bool,
+        cut_clicked:bool,
     ) -> (
         Option<Vec<(Vec<Pos2>, Color32)>>,
         Option<Vec<(Vec<Pos2>, Color32)>>,
@@ -878,15 +882,22 @@ impl View for Painting {
 
         if save{
             self.last_type_added.clear();
-        }
-
-        if cropped{
-            self.arrows.clear();
-            self.circles.clear();
             self.lines.clear();
+            self.arrows.clear();
+            self.arrows_pixels.clear();
+            self.circles.clear();
             self.squares.clear();
             self.texts.clear();
         }
+        // if cut_clicked{
+        //     self.arrows.clear();
+        //     self.circles.clear();
+        //     self.squares.clear();
+        //     self.texts.clear();
+        //     self.lines.clear();
+        // }
+
+       
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
@@ -895,13 +906,13 @@ impl View for Painting {
                     if  image.size().unwrap()[0] >= 1000.0 && image.size().unwrap()[1] <= 500.0 {
                         ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
                             egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                                (pix,response) = self.ui_content(ui, image, dim);
+                                (pix,response) = self.ui_content(ui, image, dim, cut_clicked);
                                
                             });
                         });
                     }else{
                         egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                            (pix,response) = self.ui_content(ui, image, dim);
+                            (pix,response) = self.ui_content(ui, image, dim, cut_clicked);
                            
                         });
                     }
@@ -913,7 +924,7 @@ impl View for Painting {
                 ui.label("Paint an arrow with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        (arr,response) = self.ui_content_arrows(ui, image, dim);
+                        (arr,response) = self.ui_content_arrows(ui, image, dim, cut_clicked);
                         
                     });
                 });
@@ -923,7 +934,7 @@ impl View for Painting {
                 ui.label("Paint a circle with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        (crcls,response) = self.ui_content_circles(ui, image, dim);
+                        (crcls,response) = self.ui_content_circles(ui, image, dim, cut_clicked);
                        
                     });
                 });
@@ -933,7 +944,7 @@ impl View for Painting {
                 ui.label("Paint a square with your mouse/touch!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        (sqrs,response) = self.ui_content_squares(ui, image, dim);
+                        (sqrs,response) = self.ui_content_squares(ui, image, dim, cut_clicked);
                         
                     });
                 });
@@ -943,7 +954,7 @@ impl View for Painting {
                 ui.label("First, click were you want to write and then write something!");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                        (txt,response) = self.ui_content_texts(ui, image, mult_fact, dim);
+                        (txt,response) = self.ui_content_texts(ui, image, mult_fact, dim, cut_clicked);
                         
                     });
                 });
