@@ -460,7 +460,10 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
-            ret.push((retlns, clr));
+            if retlns.len()>0{
+                ret.push((retlns, clr));
+            }
+            
         }
         //println!("{:?}", ret);
 
