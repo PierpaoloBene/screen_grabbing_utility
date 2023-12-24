@@ -776,6 +776,7 @@ impl Painting {
                 && self.text_starting_position.y == -1.0
             {
                 self.text_starting_position = pos.unwrap();
+                
             }
         }
 
