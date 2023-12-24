@@ -578,7 +578,7 @@ impl eframe::App for FirstWindow {
                                     dim,
                                     self.pp_option.clone().unwrap(),
                                     self.save,
-                                    self.cropped,
+                                    self.cut_clicked,
                                 )
                                 .clone();
                                 
@@ -627,7 +627,7 @@ impl eframe::App for FirstWindow {
                                 self.toasts.as_mut().unwrap().success(format!("Image saved in ./screenshot/{}",self.image_name.clone().unwrap())).set_duration(Some(Duration::from_secs(5)));
                                 
                                 self.show_toast=true;
-                                self.edit_image();
+                                self.edit_image(ui);
 
                                 let screens = Screen::all().unwrap();
                                 
@@ -689,7 +689,7 @@ impl eframe::App for FirstWindow {
                                 //     response.unwrap().rect.width() as u32,
                                 //     response.unwrap().rect.height() as u32,
                                 // );
-                                self.edit_image();
+                                self.edit_image(ui);
                                 let mod_img = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
                                     let _ = mod_img.unwrap().save(format!(
@@ -706,7 +706,7 @@ impl eframe::App for FirstWindow {
                                 }
                             }
                             if copy_btn.unwrap().clicked(){
-                                self.edit_image();
+                                self.edit_image(ui);
                                 self.toasts.as_mut().unwrap().success("Image copied to clipboard" ).set_duration(Some(Duration::from_secs(5)));
                                 
                                 self.show_toast=true;
@@ -717,6 +717,7 @@ impl eframe::App for FirstWindow {
 
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true){
                                 self.cut_clicked=true;
+                                self.edit_image(ui);
                                 let mut pos_bug_fixed=Pos2::new(0.0,0.0);
 
                                 if ui.input(|i| i.pointer.hover_pos().is_none()==false){
