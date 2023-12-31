@@ -1,12 +1,11 @@
 pub mod first_window {
 
-    use egui::{ColorImage, ImageData, Response, Ui};
-
+    use crate::{FirstWindow, ModeOptions};
+    use egui::{ColorImage, ImageData, Response};
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
     use screenshots::Screen;
 
-    use crate::{FirstWindow, ModeOptions};
     impl FirstWindow {
         pub fn set_width_height(&mut self) {
             match self.selected_mode {
@@ -28,7 +27,6 @@ pub mod first_window {
         }
 
         pub fn set_image_texture(&mut self) {
-            println!("{}", self.screenshots_taken.len());
             for i in [0, self.screenshots_taken.len() - 1] {
                 let size: [usize; 2] = [
                     self.screenshots_taken[i].width() as _,
@@ -58,7 +56,7 @@ pub mod first_window {
                             if screen.display_info.is_primary == false {
                                 self.rect_pos.x -= screen.display_info.width as f32;
                             }
-                           
+
                             if self.rect_pos[0] < 0.0 {
                                 self.rect_pos[0] += self.screen_size.unwrap()[0];
                             }
@@ -69,29 +67,23 @@ pub mod first_window {
                                 self.height as u32,
                             );
 
-                            println!("{:?}", image.as_ref().unwrap().dimensions());
                             if image.is_err() == false {
-                                //let mut sub_img=image.as_mut().unwrap().sub_image(self.rect_pos[0] as u32, self.rect_pos[1] as u32, self.width as u32, self.height as u32);
                                 self.screenshots_taken.push(image.unwrap());
                             } else {
-                                println!("{:?}", image);
                             }
                         }
                     }
                     self.set_image_texture();
                 }
                 ModeOptions::FullScreen => {
-                    //std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                     for screen in screens {
-                        if screen.display_info.id==self.screen_to_show.unwrap(){
+                        if screen.display_info.id == self.screen_to_show.unwrap() {
                             let image = screen.capture();
-                        if image.is_err() == false {
-                            self.screenshots_taken.push(image.unwrap());
-                        } else {
-                            println!("{:?}", image);
+                            if image.is_err() == false {
+                                self.screenshots_taken.push(image.unwrap());
+                            } else {
+                            }
                         }
-                        }
-                        
                     }
                     self.set_image_texture();
                     self.set_width_height();
@@ -106,19 +98,15 @@ pub mod first_window {
             if diff_x > 0.0 && diff_y > 0.0 {
                 self.rect_pos = self.mouse_pos.unwrap();
                 self.rect_pos_f = self.mouse_pos_f.unwrap();
-                println!("sono in basso a destra");
             } else if diff_x < 0.0 && diff_y < 0.0 {
-                println!("sono in alto a sinistra");
                 self.rect_pos = self.mouse_pos_f.unwrap();
                 self.rect_pos_f = self.mouse_pos.unwrap();
             } else if diff_x < 0.0 && diff_y > 0.0 {
-                println!("sono in basso a sinistra");
                 self.rect_pos[0] = self.mouse_pos_f.unwrap()[0];
                 self.rect_pos[1] = self.mouse_pos.unwrap()[1];
                 self.rect_pos_f[0] = self.mouse_pos.unwrap()[0];
                 self.rect_pos_f[1] = self.mouse_pos_f.unwrap()[1];
             } else if diff_x > 0.0 && diff_y < 0.0 {
-                println!("sono in alto a destra");
                 self.rect_pos[0] = self.mouse_pos.unwrap()[0];
                 self.rect_pos[1] = self.mouse_pos_f.unwrap()[1];
                 self.rect_pos_f[0] = self.mouse_pos_f.unwrap()[0];
@@ -135,8 +123,7 @@ pub mod first_window {
             self.image = Some(img);
         }
 
-        pub fn edit_image(&mut self, ui:&mut egui::Ui) {
-            
+        pub fn edit_image(&mut self, ui: &mut egui::Ui) {
             if self.circle_pixels.is_empty() == false {
                 for c in self.circle_pixels.clone() {
                     imageproc::drawing::draw_hollow_circle_mut(
@@ -164,7 +151,6 @@ pub mod first_window {
                         image::Rgba([p.1.r(), p.1.g(), p.1.b(), p.1.a()]),
                     );
                 }
-                println!("{}", i);
             }
 
             if self.arrow_pixels.is_empty() == false {
@@ -217,29 +203,27 @@ pub mod first_window {
                     }
                 }
             }
-            
-            let ci=ColorImage::from_rgba_unmultiplied(
-                [self.image_buffer.clone().unwrap().dimensions().0 as usize,self.image_buffer.clone().unwrap().dimensions().1 as usize],
-            self.image_buffer.clone().unwrap().as_bytes() );
+
+            let ci = ColorImage::from_rgba_unmultiplied(
+                [
+                    self.image_buffer.clone().unwrap().dimensions().0 as usize,
+                    self.image_buffer.clone().unwrap().dimensions().1 as usize,
+                ],
+                self.image_buffer.clone().unwrap().as_bytes(),
+            );
             let new_img =
                 ui.ctx()
                     .load_texture("new image", ImageData::from(ci.clone()), Default::default());
             self.image = Some(new_img);
-            self.save=true;
-
+            self.save = true;
         }
         pub fn load_cutted_img(&mut self, ui: &mut egui::Ui, response: Option<Response>) {
             if self.current_os == "windows" {
-                // println!("{:?}", self.mult_factor);
-                // println!("{:?}", self.multiplication_factor);
-                // println!("{:?} {:?}", self.image.clone().unwrap().size()[0] as f32 / response.clone().unwrap().rect.width(),
-                // self.image.clone().unwrap().size()[1] as f32 / response.clone().unwrap().rect.height());
                 self.multiplication_factor = Some(1.0);
             }
             let di = DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
             let w = f32::abs(self.to_cut_rect.unwrap().0.x - self.to_cut_rect.unwrap().1.x);
             let h = f32::abs(self.to_cut_rect.unwrap().0.y - self.to_cut_rect.unwrap().1.y);
-            //println!("{:?} {:?}", self.to_cut_rect.unwrap().0,self.to_cut_rect.unwrap().1);
             let cutted = di.crop_imm(
                 (((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)
                     / self.shrink_fact.unwrap())
@@ -263,7 +247,6 @@ pub mod first_window {
             self.width = self.image.clone().unwrap().size()[0] as f32;
             self.height = self.image.clone().unwrap().size()[1] as f32;
             self.image_buffer = image_buffer_cutted.clone();
-            println!("{:?}", cutted.save("./target/caccona.png"));
         }
     }
 }
