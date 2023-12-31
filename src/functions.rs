@@ -27,7 +27,7 @@ pub mod first_window {
         }
 
         pub fn set_image_texture(&mut self) {
-            for i in [0, self.screenshots_taken.len() - 1] {
+            for i in 0.. self.screenshots_taken.len() {
                 let size: [usize; 2] = [
                     self.screenshots_taken[i].width() as _,
                     self.screenshots_taken[i].height() as _,
