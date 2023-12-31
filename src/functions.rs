@@ -27,19 +27,20 @@ pub mod first_window {
         }
 
         pub fn set_image_texture(&mut self) {
-            for i in 0.. self.screenshots_taken.len() {
+            if !self.screenshots_taken.is_none() {
                 let size: [usize; 2] = [
-                    self.screenshots_taken[i].width() as _,
-                    self.screenshots_taken[i].height() as _,
+                    self.screenshots_taken.clone().unwrap().width() as _,
+                    self.screenshots_taken.clone().unwrap().height() as _,
                 ];
-
-                let mut pixels = self.screenshots_taken[i].as_flat_samples_mut();
+                self.image_buffer = Some(self.screenshots_taken.clone().unwrap());
+                
+                let mut pixels = self.screenshots_taken.as_mut().unwrap().as_flat_samples_mut();
 
                 let immagine: egui::ColorImage =
                     egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice());
 
                 self.image_texture = Some(immagine);
-                self.image_buffer = Some(self.screenshots_taken[i].clone());
+                
             }
         }
 
@@ -68,7 +69,7 @@ pub mod first_window {
                             );
 
                             if image.is_err() == false {
-                                self.screenshots_taken.push(image.unwrap());
+                                self.screenshots_taken=Some(image.unwrap());
                             } else {
                             }
                         }
@@ -80,7 +81,7 @@ pub mod first_window {
                         if screen.display_info.id == self.screen_to_show.unwrap() {
                             let image = screen.capture();
                             if image.is_err() == false {
-                                self.screenshots_taken.push(image.unwrap());
+                                self.screenshots_taken=Some(image.unwrap());
                             } else {
                             }
                         }

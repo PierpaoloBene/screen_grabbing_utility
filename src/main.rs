@@ -126,7 +126,7 @@ fn main() -> Result<(), eframe::Error> {
                 rect_pos: egui::pos2(0.0, 0.0),
                 rect_pos_f: egui::pos2(0.0, 0.0),
                 open_fw: openfw.clone(),
-                screenshots_taken: Vec::new(),
+                screenshots_taken: None,
                 painting: p,
                 width: 0.0,
                 height: 0.0,
@@ -177,7 +177,7 @@ struct FirstWindow {
     rect_pos: Pos2,
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
-    screenshots_taken: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
+    screenshots_taken: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
     //painting: post_processing::Painting,
     painting: pp_no_stroke::Painting,
     width: f32,
@@ -834,7 +834,7 @@ impl eframe::App for FirstWindow {
                             }
                         }
                         LoadingState::NotLoaded => {
-                            for _i in [0, self.screenshots_taken.len() - 1] {
+                            
                                 //rimettere -1
 
                                 self.load_image(ui);
@@ -842,7 +842,7 @@ impl eframe::App for FirstWindow {
                                 self.loading_state = LoadingState::Loaded;
 
                                 ()
-                            }
+                            
                         }
                     }
                 });
