@@ -898,7 +898,7 @@ impl eframe::App for FirstWindow {
                     self.screen_to_show=Some(screens[0].display_info.id);
                     self.screen_size=Some(Vec2::new(screens[0].display_info.width as f32, screens[0].display_info.height as f32));
                     self.frame_initial_pos=Some(Pos2::new(screens[0].display_info.x as f32, screens[0].display_info.y as f32));
-                    println!("{:?}", screens[0].display_info.scale_factor);
+                    
                 }
                 if screens.len()==2{
                     if ui
