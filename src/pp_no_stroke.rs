@@ -226,7 +226,7 @@ impl Painting {
     }
 
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
-        // println!("In ui_control");
+       
         let mut res = None;
         match opt {
             PpOptions::Painting => {
@@ -234,7 +234,7 @@ impl Painting {
                     res = Some(
                         ui.horizontal(|ui| {
                             ui.color_edit_button_srgba(&mut self.lines_color);
-                            println!("{:?}", self.lines_color);
+                            
                             
                             ui.separator();
                             if ui.button("Clear Painting").clicked() {
@@ -248,7 +248,7 @@ impl Painting {
                     let res = ui
                         .horizontal(|ui| {
                             ui.color_edit_button_srgba( &mut self.lines.last_mut().unwrap().1);
-                            println!("{:?}", self.lines_color);
+                           
                             ui.separator();
                             if ui.button("Clear Painting").clicked() {
                                 self.lines.clear();
@@ -284,7 +284,7 @@ impl Painting {
                 .response
             }
             PpOptions::Circle => {
-                //println!("In ui_control circles");
+               
                 let mut back_btn = None;
                 let mut forward_btn = None;
                 ui.horizontal(|ui| {
@@ -306,7 +306,7 @@ impl Painting {
                 .response
             }
             PpOptions::Square => {
-                //println!("In ui_control squares");
+              
                 let mut back_btn = None;
                 let mut forward_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -328,7 +328,7 @@ impl Painting {
                 .response
             }
             PpOptions::Text => {
-                // println!("In ui_control texts");
+               
                 let mut write_btn = None;
                 let mut back_btn = None;
                 let mut forward_btn = None;
