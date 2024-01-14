@@ -519,7 +519,7 @@ impl eframe::App for FirstWindow {
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
                         copy_btn = Some(ui.add(egui::Button::new("Copy")));
-                        crop_btn=Some(ui.add(egui::Button::new("Cut")));
+                        crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
                     });
                    
