@@ -19,6 +19,7 @@ pub mod first_window {
                 }
             }
             if self.current_os == "windows" {
+                println!("self.multiplication factor = {:?}", self.multiplication_factor);
                 self.width = self.width * self.multiplication_factor.unwrap();
                 self.height = self.height * self.multiplication_factor.unwrap();
                 self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();

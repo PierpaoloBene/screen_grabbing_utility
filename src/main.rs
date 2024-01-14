@@ -418,7 +418,12 @@ impl eframe::App for FirstWindow {
             
             frame.set_decorations(true);
             frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
-            frame.set_window_size(self.screen_size.unwrap());
+            if self.current_os=="windows"{
+                frame.set_window_size(self.screen_size.unwrap()/(self.multiplication_factor.unwrap()));
+            }else{
+                frame.set_window_size(self.screen_size.unwrap());
+            }
+            
             println!("w={:} , h={:}",self.width,self.height);
            
                /*  
@@ -522,8 +527,8 @@ impl eframe::App for FirstWindow {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 println!("caso 1");
-                                self.shrink_fact=Some(0.7);
-                                dim = Vec2::new(self.width*0.7, self.height*0.7); 
+                                self.shrink_fact=Some(0.6);
+                                dim = Vec2::new(self.width*0.6, self.height*0.6); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
                                 println!("caso 2");
                                 self.shrink_fact=Some(0.7);
