@@ -642,16 +642,17 @@ impl eframe::App for FirstWindow {
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
                                
                                 self.save=true;
-                                
+                                let stringpath =  dialog
+                                .clone()
+                                .unwrap()
+                                .as_os_str()
+                                .to_str()
+                                .unwrap()
+                                .to_string();
+                                 let slice = stringpath.get(..stringpath.len() -3).unwrap();
                                 self.toasts.as_mut().unwrap().success(format!(
-                                    "Image saved in {}.{}",
-                                    dialog
-                                    .clone()
-                                    .unwrap()
-                                    .as_os_str()
-                                    .to_str()
-                                    .unwrap()
-                                    .split_once(".").unwrap().0,
+                                    "Image saved in {}{}",
+                                    slice,
                                     self.image_format_string
                                    
                                 )).set_duration(Some(Duration::from_secs(5)));
@@ -661,16 +662,18 @@ impl eframe::App for FirstWindow {
                                 self.edit_image(ui);
                                 let mod_img = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
+                                    let stringpath =  dialog
+                                    .clone()
+                                    .unwrap()
+                                    .as_os_str()
+                                    .to_str()
+                                    .unwrap()
+                                    .to_string();
+                                let slice = stringpath.get(..stringpath.len() -3).unwrap();
 
                                     let _ = mod_img.unwrap().save(format!(
-                                        "{}.{}",
-                                        dialog
-                                        .clone()
-                                        .unwrap()
-                                        .as_os_str()
-                                        .to_str()
-                                        .unwrap()
-                                        .split_once(".").unwrap().0,
+                                        "{}{}",
+                                        slice,
                                         self.image_format_string
                                        
                                     ));
