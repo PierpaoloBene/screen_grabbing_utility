@@ -208,6 +208,7 @@ impl eframe::App for FirstWindow {
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
+        if self.selected_window==1 || self.selected_window==2{
   
         match self.open_fw.try_recv() {
             
@@ -236,6 +237,7 @@ impl eframe::App for FirstWindow {
                 
                 }
         }
+    }
 
         if self.selected_window == 1 {
             egui::CentralPanel::default().show(ctx, |ui| {
