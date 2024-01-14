@@ -527,19 +527,39 @@ impl eframe::App for FirstWindow {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                 println!("caso 1");
-                                self.shrink_fact=Some(0.6);
-                                dim = Vec2::new(self.width*0.6, self.height*0.6); 
+                                if self.current_os=="windows"{
+                                    self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
+                                }else{
+                                    self.shrink_fact=Some(0.7);
+                                }
+                              
+                                dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
                                 println!("caso 2");
-                                self.shrink_fact=Some(0.7);
-                                dim = Vec2::new(self.width*0.7, self.height*0.7);
+                                if self.current_os=="windows"{
+                                    self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
+                                }else{
+                                    self.shrink_fact=Some(0.7);
+                                }
+                                
+                                dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             } else if self.width <= 1200.0 && self.height >= 700.0 {   
-                                println!("caso 3");                                                     
-                               self.shrink_fact=Some(0.6);
-                                dim = Vec2::new(self.width*0.6 , self.height*0.6);
+                                println!("caso 3");    
+                                if self.current_os=="windows"{
+                                    self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
+                                }else{
+                                    self.shrink_fact=Some(0.6);
+                                }                                                 
+                               
+                                dim = Vec2::new(self.width*self.shrink_fact.unwrap() , self.height*self.shrink_fact.unwrap());
                             } else {
                                 println!("caso 4");
-                                self.shrink_fact=Some(1.0);
+                                if self.current_os=="windows"{
+                                    self.shrink_fact=Some(1.0/self.multiplication_factor.unwrap());
+                                }else{
+                                    self.shrink_fact=Some(1.0);
+                                }
+                            
                                 dim = Vec2::new(self.width, self.height);
                             }
                             let mut pxs = None;
