@@ -257,6 +257,9 @@ pub mod first_window {
                 ((h / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
             );
             }
+
+
+           
             let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgba8()));
             let im_b = cutted.to_rgba8();
             let ci = ColorImage::from_rgba_unmultiplied(
@@ -268,8 +271,11 @@ pub mod first_window {
                     .load_texture("new image", ImageData::from(ci.clone()), Default::default());
             self.image_texture =  Some(ci);
             self.image = Some(new_img);
-            self.width = self.image.clone().unwrap().size()[0] as f32 ;
-            self.height = self.image.clone().unwrap().size()[1] as f32 ;
+
+            self.width = self.image.clone().unwrap().size()[0] as f32 / self.multiplication_factor.unwrap();
+            self.height = self.image.clone().unwrap().size()[1] as f32 / self.multiplication_factor.unwrap() ;
+    
+        
             self.image_buffer = image_buffer_cutted.clone();
 
         }
