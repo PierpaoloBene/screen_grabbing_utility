@@ -269,16 +269,20 @@ impl Painting {
                     ui.color_edit_button_srgba( &mut self.arrows_color);
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("↩")));
+                        back_btn = Some(ui.add_enabled(true,egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
+                    }else{
+                        back_btn = Some(ui.add_enabled(false,egui::Button::new("↩")));
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("↪")));
+                        forward_btn = Some(ui.add_enabled(true,egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
+                    }else{
+                        forward_btn = Some(ui.add_enabled(false,egui::Button::new("↪")));
                     }
                 })
                 .response
@@ -291,16 +295,20 @@ impl Painting {
                     ui.color_edit_button_srgba(&mut self.circles_color);
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("↩")));
+                        back_btn = Some(ui.add_enabled(true, egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
+                    }else{
+                        back_btn = Some(ui.add_enabled(false, egui::Button::new("↩")));
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("↪")));
+                        forward_btn = Some(ui.add_enabled(true, egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
+                    }else{
+                        forward_btn = Some(ui.add_enabled(false, egui::Button::new("↪")));
                     }
                 })
                 .response
@@ -313,16 +321,20 @@ impl Painting {
                     ui.color_edit_button_srgba(&mut self.squares_color);
                     ui.separator();
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("↩")));
+                        back_btn = Some(ui.add_enabled(true, egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
+                    }else{
+                        back_btn = Some(ui.add_enabled(false, egui::Button::new("↩")));
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("↪")));
+                        forward_btn = Some(ui.add_enabled(true, egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
+                    }else{
+                        forward_btn = Some(ui.add_enabled(false, egui::Button::new("↪")));
                     }
                 })
                 .response
@@ -348,16 +360,21 @@ impl Painting {
                         self.ready_to_write = true;
                     }
                     if self.last_type_added.len() > 0 {
-                        back_btn = Some(ui.add(egui::Button::new("↩")));
+                        back_btn = Some(ui.add_enabled(true, egui::Button::new("↩")));
                         if back_btn.unwrap().clicked() {
                             self.undo();
                         }
+                        
+                    }else{
+                        back_btn = Some(ui.add_enabled(false, egui::Button::new("↩")));
                     }
                     if self.last_type_removed.len()>0{
-                        forward_btn = Some(ui.add(egui::Button::new("↪")));
+                        forward_btn = Some(ui.add_enabled(true, egui::Button::new("↪")));
                         if forward_btn.unwrap().clicked() {
                             self.redo();
                         }
+                    }else{
+                        forward_btn = Some(ui.add_enabled(false, egui::Button::new("↪")));
                     }
                 })
                 .response
