@@ -1,6 +1,6 @@
 pub mod first_window {
 
-    use crate::{FirstWindow, ModeOptions};
+    use crate::{FirstWindow, ModeOptions, LoadingState};
     use egui::{ColorImage, ImageData, Response};
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
@@ -253,10 +253,12 @@ pub mod first_window {
             let new_img =
                 ui.ctx()
                     .load_texture("new image", ImageData::from(ci.clone()), Default::default());
+            self.image_texture =  Some(ci);
             self.image = Some(new_img);
-            self.width = self.image.clone().unwrap().size()[0] as f32;
-            self.height = self.image.clone().unwrap().size()[1] as f32;
+            self.width = self.image.clone().unwrap().size()[0] as f32 / self.multiplication_factor.unwrap();
+            self.height = self.image.clone().unwrap().size()[1] as f32 / self.multiplication_factor.unwrap();
             self.image_buffer = image_buffer_cutted.clone();
+
         }
     }
 }

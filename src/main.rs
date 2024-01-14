@@ -197,7 +197,8 @@ struct FirstWindow {
 }
 
 impl eframe::App for FirstWindow {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {        
+    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {    
+            
         let screens=Screen::all().unwrap();
         if self.screen_to_show.is_none(){
             self.screen_to_show=Some(screens[0].display_info.id);
@@ -900,6 +901,7 @@ impl eframe::App for FirstWindow {
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
                                     self.cropped=true;
+
                                 }
                                
 
