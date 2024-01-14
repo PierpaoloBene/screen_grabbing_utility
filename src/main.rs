@@ -293,6 +293,7 @@ impl eframe::App for FirstWindow {
                                 .clicked()
                             {
                                 self.selected_timer_string = "No Timer".to_string();
+                                self.selected_timer_numeric=0;
                             };
 
                             if ui
