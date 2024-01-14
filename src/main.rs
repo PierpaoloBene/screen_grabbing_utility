@@ -587,7 +587,15 @@ impl eframe::App for FirstWindow {
                                         .format("%Y-%m-%d_%H_%M_%S")
                                         .to_string(),
                                 );
-                                self.toasts.as_mut().unwrap().success(format!("Image saved in ./screenshot/{}",self.image_name.clone().unwrap())).set_duration(Some(Duration::from_secs(5)));
+                                self.toasts.as_mut().unwrap().success(format!("Image saved in {}/{}.{}",  self.filepath
+                                .clone()
+                                .unwrap()
+                                .as_os_str()
+                                .to_str()
+                                .unwrap()
+                                .to_string(),
+                            self.image_name.clone().unwrap(),
+                            self.image_format_string)).set_duration(Some(Duration::from_secs(5)));
                                 
                                 self.show_toast=true;
                                 self.edit_image(ui);
@@ -633,22 +641,35 @@ impl eframe::App for FirstWindow {
                                
                                 self.save=true;
                                 
-                                self.toasts.as_mut().unwrap().success(format!("Image saved in {}",dialog.clone().unwrap().to_str().unwrap())).set_duration(Some(Duration::from_secs(5)));
+                                self.toasts.as_mut().unwrap().success(format!(
+                                    "Image saved in {}.{}",
+                                    dialog
+                                    .clone()
+                                    .unwrap()
+                                    .as_os_str()
+                                    .to_str()
+                                    .unwrap()
+                                    .split_once(".").unwrap().0,
+                                    self.image_format_string
+                                   
+                                )).set_duration(Some(Duration::from_secs(5)));
                                 
                                 self.show_toast=true;
                                 
                                 self.edit_image(ui);
                                 let mod_img = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
+
                                     let _ = mod_img.unwrap().save(format!(
-                                        "{}",
+                                        "{}.{}",
                                         dialog
-                                            .clone()
-                                            .unwrap()
-                                            .as_os_str()
-                                            .to_str()
-                                            .unwrap()
-                                            .to_string(),
+                                        .clone()
+                                        .unwrap()
+                                        .as_os_str()
+                                        .to_str()
+                                        .unwrap()
+                                        .split_once(".").unwrap().0,
+                                        self.image_format_string
                                        
                                     ));
                                 }
