@@ -220,7 +220,10 @@ impl eframe::App for FirstWindow {
                         frame.set_window_size(egui::vec2(680.0, 480.0));
                     }
                     2440410256 => {
+                        
+                        std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                         self.selected_window = 2;
+
                     }
                     _ => {
                         println!("{:?}", event);
