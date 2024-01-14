@@ -872,12 +872,15 @@ impl eframe::App for FirstWindow {
                         }
                         LoadingState::NotLoaded => {
                             
-                                //rimettere -1
+                                if self.image_texture.is_none()==false{
+                                    self.load_image(ui);
+                                    self.pp_option = Some(PpOptions::Painting);
+                                    self.loading_state = LoadingState::Loaded;
 
-                                self.load_image(ui);
-                                self.pp_option = Some(PpOptions::Painting);
-                                self.loading_state = LoadingState::Loaded;
-
+                                }else{
+                                    self.selected_window=1;
+                                }
+                                
                                 ()
                             
                         }

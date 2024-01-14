@@ -116,16 +116,16 @@ pub mod first_window {
         }
 
         pub fn load_image(&mut self, ui: &mut egui::Ui) {
-            if self.image_texture.is_none()==false{
+            
+            
+                
                 let img = ui.ctx().load_texture(
                     "image_texture",
                     ImageData::from(self.image_texture.clone().unwrap()),
                     Default::default(),
                 );
                 self.image = Some(img);
-            }else{
-                self.selected_window=1;
-            }
+            
             
         }
 
