@@ -228,9 +228,7 @@ pub mod first_window {
             self.save = true;
         }
         pub fn load_cutted_img(&mut self, ui: &mut egui::Ui, response: Option<Response>) {
-            if self.current_os == "windows" {
-                self.multiplication_factor = Some(1.0);
-            }
+            
             let di = DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
             let w = f32::abs(self.to_cut_rect.unwrap().0.x - self.to_cut_rect.unwrap().1.x);
             let h = f32::abs(self.to_cut_rect.unwrap().0.y - self.to_cut_rect.unwrap().1.y);
@@ -255,8 +253,8 @@ pub mod first_window {
                     .load_texture("new image", ImageData::from(ci.clone()), Default::default());
             self.image_texture =  Some(ci);
             self.image = Some(new_img);
-            self.width = self.image.clone().unwrap().size()[0] as f32 / self.multiplication_factor.unwrap();
-            self.height = self.image.clone().unwrap().size()[1] as f32 / self.multiplication_factor.unwrap();
+            self.width = self.image.clone().unwrap().size()[0] as f32 ;
+            self.height = self.image.clone().unwrap().size()[1] as f32 ;
             self.image_buffer = image_buffer_cutted.clone();
 
         }
