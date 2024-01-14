@@ -14,8 +14,8 @@ pub mod first_window {
                     self.height = (self.rect_pos_f[1]) - self.rect_pos[1];
                 }
                 ModeOptions::FullScreen => {
-                    self.width = self.image_texture.clone().unwrap().size[0] as f32;
-                    self.height = self.image_texture.clone().unwrap().size[1] as f32;
+                    self.width = self.image_texture.clone().unwrap().size[0] as f32 / self.multiplication_factor.unwrap();
+                    self.height = self.image_texture.clone().unwrap().size[1] as f32 / self.multiplication_factor.unwrap();
                 }
             }
             if self.current_os == "windows" {

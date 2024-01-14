@@ -244,7 +244,7 @@ impl eframe::App for FirstWindow {
             self.mouse_pos_f=Some(Pos2::new(-1.0, -1.0));
             self.rect_pos =  egui::pos2(0.0, 0.0);
             self.rect_pos_f =  egui::pos2(0.0, 0.0);
-            
+
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
@@ -404,6 +404,7 @@ impl eframe::App for FirstWindow {
                 }
                 ModeOptions::FullScreen => {
                     frame.set_window_size(Vec2::new(0.0, 0.0));
+
                     self.selected_window = 3;
                 }
             }
@@ -417,10 +418,10 @@ impl eframe::App for FirstWindow {
             
             frame.set_decorations(true);
             frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
-            
+            frame.set_window_size(self.screen_size.unwrap());
             println!("w={:} , h={:}",self.width,self.height);
            
-                
+               /*  
                
             if self.width <= 1000.0 && self.height <= 500.0 {
                 frame.set_window_size(Vec2::new(1100.0, 600.0)); //1400 750
@@ -439,7 +440,7 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap()- self.screen_size.unwrap().x /self.multiplication_factor.unwrap()*0.001, self.screen_size.unwrap().y /self.multiplication_factor.unwrap()- self.screen_size.unwrap().y /self.multiplication_factor.unwrap()*0.01));
             }
 
-           
+           */
 
             let mut paint_btn = None;
             let mut text_btn = None;
@@ -520,15 +521,19 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
+                                println!("caso 1");
                                 self.shrink_fact=Some(0.7);
                                 dim = Vec2::new(self.width*0.7, self.height*0.7); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
+                                println!("caso 2");
                                 self.shrink_fact=Some(0.7);
                                 dim = Vec2::new(self.width*0.7, self.height*0.7);
-                            } else if self.width <= 1200.0 && self.height >= 700.0 {                                                        
+                            } else if self.width <= 1200.0 && self.height >= 700.0 {   
+                                println!("caso 3");                                                     
                                self.shrink_fact=Some(0.6);
                                 dim = Vec2::new(self.width*0.6 , self.height*0.6);
                             } else {
+                                println!("caso 4");
                                 self.shrink_fact=Some(1.0);
                                 dim = Vec2::new(self.width, self.height);
                             }
