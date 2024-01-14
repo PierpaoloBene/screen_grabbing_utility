@@ -356,8 +356,8 @@ impl eframe::App for FirstWindow {
                     egui::Area::new("my_area")
                         .fixed_pos(egui::pos2(0.0, 0.0))
                         .show(ctx, |ui| {
-                            ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
-                                ui.label(RichText::new("ESC to go back").size(25.0));
+                            ui.with_layout(egui::Layout::centered_and_justified(egui::Direction::LeftToRight), |ui| {
+                                ui.label(RichText::new("CTRL+E to go back").size(25.0));
                             });
                             ui.ctx()
                                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
