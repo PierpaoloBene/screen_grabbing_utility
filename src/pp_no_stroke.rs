@@ -1,11 +1,7 @@
-use std::f32::consts::PI;
-
 use egui::{
     emath::{self, Rot2},
     vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response,
 };
-
-/// Something to view in the demo windows
 pub trait View {
     fn ui(
         &mut self,
@@ -26,18 +22,11 @@ pub trait View {
     );
 }
 
-/// Something to view
 pub trait Demo {
-    /// Is the demo enabled for this integraton?
     fn is_enabled(&self, _ctx: &egui::Context) -> bool {
         true
     }
-
-    /// `&'static` so we can also use it as a key to store open/close state.
     fn name(&self) -> &'static str;
-
-    // Show windows, etc
-    /*fn show(&mut self, ctx: &egui::Context, open: &mut bool);*/
 }
 #[derive(Debug, Clone)]
 pub enum PpOptions {
@@ -53,7 +42,7 @@ pub struct Painting {
     
 
     mult_factor: Option<(f32, f32)>,
-    /// in 0-1 normalized coordinates
+
     lines: Vec<(Vec<Pos2>, Color32)>,
     lines_color: egui::Color32,
 
@@ -138,14 +127,6 @@ impl Painting {
                 .filter(|line| line.0.len() >= 2)
                 .map(|line| {
                     let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    // let (vecio, stroke) = line.clone();
-                    // if !self.linea_scritta {
-                    //     for posizione in vecio {
-                    //         self.lines_pixels.push(posizione);
-                    //     }
-                    //     self.linea_scritta = true;
-                    // }
-
                     egui::Shape::line(points, Stroke::new(1.0, line.1))
                 });
             painter.extend(shapes);
@@ -194,27 +175,23 @@ impl Painting {
         match self.last_type_added.last().unwrap() {
             PpOptions::Arrow => {
                 let rem=self.arrows.pop().unwrap();
-                self.removed_arrows.push(rem);
-                //self.arrows.remove(self.arrows.len() - 1);              
+                self.removed_arrows.push(rem);              
                 self.arrows_pixels.remove(self.arrows_pixels.len()-1);    
                 self.last_type_removed.push(PpOptions::Arrow);            
             }
             PpOptions::Circle => {
                 let rem=self.circles.pop().unwrap();
                 self.removed_circles.push(rem);
-                //self.circles.remove(self.circles.len() - 1);
                 self.last_type_removed.push(PpOptions::Circle);  
             }
             PpOptions::Square => {
                 let rem=self.squares.pop().unwrap();
                 self.removed_squares.push(rem);
-                //self.squares.remove(self.squares.len() - 1);
                 self.last_type_removed.push(PpOptions::Square);  
             }
             PpOptions::Text => {
                 let rem=self.texts.pop().unwrap();
                 self.removed_texts.push(rem);
-               // self.texts.remove(self.texts.len() - 1);
                self.last_type_removed.push(PpOptions::Text);  
             }
             _ => {}
@@ -226,8 +203,7 @@ impl Painting {
             PpOptions::Arrow => {
                 let rem=self.removed_arrows.pop().unwrap();
                 self.arrows.push(rem);        
-                self.last_type_added.push(PpOptions::Arrow);      
-                //self.arrows_pixels.remove(self.arrows_pixels.len()-1);                
+                self.last_type_added.push(PpOptions::Arrow);                   
             }
             PpOptions::Circle => {
                 let rem=self.removed_circles.pop().unwrap();
@@ -250,7 +226,7 @@ impl Painting {
     }
 
     pub fn ui_control(&mut self, ui: &mut egui::Ui, opt: PpOptions) -> egui::Response {
-        // println!("In ui_control");
+       
         let mut res = None;
         match opt {
             PpOptions::Painting => {
@@ -258,7 +234,7 @@ impl Painting {
                     res = Some(
                         ui.horizontal(|ui| {
                             ui.color_edit_button_srgba(&mut self.lines_color);
-                            println!("{:?}", self.lines_color);
+                            
                             
                             ui.separator();
                             if ui.button("Clear Painting").clicked() {
@@ -272,7 +248,7 @@ impl Painting {
                     let res = ui
                         .horizontal(|ui| {
                             ui.color_edit_button_srgba( &mut self.lines.last_mut().unwrap().1);
-                            println!("{:?}", self.lines_color);
+                           
                             ui.separator();
                             if ui.button("Clear Painting").clicked() {
                                 self.lines.clear();
@@ -308,7 +284,7 @@ impl Painting {
                 .response
             }
             PpOptions::Circle => {
-                //println!("In ui_control circles");
+               
                 let mut back_btn = None;
                 let mut forward_btn = None;
                 ui.horizontal(|ui| {
@@ -330,7 +306,7 @@ impl Painting {
                 .response
             }
             PpOptions::Square => {
-                //println!("In ui_control squares");
+              
                 let mut back_btn = None;
                 let mut forward_btn = None;
                 ui.horizontal(|ui: &mut Ui| {
@@ -352,7 +328,7 @@ impl Painting {
                 .response
             }
             PpOptions::Text => {
-                // println!("In ui_control texts");
+               
                 let mut write_btn = None;
                 let mut back_btn = None;
                 let mut forward_btn = None;
@@ -397,8 +373,6 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Vec<Pos2>, Color32)>>,Option<Response>){
-        //println!("In ui_content");
-
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -468,7 +442,7 @@ impl Painting {
             }
             
         }
-        //println!("{:?}", ret);
+       
 
         (Some(ret),Some(response))
     }
@@ -561,8 +535,6 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Color32)>>, Option<Response>) {
-        // println!("In ui_content circles");
-
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -638,8 +610,6 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Rect, Color32)>>, Option<Response>) {
-        //println!("In ui_content squares");
-
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -711,7 +681,7 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
-        //Some(self.squares_pixels.clone())
+        
         let mut sqrs = Vec::new();
         for s in self.squares.clone() {
             let min = Pos2::new(
@@ -740,8 +710,6 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, Color32, String)>>, Option<Response>) {
-        // println!("In ui_content texts");
-
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -896,14 +864,6 @@ impl View for Painting {
             self.squares.clear();
             self.texts.clear();
         }
-        // if cut_clicked{
-        //     self.arrows.clear();
-        //     self.circles.clear();
-        //     self.squares.clear();
-        //     self.texts.clear();
-        //     self.lines.clear();
-        // }
-
        
         match opt {
             PpOptions::Painting => {

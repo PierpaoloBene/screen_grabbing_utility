@@ -465,7 +465,7 @@ impl Painting {
             }
             
         }
-        //println!("{:?}", ret);
+        
 
         (Some(ret),Some(response))
     }
@@ -558,7 +558,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Stroke)>>, Option<Response>) {
-        // println!("In ui_content circles");
+       
 
         let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
 
