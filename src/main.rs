@@ -240,6 +240,7 @@ impl eframe::App for FirstWindow {
     }
 
         if self.selected_window == 1 {
+            self.mouse_pos=Some(Pos2::new(-1.0, -1.0));
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
