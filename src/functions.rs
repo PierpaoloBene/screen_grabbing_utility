@@ -242,8 +242,8 @@ pub mod first_window {
                     (((self.to_cut_rect.unwrap().0.y - response.clone().unwrap().rect.left_top().y)
                         / self.shrink_fact.unwrap())
                         ) as u32,
-                    ((w / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
-                    ((h / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
+                    ((w / self.shrink_fact.unwrap()) ) as u32,
+                    ((h / self.shrink_fact.unwrap()) ) as u32,
                 );
             }else{            
             cutted = di.crop_imm(
