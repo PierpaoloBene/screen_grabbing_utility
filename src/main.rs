@@ -376,6 +376,7 @@ impl eframe::App for FirstWindow {
                                     && self.mouse_pos.unwrap()[1] == -1.0
                             }) {
                                 self.mouse_pos = ui.input(|i| i.pointer.interact_pos());
+                                
                                 }
                             if self.mouse_pos.unwrap()[0] != -1.0
                                 && self.mouse_pos.unwrap()[1] != -1.0

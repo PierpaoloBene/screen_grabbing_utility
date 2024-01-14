@@ -93,6 +93,7 @@ pub mod first_window {
         }
 
         pub fn define_rectangle(&mut self) {
+            if self.mouse_pos.is_none() == false && self.mouse_pos_f.is_none() == false {
             let diff_x = self.mouse_pos_f.unwrap()[0] - self.mouse_pos.unwrap()[0];
             let diff_y = self.mouse_pos_f.unwrap()[1] - self.mouse_pos.unwrap()[1];
 
@@ -112,6 +113,8 @@ pub mod first_window {
                 self.rect_pos[1] = self.mouse_pos_f.unwrap()[1];
                 self.rect_pos_f[0] = self.mouse_pos_f.unwrap()[0];
                 self.rect_pos_f[1] = self.mouse_pos.unwrap()[1];
+            }
+                
             }
         }
 
