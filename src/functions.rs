@@ -232,7 +232,21 @@ pub mod first_window {
             let di = DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
             let w = f32::abs(self.to_cut_rect.unwrap().0.x - self.to_cut_rect.unwrap().1.x);
             let h = f32::abs(self.to_cut_rect.unwrap().0.y - self.to_cut_rect.unwrap().1.y);
-            let cutted = di.crop_imm(
+            let mut cutted :DynamicImage;
+            if self.current_os=="windows"{
+
+                cutted = di.crop_imm(
+                    (((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)
+                        / self.shrink_fact.unwrap())
+                       ) as u32,
+                    (((self.to_cut_rect.unwrap().0.y - response.clone().unwrap().rect.left_top().y)
+                        / self.shrink_fact.unwrap())
+                        ) as u32,
+                    ((w / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
+                    ((h / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
+                );
+            }else{            
+            cutted = di.crop_imm(
                 (((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)
                     / self.shrink_fact.unwrap())
                     * self.multiplication_factor.unwrap()) as u32,
@@ -242,6 +256,7 @@ pub mod first_window {
                 ((w / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
                 ((h / self.shrink_fact.unwrap()) * self.multiplication_factor.unwrap()) as u32,
             );
+            }
             let image_buffer_cutted = Some(ImageBuffer::from(cutted.clone().into_rgba8()));
             let im_b = cutted.to_rgba8();
             let ci = ColorImage::from_rgba_unmultiplied(
