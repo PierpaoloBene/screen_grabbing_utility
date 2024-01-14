@@ -82,7 +82,7 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     let manager = GlobalHotKeyManager::new().unwrap();
-    let hotkey_exit = HotKey::new(None, Code::Escape);
+    let hotkey_exit = HotKey::new(Some(Modifiers::CONTROL), Code::KeyE);
     let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
     //let p = post_processing::Painting::default();
     let p=pp_no_stroke::Painting::default();
@@ -210,9 +210,11 @@ impl eframe::App for FirstWindow {
         }
   
         match self.open_fw.try_recv() {
+            
             Ok(event) => match event.state {
                 HotKeyState::Pressed => match event.id {
-                    2439345500 => {
+                    
+                    909518472 => {
                         self.selected_window = 1;
                         frame.set_decorations(true);
                         frame.set_window_size(egui::vec2(680.0, 480.0));
@@ -221,7 +223,7 @@ impl eframe::App for FirstWindow {
                         self.selected_window = 2;
                     }
                     _ => {
-                        
+                        println!("{:?}", event);
                     }
                 },
                 HotKeyState::Released => {}
