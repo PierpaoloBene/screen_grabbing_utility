@@ -339,5 +339,31 @@ pub mod first_window {
             }
             self.save = false;
         }
+
+        pub fn find_true_modifier(json_str: &str) -> Option<&str> {
+            let mut modifier_start = None;
+            let mut modifier_end = None;
+            let mut is_true = false;
+        
+            json_str.replace(" ","");
+            json_str.replace("{", ",");
+            for (i, c) in json_str.char_indices() {
+                match c {
+                    'r' => {
+                        if is_true {
+                            return Some(&json_str[modifier_start.unwrap()..modifier_end.unwrap()]);
+                           
+                        }
+                    }
+                    't' => if json_str[i..].starts_with("true") {is_true = true; modifier_end=Some(i-2)},
+                    ',' => modifier_start = Some(i+2),
+                    _ => {},
+                }
+            }
+        
+            None
+        }
     }
 }
+
+

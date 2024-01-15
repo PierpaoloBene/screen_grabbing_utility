@@ -33,7 +33,7 @@ impl Hotkeys{
         
         let mut modifier_name: String = "CONTROL".to_string();
  
-  
+    
         match modifier.as_str(){
             "alt" => {modifier_name = "ALT".to_string()},
             "ctrl" => {modifier_name = "CONTROL".to_string()},
@@ -43,10 +43,10 @@ impl Hotkeys{
             _ => {}
         }
 
-           
+        println!("{:?}", self.hotkeys_vector.get(id));
         *self.hotkeys_vector.get_mut(id).unwrap() = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",code).as_str()).unwrap());
         
-
-
+        println!("{:?}",  HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",code).as_str()).unwrap()));
+        println!("{:?}", self.hotkeys_vector.get(id));
     }
 }

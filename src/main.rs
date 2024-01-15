@@ -7,6 +7,8 @@ use crate::pp_no_stroke::PpOptions;
 use crate::pp_no_stroke::View;
 use chrono;
 use egui::CursorIcon;
+use egui::InputState;
+use egui::Modifiers;
 use egui::style::Widgets;
 use hotkeys::Hotkeys;
 use image::EncodableLayout;
@@ -21,13 +23,14 @@ use eframe::{
 use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2};
 
 use screenshots::Screen;
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use global_hotkey::{
     hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
 };
-use keyboard_types::{Code, Modifiers};
+use keyboard_types::{Code};
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -146,6 +149,7 @@ fn main() -> Result<(), eframe::Error> {
                 ready_to_save_with_name: false,
                 ready_to_copy: false,
                 ready_to_crop: false,
+                customize_hotkey: false,
                 to_cut_rect:None,
                 shrink_fact:None,
                 shortcuts: shortcuts,
@@ -205,6 +209,7 @@ struct FirstWindow {
     ready_to_save_with_name: bool,
     ready_to_copy: bool,
     ready_to_crop: bool,
+    customize_hotkey:bool,
     to_cut_rect:Option<(Pos2, Pos2)>,
     shrink_fact:Option<f32>,
     shortcuts: Hotkeys,
@@ -489,6 +494,8 @@ impl eframe::App for FirstWindow {
                 
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
                     ui.horizontal(|ui| {
+                        if self.cut_clicked==false{
+
                         paint_btn = Some(ui.add(egui::Button::new("🖊 Paint")));
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
@@ -544,6 +551,7 @@ impl eframe::App for FirstWindow {
                         save_btn = Some(ui.add(egui::Button::new("Save")));
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
                         copy_btn = Some(ui.add(egui::Button::new("Copy")));
+                    }
                         crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
                     });
@@ -646,11 +654,11 @@ impl eframe::App for FirstWindow {
                                     }
                                 }
 
-                            if save_btn.unwrap().clicked() || self.ready_to_save {
+                            if (save_btn.is_none()==false && save_btn.unwrap().clicked() )|| self.ready_to_save {
                                 self.save_img(ui);
                                 self.ready_to_save = false;
                             }
-                            if save_edit_btn.unwrap().clicked() || self. ready_to_save_with_name{
+                            if (save_edit_btn.is_none()==false && save_edit_btn.unwrap().clicked() )|| self. ready_to_save_with_name{
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
                                
                                 self.save=true;
@@ -693,7 +701,7 @@ impl eframe::App for FirstWindow {
                                 self.save = false;
                                 self.ready_to_save_with_name = false;
                             }
-                            if copy_btn.unwrap().clicked() || self.ready_to_copy{
+                            if (copy_btn.is_none()==false && copy_btn.unwrap().clicked()) || self.ready_to_copy{
                                 self.edit_image(ui);
                                 self.toasts.as_mut().unwrap().success("Image copied to clipboard" ).set_duration(Some(Duration::from_secs(5)));
                                 
@@ -886,6 +894,7 @@ impl eframe::App for FirstWindow {
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
                                     self.cropped=true;
+                                    self.pp_option=Some(PpOptions::Painting);
                                     self.ready_to_crop= false;
 
                                 }
@@ -979,23 +988,34 @@ impl eframe::App for FirstWindow {
                 }
                 }
                
-/* 
+
+                let mut new_hotkey: (String,String) = ("modifier".to_string(),"key".to_string());
                 if ui.button("Customize screen button").clicked(){
-                    self.customize_hk=true;
-               
+                    self.customize_hotkey=true;
+                 
                 }
+
                         if ui.input(|i|{
     
-                            if !i.keys_down.is_empty(){
-                                println!("{:?}", i.keys_down);
-    
-                                println!("{:?}", i.modifiers);
+                            if !i.keys_down.is_empty() && i.modifiers.any(){
+                                let key_string = format!("{:?}", i.keys_down);
+                                let stringaaa = format!("{:?}",i.modifiers);
+                                let modifier_string = FirstWindow::find_true_modifier(&stringaaa.as_str());
+                                new_hotkey=(modifier_string.unwrap().to_string(),key_string.replace("{", "").replace("}", ""));
+
+
                             }
-                                self.customize_hk
+                                self.customize_hotkey
                          }){
-                               // self.customize_hk=false;
+                                if new_hotkey!=("modifier".to_string(),"key".to_string()){
+                                                                    self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice());
+                                self.shortcuts.update_hotkey(1, new_hotkey.0, new_hotkey.1);
+
+                                self.manager.register_all(self.shortcuts.get_hotkeys().as_slice());
+                                self.customize_hotkey=false;
+                                }
                          }
-                        */
+                        
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }
