@@ -425,7 +425,7 @@ impl eframe::App for FirstWindow {
                 frame.set_window_size(self.screen_size.unwrap());
             }
             
-            println!("w={:} , h={:}",self.width,self.height);
+            //println!("w={:} , h={:}",self.width,self.height);
            
                /*  
                
@@ -527,7 +527,7 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
-                                println!("caso 1");
+                               // println!("caso 1");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
                                 }else{
@@ -536,7 +536,7 @@ impl eframe::App for FirstWindow {
                               
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                println!("caso 2");
+                               // println!("caso 2");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
                                 }else{
@@ -545,7 +545,7 @@ impl eframe::App for FirstWindow {
                                 
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             } else if self.width <= 1200.0 && self.height >= 700.0 {   
-                                println!("caso 3");    
+                               // println!("caso 3");    
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -554,7 +554,7 @@ impl eframe::App for FirstWindow {
                                
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap() , self.height*self.shrink_fact.unwrap());
                             } else {
-                                println!("caso 4");
+                               // println!("caso 4");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(1.0/self.multiplication_factor.unwrap());
                                 }else{
@@ -672,8 +672,9 @@ impl eframe::App for FirstWindow {
                                             self.image_name.clone().unwrap(),
                                             self.image_format_string
                                         ));
-                                    }
+                                    }   
                                 }
+                                self.save = false;
                             }
                             if save_edit_btn.unwrap().clicked() {
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
@@ -715,6 +716,7 @@ impl eframe::App for FirstWindow {
                                        
                                     ));
                                 }
+                                self.save = false;
                             }
                             if copy_btn.unwrap().clicked(){
                                 self.edit_image(ui);

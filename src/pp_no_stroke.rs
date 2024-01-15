@@ -881,6 +881,7 @@ impl View for Painting {
             self.squares.clear();
             self.texts.clear();
         }
+        
        
         match opt {
             PpOptions::Painting => {
