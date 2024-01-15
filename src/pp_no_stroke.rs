@@ -120,6 +120,7 @@ impl Default for Painting {
 
 impl Painting {
     pub fn render_elements(&mut self, painter: Painter, to_screen: emath::RectTransform) {
+
         if !self.lines.is_empty() {
             let shapes = self
                 .lines
@@ -552,6 +553,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Color32)>>, Option<Response>) {
+        println!("renderizzo circles {:?}", self.circles);
         let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -573,6 +575,7 @@ impl Painting {
             ui.ctx()
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
         }
+
         self.render_elements(painter.clone(), to_screen);
 
         if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false{
@@ -585,6 +588,7 @@ impl Painting {
                 self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
             }
         }
+
 
         if ui.input(|i| i.pointer.any_released())
             && cut_clicked==false
@@ -607,6 +611,7 @@ impl Painting {
                 response.rect.left_top().y,
             ));
         }
+
         self.render_elements(painter.clone(), to_screen);
         let mut crcls=Vec::new();
         for c in self.circles.clone(){
@@ -872,7 +877,9 @@ impl View for Painting {
         let mut crcls=None;
         let mut response=None;
 
+        
         if save{
+            println!("pulisco");
             self.last_type_added.clear();
             self.lines.clear();
             self.arrows.clear();

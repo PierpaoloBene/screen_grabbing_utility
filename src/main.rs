@@ -738,6 +738,12 @@ impl eframe::App for FirstWindow {
                                     || self.text_pixels.len()>0
                                     || self.line_pixels.len()>0{
                                         self.edit_image(ui);
+                                        self.circle_pixels= Vec::new();
+                                        self.square_pixels= Vec::new();
+                                        self.arrow_pixels= Vec::new();
+                                        self.text_pixels= Vec::new();
+                                        self.line_pixels=  Vec::new();
+     
                                     }
                                 
                                 let mut pos_bug_fixed=Pos2::new(0.0,0.0);
