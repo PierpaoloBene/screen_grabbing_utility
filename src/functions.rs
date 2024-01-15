@@ -1,5 +1,7 @@
 pub mod first_window {
 
+    use std::time::Duration;
+
     use crate::{FirstWindow, ModeOptions, LoadingState};
     use egui::{ColorImage, ImageData, Response};
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
@@ -278,6 +280,64 @@ pub mod first_window {
         
             self.image_buffer = image_buffer_cutted.clone();
 
+        }
+        pub fn save_img(&mut self, ui: &mut egui::Ui){
+            self.save=true;
+                               
+            self.image_name = Some(
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d_%H_%M_%S")
+                    .to_string(),
+            );
+            self.toasts.as_mut().unwrap().success(format!("Image saved in {}/{}.{}",  self.filepath
+            .clone()
+            .unwrap()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_string(),
+        self.image_name.clone().unwrap(),
+        self.image_format_string)).set_duration(Some(Duration::from_secs(5)));
+            
+            self.show_toast=true;
+            self.edit_image(ui);
+
+           
+            
+            let mod_img = self.image_buffer.clone();
+
+            if mod_img.is_none() == false {
+                
+
+                if self.current_os == "windows" {
+                    let _ = mod_img.unwrap().save(format!(
+                        "{}\\{}.{}",
+                        self.filepath
+                            .clone()
+                            .unwrap()
+                            .as_os_str()
+                            .to_str()
+                            .unwrap()
+                            .to_string(),
+                        self.image_name.clone().unwrap(),
+                        self.image_format_string
+                    ));
+                } else {
+                    let _ = mod_img.unwrap().save(format!(
+                        "{}/{}.{}",
+                        self.filepath
+                            .clone()
+                            .unwrap()
+                            .as_os_str()
+                            .to_str()
+                            .unwrap()
+                            .to_string(),
+                        self.image_name.clone().unwrap(),
+                        self.image_format_string
+                    ));
+                }   
+            }
+            self.save = false;
         }
     }
 }

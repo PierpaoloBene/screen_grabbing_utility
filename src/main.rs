@@ -2,10 +2,13 @@
 // use crate::post_processing::PpOptions;
 // use crate::post_processing::View;
 mod pp_no_stroke;
+mod hotkeys;
 use crate::pp_no_stroke::PpOptions;
 use crate::pp_no_stroke::View;
 use chrono;
 use egui::CursorIcon;
+use egui::style::Widgets;
+use hotkeys::Hotkeys;
 use image::EncodableLayout;
 use rfd::FileDialog;
 use arboard::Clipboard;
@@ -60,6 +63,7 @@ enum ImageFormat {
     Gif,
 }
 
+
 fn main() -> Result<(), eframe::Error> {
     let mut filepath = Some(PathBuf::new());
 
@@ -82,14 +86,13 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     let manager = GlobalHotKeyManager::new().unwrap();
-    let hotkey_exit = HotKey::new(Some(Modifiers::CONTROL), Code::KeyE);
-    let hotkey_screen = HotKey::new(Some(Modifiers::CONTROL), Code::KeyD);
+    let shortcuts = Hotkeys::new();
+    manager.register_all(shortcuts.get_hotkeys().as_slice());
     //let p = post_processing::Painting::default();
     let p=pp_no_stroke::Painting::default();
-    
-    manager.register(hotkey_exit).unwrap();
-    manager.register(hotkey_screen).unwrap();
+
     let openfw = GlobalHotKeyEvent::receiver();
+
     eframe::run_native(
         "Screen Grabbing Utility",
         options,
@@ -139,8 +142,15 @@ fn main() -> Result<(), eframe::Error> {
                 text_pixels: Vec::new(),
                 line_pixels: Vec::new(),
                 save:false,
+                ready_to_save: false,
+                ready_to_save_with_name: false,
+                ready_to_copy: false,
+                ready_to_crop: false,
                 to_cut_rect:None,
                 shrink_fact:None,
+                shortcuts: shortcuts,
+                manager: manager,
+        
             })
         }),
     )
@@ -191,8 +201,15 @@ struct FirstWindow {
     text_pixels: Vec<(Pos2, Color32, String)>,
     line_pixels: Vec<(Vec<Pos2>, Color32)>,
     save:bool,
+    ready_to_save:bool,
+    ready_to_save_with_name: bool,
+    ready_to_copy: bool,
+    ready_to_crop: bool,
     to_cut_rect:Option<(Pos2, Pos2)>,
     shrink_fact:Option<f32>,
+    shortcuts: Hotkeys,
+    manager: GlobalHotKeyManager,
+
     
 }
 
@@ -209,36 +226,44 @@ impl eframe::App for FirstWindow {
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
-        if self.selected_window==1 || self.selected_window==2{
-  
-        match self.open_fw.try_recv() {
+
+            match self.open_fw.try_recv() {
             
-            Ok(event) => match event.state {
-                HotKeyState::Pressed => match event.id {
-                    
-                    909518472 => {
-                        self.selected_window = 1;
-                        frame.set_decorations(true);
-                        frame.set_window_size(egui::vec2(680.0, 480.0));
-                    }
-                    2440410256 => {
-                        
-                        std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
-                        self.selected_window = 2;
+                Ok(event) => match event.state {
+                    HotKeyState::Pressed => 
 
+                    if event.id==self.shortcuts.get_hotkeys()[0].id() && self.selected_window==2{ //Exit
+                        self.selected_window = 1; //A
+                            frame.set_decorations(true); //A
+                            frame.set_window_size(egui::vec2(680.0, 480.0)); //A
+                    }else if event.id==self.shortcuts.get_hotkeys()[1].id() && self.selected_window==1{ //Screen
+                        std::thread::sleep(Duration::from_secs(self.selected_timer_numeric)); //A
+                        self.selected_window = 2;//A
                     }
-                    _ => {
-                        println!("{:?}", event);
+                    else if event.id==self.shortcuts.get_hotkeys()[2].id() && self.selected_window==5{
+                        self.ready_to_save = true;
                     }
+                    else if event.id==self.shortcuts.get_hotkeys()[3].id() && self.selected_window==5{
+                        self.ready_to_copy = true;
+                    }
+                    else if event.id==self.shortcuts.get_hotkeys()[4].id() && self.selected_window==5{
+                        self.ready_to_save_with_name = true;
+                    }
+                    else if event.id==self.shortcuts.get_hotkeys()[5].id() && self.selected_window==5{
+                        self.ready_to_crop = true;
+                    }
+                    else{//A
+                        println!("else {:?}", event.id);//A
+                    }//A
+                    HotKeyState::Released => {}
                 },
-                HotKeyState::Released => {}
-            },
+    
+                Err(_) => {
+                    
+                    }
+            }
 
-            Err(_) => {
-                
-                }
-        }
-    }
+         
 
         if self.selected_window == 1 {
             self.mouse_pos=Some(Pos2::new(-1.0, -1.0));
@@ -621,65 +646,11 @@ impl eframe::App for FirstWindow {
                                     }
                                 }
 
-                            if save_btn.unwrap().clicked() {
-                                self.save=true;
-                               
-                                self.image_name = Some(
-                                    chrono::offset::Local::now()
-                                        .format("%Y-%m-%d_%H_%M_%S")
-                                        .to_string(),
-                                );
-                                self.toasts.as_mut().unwrap().success(format!("Image saved in {}/{}.{}",  self.filepath
-                                .clone()
-                                .unwrap()
-                                .as_os_str()
-                                .to_str()
-                                .unwrap()
-                                .to_string(),
-                            self.image_name.clone().unwrap(),
-                            self.image_format_string)).set_duration(Some(Duration::from_secs(5)));
-                                
-                                self.show_toast=true;
-                                self.edit_image(ui);
-
-                               
-                                
-                                let mod_img = self.image_buffer.clone();
-
-                                if mod_img.is_none() == false {
-                                    
-            
-                                    if self.current_os == "windows" {
-                                        let _ = mod_img.unwrap().save(format!(
-                                            "{}\\{}.{}",
-                                            self.filepath
-                                                .clone()
-                                                .unwrap()
-                                                .as_os_str()
-                                                .to_str()
-                                                .unwrap()
-                                                .to_string(),
-                                            self.image_name.clone().unwrap(),
-                                            self.image_format_string
-                                        ));
-                                    } else {
-                                        let _ = mod_img.unwrap().save(format!(
-                                            "{}/{}.{}",
-                                            self.filepath
-                                                .clone()
-                                                .unwrap()
-                                                .as_os_str()
-                                                .to_str()
-                                                .unwrap()
-                                                .to_string(),
-                                            self.image_name.clone().unwrap(),
-                                            self.image_format_string
-                                        ));
-                                    }   
-                                }
-                                self.save = false;
+                            if save_btn.unwrap().clicked() || self.ready_to_save {
+                                self.save_img(ui);
+                                self.ready_to_save = false;
                             }
-                            if save_edit_btn.unwrap().clicked() {
+                            if save_edit_btn.unwrap().clicked() || self. ready_to_save_with_name{
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
                                
                                 self.save=true;
@@ -701,7 +672,7 @@ impl eframe::App for FirstWindow {
                                 self.show_toast=true;
                                 
                                 self.edit_image(ui);
-                                let mod_img = self.image_buffer.clone();
+                                let mod_img: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>> = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
                                     let stringpath =  dialog
                                     .clone()
@@ -720,8 +691,9 @@ impl eframe::App for FirstWindow {
                                     ));
                                 }
                                 self.save = false;
+                                self.ready_to_save_with_name = false;
                             }
-                            if copy_btn.unwrap().clicked(){
+                            if copy_btn.unwrap().clicked() || self.ready_to_copy{
                                 self.edit_image(ui);
                                 self.toasts.as_mut().unwrap().success("Image copied to clipboard" ).set_duration(Some(Duration::from_secs(5)));
                                 
@@ -730,9 +702,10 @@ impl eframe::App for FirstWindow {
                                 let w=self.image_buffer.clone().unwrap().width() as usize;
                                 let h=self.image_buffer.clone().unwrap().height() as usize;
                                 let _=clipboard.set_image(arboard::ImageData { width: w, height: h, bytes: self.image_buffer.clone().unwrap().as_bytes().into()});
+                                self.ready_to_copy=false;
                             }
 
-                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true){
+                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{
                                 self.pp_option = Some(PpOptions::Cut);
                                 self.cut_clicked=true;
                                 
@@ -913,6 +886,7 @@ impl eframe::App for FirstWindow {
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
                                     self.cropped=true;
+                                    self.ready_to_crop= false;
 
                                 }
                                
@@ -1005,12 +979,29 @@ impl eframe::App for FirstWindow {
                 }
                 }
                
-
+/* 
+                if ui.button("Customize screen button").clicked(){
+                    self.customize_hk=true;
+               
+                }
+                        if ui.input(|i|{
+    
+                            if !i.keys_down.is_empty(){
+                                println!("{:?}", i.keys_down);
+    
+                                println!("{:?}", i.modifiers);
+                            }
+                                self.customize_hk
+                         }){
+                               // self.customize_hk=false;
+                         }
+                        */
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }
 
             });
         }
+
     }
 }
