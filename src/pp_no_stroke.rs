@@ -567,7 +567,6 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Color32)>>, Option<Response>) {
-        println!("renderizzo circles {:?}", self.circles);
         let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
@@ -971,7 +970,6 @@ impl View for Painting {
 
         
         if save{
-            println!("pulisco");
             self.last_type_added.clear();
             self.lines.clear();
             self.arrows.clear();
