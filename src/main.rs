@@ -616,6 +616,9 @@ impl eframe::App for FirstWindow {
                                             self.text_pixels=txt.clone().unwrap();
                                         }
                                     }
+                                    PpOptions::Cut => {
+                                        
+                                    }
                                 }
 
                             if save_btn.unwrap().clicked() {
@@ -730,6 +733,7 @@ impl eframe::App for FirstWindow {
                             }
 
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true){
+                                self.pp_option = Some(PpOptions::Cut);
                                 self.cut_clicked=true;
                                 
                                 if self.arrow_pixels.len()>0

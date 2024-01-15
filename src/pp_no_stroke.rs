@@ -35,6 +35,7 @@ pub enum PpOptions {
     Square,
     Text,
     Painting,
+    Cut,
 }
 pub struct Painting {
     last_type_added: Vec<PpOptions>,
@@ -384,6 +385,15 @@ impl Painting {
                 })
                 .response
             }
+            PpOptions::Cut => {
+               
+                ui.horizontal(|ui: &mut Ui| {
+            
+                })
+                .response
+           
+            }
+
             _ => res.unwrap(),
         }
     }
@@ -857,6 +867,52 @@ impl Painting {
         (Some(txt.clone()), Some(response))
     }
 
+    pub fn ui_content_cut(
+        &mut self,
+        ui: &mut Ui,
+        image: egui::Image,
+        mult_fact: &mut Option<(f32, f32)>,
+        dim: Vec2,
+        cut_clicked:bool
+    ) -> (Option<Vec<(Pos2, Color32, String)>>, Option<Response>) {
+        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
+
+        let to_screen = emath::RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+            response.rect,
+        );
+        image.paint_at(ui, response.rect);
+        self.shift_squares = Some(Pos2::new(
+            response.rect.left_top().x,
+            response.rect.left_top().y,
+        ));
+        self.mult_factor = Some((
+            image.size().unwrap().x as f32 / response.rect.width(),
+            image.size().unwrap().y as f32 / response.rect.height(),
+        ));
+
+        *mult_fact = self.mult_factor;
+        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+        if mouse_pos.is_none() == false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
+            && ui.input(|i| i.pointer.any_down()==false)
+        {
+            ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Grab);
+        }else if 
+            mouse_pos.is_none()==false
+            && response.rect.x_range().contains(mouse_pos.unwrap().x)
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
+            && ui.input(|i| i.pointer.any_down()==true){
+            ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Grabbing);
+        }
+        
+        (None, Some(response))
+    }
+
+
+    
+
     pub fn calc_pixels_arrow(&mut self, origin: Pos2, vec: Vec2) -> Vec<Pos2> {
         let mut pixels = Vec::new();
 
@@ -929,7 +985,7 @@ impl View for Painting {
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
-                ui.label("Paint with your mouse/touch!");
+                ui.label("Paint with your mouse/touch! If you want to clear all the painting, click the button Clear Painting");
                 ui.vertical_centered(|ui| {
                     if  image.size().unwrap()[0] >= 1000.0 && image.size().unwrap()[1] <= 500.0 {
                         ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
@@ -949,7 +1005,7 @@ impl View for Painting {
             }
             PpOptions::Arrow => {
                 self.ui_control(ui, opt);
-                ui.label("Paint an arrow with your mouse/touch!");
+                ui.label("Paint an arrow with your mouse/touch! Press the left button of your mouse wherever you want, as a starting point, and release it when you want to finish drawing the arrow ");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (arr,response) = self.ui_content_arrows(ui, image, dim, cut_clicked);
@@ -959,7 +1015,7 @@ impl View for Painting {
             }
             PpOptions::Circle => {
                 self.ui_control(ui, opt);
-                ui.label("Paint a circle with your mouse/touch!");
+                ui.label("Paint a circle with your mouse/touch! Press the left button of your mouse wherever you want, to identify the circle's center, and release it when you want to finish drawing the circle ");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (crcls,response) = self.ui_content_circles(ui, image, dim, cut_clicked);
@@ -969,7 +1025,7 @@ impl View for Painting {
             }
             PpOptions::Square => {
                 self.ui_control(ui, opt);
-                ui.label("Paint a square with your mouse/touch!");
+                ui.label("Paint a square with your mouse/touch! Press the left button of your mouse wherever you want, to identify the rectangle's top-left corner, and release it when you want to set the right-bottom corner");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (sqrs,response) = self.ui_content_squares(ui, image, dim, cut_clicked);
@@ -979,10 +1035,21 @@ impl View for Painting {
             }
             PpOptions::Text => {
                 self.ui_control(ui, opt);
-                ui.label("First, click were you want to write and then write something!");
+                ui.label("First, click were you want to write and type your text in the bar above! When you finish writing, press the button Write! to put your text on the image below");
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (txt,response) = self.ui_content_texts(ui, image, mult_fact, dim, cut_clicked);
+                        
+                    });
+                });
+            }
+
+            PpOptions::Cut => {
+                self.ui_control(ui, opt);
+                ui.label("Restrict the grabbed image however you want and when you identify the right area to cut, press the button Finish Your Cut ");
+                ui.vertical_centered(|ui| {
+                    egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                        (txt,response) = self.ui_content_cut(ui, image, mult_fact, dim, cut_clicked);
                         
                     });
                 });
