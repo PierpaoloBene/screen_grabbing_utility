@@ -407,10 +407,10 @@ impl Painting {
             response.rect.left_top().y,
         ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if (mouse_pos.is_none() == false
+        if mouse_pos.is_none() == false
             
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
         {
             ui.ctx()
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
@@ -424,7 +424,7 @@ impl Painting {
             self.lines.push((vec![], self.lines_color));
         }
 
-        let mut current_line = &mut self.lines.last_mut().unwrap().0;
+        let current_line = &mut self.lines.last_mut().unwrap().0;
         let pointer_pos= response.interact_pointer_pos();
         if pointer_pos.is_none()==false && cut_clicked==false {
             let canvas_pos = from_screen * pointer_pos.unwrap();
@@ -443,11 +443,11 @@ impl Painting {
 
         for l in self.lines.clone().into_iter() {
             let clr = l.1;
-            let mut lns =
+            let lns =
                 l.0.into_iter()
                     .map(|f| from_screen.inverse().transform_pos(f));
             let mut retlns = Vec::new();
-            for mut li in lns.into_iter() {
+            for li in lns.into_iter() {
                 let ps = Pos2::new(
                     (li.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
                     (li.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
@@ -471,7 +471,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<Response>) {
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -485,9 +485,9 @@ impl Painting {
             image.size().unwrap().y as f32 / response.rect.height(),
         ));
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if (mouse_pos.is_none() == false
+        if mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
         {
             ui.ctx()
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
@@ -552,7 +552,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, f32, Color32)>>, Option<Response>) {
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -566,9 +566,9 @@ impl Painting {
         image.paint_at(ui, response.rect);
         
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if (mouse_pos.is_none() == false
+        if mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
         {
             ui.ctx()
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
@@ -627,7 +627,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Rect, Color32)>>, Option<Response>) {
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -642,9 +642,9 @@ impl Painting {
 
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
 
-        if (mouse_pos.is_none() == false
+        if mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
         {
             ui.ctx()
                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
@@ -727,7 +727,7 @@ impl Painting {
         dim: Vec2,
         cut_clicked:bool
     ) -> (Option<Vec<(Pos2, Color32, String)>>, Option<Response>) {
-        let (mut response, painter) = ui.allocate_painter(dim, Sense::drag());
+        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
 
         let to_screen = emath::RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
@@ -745,9 +745,9 @@ impl Painting {
 
         *mult_fact = self.mult_factor;
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if (mouse_pos.is_none() == false
+        if mouse_pos.is_none() == false
             && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y))
+            && response.rect.y_range().contains(mouse_pos.unwrap().y)
         {
             ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Text);
         }
@@ -824,8 +824,8 @@ impl Painting {
             y: vec.y * self.mult_factor.unwrap().1,
         };
         let new_origin = Pos2::new(
-            ((origin.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0),
-            ((origin.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1),
+            (origin.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+            (origin.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
         );
         let rot = Rot2::from_angle(std::f32::consts::TAU / 10.0);
         let tip_length = new_vec.length() / 4.0;
