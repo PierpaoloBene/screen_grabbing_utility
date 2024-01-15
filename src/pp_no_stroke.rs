@@ -73,6 +73,8 @@ pub struct Painting {
     removed_texts: Vec<(String, Pos2, Pos2, Color32)>,
     to_write_text: String,
     ready_to_write: bool,
+    counter:i32,
+    inizializzato:bool,
 }
 
 impl Default for Painting {
@@ -114,6 +116,8 @@ impl Default for Painting {
             texts_color: Color32::from_rgba_unmultiplied(25, 200, 100, 255),
             to_write_text: "Write something".to_string(),
             ready_to_write: false,
+            counter: 0,
+            inizializzato:false,
         }
     }
 }
@@ -766,9 +770,40 @@ impl Painting {
                 && self.text_starting_position.y == -1.0
             {
                 self.text_starting_position = pos.unwrap();
+                self.inizializzato=true;
                 
+            }else if  pos.is_none() == false
+                   && response.rect.contains(pos.unwrap())
+                   && self.inizializzato==true{
+                    self.text_starting_position = pos.unwrap();
             }
         }
+
+
+                     if self.ready_to_write==false 
+                        && self.text_starting_position.x != -1.0 
+                        && self.text_starting_position.y != -1.0 { 
+                          
+                            self.counter=self.counter+1;
+
+                     if self.counter%2==0{
+                        ui.painter().add(
+                            egui::Shape::dashed_line(&[ 
+                                Pos2::new(self.text_starting_position.x,self.text_starting_position.y+10.0),
+                                Pos2::new(self.text_starting_position.x,self.text_starting_position.y-10.0)], 
+                                Stroke::new(5.0, Color32::WHITE),
+                                 10.0, 0.0));
+                            }else{
+                        
+                        ui.painter().add(
+                            egui::Shape::dashed_line(&[ 
+                                Pos2::new(self.text_starting_position.x,self.text_starting_position.y+10.0),
+                                Pos2::new(self.text_starting_position.x,self.text_starting_position.y-10.0)], 
+                                Stroke::new(5.0, Color32::BLACK),
+                                10.0, 0.0));
+                                 
+                        }
+                    }
 
         if ui.input(|i| i.pointer.any_released())  && cut_clicked==false {
             let pos = ui.input(|i| i.pointer.interact_pos());
@@ -802,6 +837,7 @@ impl Painting {
                 self.text_ending_position.x = -1.0;
                 self.text_ending_position.y = -1.0;
                 self.ready_to_write = false;
+                self.inizializzato=false;
                 self.last_type_added.push(PpOptions::Text);
             }
         }
