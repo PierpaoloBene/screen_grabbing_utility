@@ -903,8 +903,7 @@ impl eframe::App for FirstWindow {
             });
         } else if self.selected_window == 6 {
            
-            if self.show_toast{
-                
+            if self.show_toast{                
                 self.toasts.as_mut().unwrap().show(ctx);    
             }
            
@@ -1025,10 +1024,14 @@ impl eframe::App for FirstWindow {
                                 if ret==1{
                                     self.toasts.as_mut().unwrap().success("Shortcut changed!" ).set_duration(Some(Duration::from_secs(5))); 
                                      self.show_toast=true;            
-                                }else if ret==2{
-                                    
+                                }else if ret==2{                                    
                                     self.toasts.as_mut().unwrap().error("Shortcut already used!" ).set_duration(Some(Duration::from_secs(5)));
                                     self.show_toast=true; 
+                                }else if ret==3{
+                                    
+                                    self.toasts.as_mut().unwrap().error("Too many digits for the shortcut").set_duration(Some(Duration::from_secs(5)));
+                                    self.show_toast=true;
+                                    self.customizing_hotkey=usize::MAX;
                                 }
                                 
                             }
