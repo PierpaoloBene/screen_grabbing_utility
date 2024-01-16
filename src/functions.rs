@@ -428,9 +428,7 @@ pub mod first_window {
                         self.shortcuts.update_hotkey(&self.new_hotkey, ui);
                         println!("{:?}", self.new_hotkey);
                         ret = 1;
-                    } else if self.new_hotkey.get_code().parse::<char>().is_ok() 
-                    && !self.new_hotkey.get_code().parse::<char>().unwrap().is_alphanumeric(){
-                        ret = 4;
+                    
                     }else{
                         ret=2;
                     }

@@ -1025,15 +1025,11 @@ impl eframe::App for FirstWindow {
                                     self.toasts.as_mut().unwrap().success("Shortcut changed!" ).set_duration(Some(Duration::from_secs(5))); 
                                      self.show_toast=true;            
                                 }else if ret==2{                                    
-                                    self.toasts.as_mut().unwrap().error("Shortcut already used!" ).set_duration(Some(Duration::from_secs(5)));
+                                    self.toasts.as_mut().unwrap().error("Shortcut already used or invalid!" ).set_duration(Some(Duration::from_secs(5)));
                                     self.show_toast=true; 
                                 }else if ret==3{
                                     
                                     self.toasts.as_mut().unwrap().error("Too many digits for the shortcut").set_duration(Some(Duration::from_secs(5)));
-                                    self.show_toast=true;
-                                    self.customizing_hotkey=usize::MAX;
-                                }else if ret==4{
-                                    self.toasts.as_mut().unwrap().error("Invalid shortcut").set_duration(Some(Duration::from_secs(5)));
                                     self.show_toast=true;
                                     self.customizing_hotkey=usize::MAX;
                                 }
