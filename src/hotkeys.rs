@@ -1,7 +1,9 @@
 use std::ops::Index;
 use std::str::FromStr;
+
 use std::string;
 
+use egui::TextBuffer;
 use global_hotkey::hotkey::HotKey;
 use keyboard_types::Modifiers;
 use keyboard_types::Code;
@@ -100,8 +102,13 @@ impl Hotkeys{
             "command" => {modifier_name = "CONTROL".to_string()},
             _ => {}
         }
-
-        let hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
+        let mut hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::Abort);
+        
+        if new_hotkey.code.parse::<u32>().is_ok(){
+            hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Digit{}",new_hotkey.code).as_str()).unwrap());
+        }else{
+            hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
+        }
         
         if self.hotkeys_vector.contains(&hotkey_to_assign){
             println!("Hotkey selezionata già utilizzata scegline un altra");

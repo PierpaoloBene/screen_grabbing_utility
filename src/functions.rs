@@ -376,7 +376,7 @@ pub mod first_window {
             if ui.input(|i|{
                 if !i.keys_down.is_empty() && i.modifiers.any(){
 
-                    let key_string = format!("{:?}", i.keys_down).replace("{", "").replace("}", "");
+                    let key_string = format!("{:?}", i.keys_down).replace("{", "").replace("}", "").replace("Num", "");
                     let stringaaa = format!("{:?}",i.modifiers);
                     let modifier_string = FirstWindow::find_true_modifier(&stringaaa.as_str()).unwrap().to_string();
                     self.new_hotkey=CustomizeHotkey::new(self.customizing_hotkey,modifier_string,key_string);
