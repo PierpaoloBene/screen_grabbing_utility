@@ -421,7 +421,7 @@ pub mod first_window {
                         .get_hotkeys_strings()
                         .contains(&(self.new_hotkey.get_modifier(), self.new_hotkey.get_code()))
                         && self.new_hotkey.get_code().parse::<char>().is_ok() 
-                        && self.new_hotkey.get_code().parse::<char>().unwrap().is_alphabetic()
+                        && self.new_hotkey.get_code().parse::<char>().unwrap().is_alphanumeric()
                     {
                         println!("non assegnata e valida");
 
@@ -429,7 +429,7 @@ pub mod first_window {
                         println!("{:?}", self.new_hotkey);
                         ret = 1;
                     } else if self.new_hotkey.get_code().parse::<char>().is_ok() 
-                    && !self.new_hotkey.get_code().parse::<char>().unwrap().is_alphabetic(){
+                    && !self.new_hotkey.get_code().parse::<char>().unwrap().is_alphanumeric(){
                         ret = 4;
                     }else{
                         ret=2;
