@@ -222,10 +222,12 @@ struct FirstWindow {
 }
 
 impl eframe::App for FirstWindow {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {    
+    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {   
+
+        ctx.request_repaint(); 
             
         let screens=Screen::all().unwrap();
-        self.hotkey_listener();
+
         if self.screen_to_show.is_none(){
             self.screen_to_show=Some(screens[0].display_info.id);
             self.screen_size=Some(Vec2::new(screens[0].display_info.width as f32, screens[0].display_info.height as f32));
@@ -242,6 +244,7 @@ impl eframe::App for FirstWindow {
          
 
         if self.selected_window == 1 {
+            self.hotkey_listener();
             self.mouse_pos=Some(Pos2::new(-1.0, -1.0));
             self.mouse_pos_f=Some(Pos2::new(-1.0, -1.0));
             self.rect_pos =  egui::pos2(0.0, 0.0);
@@ -360,6 +363,7 @@ impl eframe::App for FirstWindow {
                 });
             });
         } else if self.selected_window == 2 {
+            self.hotkey_listener();
             frame.set_decorations(false);
             frame.set_window_size(self.screen_size.unwrap());
             frame.set_window_pos(self.frame_initial_pos.unwrap());
@@ -422,7 +426,7 @@ impl eframe::App for FirstWindow {
             self.selected_window = 5;
         } else if self.selected_window == 5 {
             
-            
+            self.hotkey_listener();
             frame.set_decorations(true);
             frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
             if self.current_os=="windows"{
@@ -972,7 +976,7 @@ impl eframe::App for FirstWindow {
                 .show(ui, |ui| {
                     ui.label("Customizabile Shortucts");
                     ui.end_row();
-                if ui.button("Exit button").clicked(){
+                             if ui.button("Exit button").clicked(){
                                 self.customizing_hotkey=0;      
                             }
                             ui.label(self.shortcuts.get_hotkey_strings_formatted(0));
@@ -1010,6 +1014,7 @@ impl eframe::App for FirstWindow {
                             ui.end_row();
                             
                             if self.customizing_hotkey != usize::MAX{
+
                                 self.customize_shortcut(ui);
                             }
 

@@ -6,6 +6,7 @@ use global_hotkey::hotkey::HotKey;
 use keyboard_types::Modifiers;
 use keyboard_types::Code;
 
+#[derive(Debug)]
 pub struct CustomizeHotkey{
     id: usize,
     modifier: String,
@@ -35,6 +36,14 @@ impl CustomizeHotkey{
     pub fn new(id: usize,modifier: String,code: String)->Self{
         CustomizeHotkey { id: id, modifier: modifier, code: code }
     }
+
+    pub fn get_modifier(&self) -> String{
+        self.modifier.clone()
+    }
+    pub fn get_code(&self) -> String{
+        self.code.clone()
+    }
+
 
     
 }
@@ -77,11 +86,11 @@ impl Hotkeys{
     pub fn get_hotkey_strings_formatted(&self,id: usize) -> String{
         format!("{} + {}",   self.hotkeys_strings[id].0,  self.hotkeys_strings[id].1)
     }
-    pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey){
+    pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey, ui: &mut egui::Ui)-> bool{
         
         let mut modifier_name: String = "CONTROL".to_string();
  
-        self.hotkeys_strings[new_hotkey.id]= (new_hotkey.modifier.clone(),new_hotkey.code.clone());
+
     
         match new_hotkey.modifier.as_str(){
             "alt" => {modifier_name = "ALT".to_string()},
@@ -92,13 +101,19 @@ impl Hotkeys{
             _ => {}
         }
 
-        let hotkey_to_assing = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
+        let hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
         
-        if self.hotkeys_vector.contains(&hotkey_to_assing){
- 
+        if self.hotkeys_vector.contains(&hotkey_to_assign){
+            println!("Hotkey selezionata già utilizzata scegline un altra");
+            true
+        }else{
+            println!("aggiorno hotkey");
+            self.hotkeys_strings[new_hotkey.id]= (new_hotkey.modifier.clone(),new_hotkey.code.clone());
+             *self.hotkeys_vector.get_mut(new_hotkey.id).unwrap() =hotkey_to_assign;
+             false
+        
         }
-            *self.hotkeys_vector.get_mut(new_hotkey.id).unwrap() =hotkey_to_assing;
-        
+ 
 
     }
 }   

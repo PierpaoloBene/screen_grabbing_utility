@@ -792,10 +792,13 @@ impl Painting {
                      if self.ready_to_write==false 
                         && self.text_starting_position.x != -1.0 
                         && self.text_starting_position.y != -1.0 { 
-                          
-                            self.counter=self.counter+1;
+                        
+                        
+                        self.counter=self.counter+1;
 
-                     if self.counter%2==0{
+
+                    
+                     if self.counter%10==0{
                         ui.painter().add(
                             egui::Shape::dashed_line(&[ 
                                 Pos2::new(self.text_starting_position.x,self.text_starting_position.y+10.0),

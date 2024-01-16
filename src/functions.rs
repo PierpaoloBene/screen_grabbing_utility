@@ -2,14 +2,16 @@
 pub mod first_window {
 
 
-    use std::time::Duration;
+    use std::{time::Duration, process::exit};
 
     use crate::{FirstWindow, ModeOptions, LoadingState, hotkeys::CustomizeHotkey};
     use egui::{ColorImage, ImageData, Response};
+    use egui_hotkey::Hotkey;
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
+    use keyboard_types::Modifiers;
     use rusttype::Font;
     use screenshots::Screen;
-    use global_hotkey::HotKeyState;
+    use global_hotkey::{HotKeyState, hotkey::HotKey};
 
     impl FirstWindow {
         pub fn set_width_height(&mut self) {
@@ -368,37 +370,49 @@ pub mod first_window {
         }
         
         pub fn customize_shortcut(&mut self, ui: &mut egui::Ui){
+            self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
             if ui.input(|i|{
-    
                 if !i.keys_down.is_empty() && i.modifiers.any(){
+
                     let key_string = format!("{:?}", i.keys_down).replace("{", "").replace("}", "");
                     let stringaaa = format!("{:?}",i.modifiers);
                     let modifier_string = FirstWindow::find_true_modifier(&stringaaa.as_str()).unwrap().to_string();
                     self.new_hotkey=CustomizeHotkey::new(self.customizing_hotkey,modifier_string,key_string);
-
+                    
                 }
                     self.customizing_hotkey != usize::MAX
              }){
+                   
                     if self.new_hotkey!= CustomizeHotkey::default(){
-                            self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
-                            self.shortcuts.update_hotkey(&self.new_hotkey);
+                         if !self.shortcuts.get_hotkeys_strings().contains(&(self.new_hotkey.get_modifier(),self.new_hotkey.get_code())){
+                            println!("non assegnata");
+                           
+                            self.shortcuts.update_hotkey(&self.new_hotkey, ui);
+                            println!("{:?}", self.new_hotkey);
+ 
+                        }
+                        self.manager.register_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
+                        self.customizing_hotkey=usize::MAX;  
+                        self.new_hotkey = CustomizeHotkey::default();
 
-                         self.manager.register_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
-                         self.customizing_hotkey=usize::MAX;  
-                         self.new_hotkey = CustomizeHotkey::default();
+                        
                     }
              }
             
         }
         pub fn hotkey_listener(&mut self,){
-            if self.selected_window == 1{
+            if self.selected_window == 1 {
+
+
                 match self.open_fw.try_recv() {
-                    Ok(event) => match event.state {
+                    
+                    Ok(event)=> match event.state {
                         HotKeyState::Pressed => 
                         if event.id==self.shortcuts.get_hotkeys()[1].id(){
+                            println!("PREMUTO CTRL+D");
                             std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
                             self.selected_window = 2;
-                        }
+                        }      
                         HotKeyState::Released => {}
                     },
         
@@ -407,6 +421,7 @@ pub mod first_window {
                         }
                 }
             }else if self.selected_window == 2{
+
                 match self.open_fw.try_recv() {
                     Ok(event) => match event.state {
                         HotKeyState::Pressed => 
@@ -448,6 +463,8 @@ pub mod first_window {
                         
                         }
                 }
+            }else if self.selected_window==6{
+                println!("ehehehhe");
             }
         }
     }
