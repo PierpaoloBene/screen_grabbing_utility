@@ -1,6 +1,7 @@
 use std::ops::Index;
 use std::str::FromStr;
 
+
 use std::string;
 
 use egui::TextBuffer;
@@ -106,7 +107,7 @@ impl Hotkeys{
         
         if new_hotkey.code.parse::<u32>().is_ok(){
             hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Digit{}",new_hotkey.code).as_str()).unwrap());
-        }else{
+        }else if new_hotkey.code.parse::<char>().is_ok() && new_hotkey.code.parse::<char>().unwrap().is_alphabetic(){
             hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
         }
         

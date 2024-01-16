@@ -374,6 +374,7 @@ pub mod first_window {
         }
 
         pub fn customize_shortcut(&mut self, ui: &mut egui::Ui) -> u32 {
+           
             let _ = self
                 .manager
                 .unregister_all(self.shortcuts.get_hotkeys().as_slice());
@@ -382,11 +383,15 @@ pub mod first_window {
                 if !i.keys_down.is_empty() && i.modifiers.any() {
                     if i.keys_down.len() > 1 {
                         ret = 3;
-                    } else {
+                    }
+                    else {
+
+                        
                         let key_string = format!("{:?}", i.keys_down)
                             .replace("{", "")
                             .replace("}", "")
                             .replace("Num", "");
+                        
                         let stringaaa = format!("{:?}", i.modifiers);
                        
                         let true_cnt = Self::count_true(&stringaaa);
@@ -415,18 +420,26 @@ pub mod first_window {
                         .shortcuts
                         .get_hotkeys_strings()
                         .contains(&(self.new_hotkey.get_modifier(), self.new_hotkey.get_code()))
+                        && self.new_hotkey.get_code().parse::<char>().is_ok() 
+                        && self.new_hotkey.get_code().parse::<char>().unwrap().is_alphabetic()
                     {
-                        println!("non assegnata");
+                        println!("non assegnata e valida");
 
                         self.shortcuts.update_hotkey(&self.new_hotkey, ui);
                         println!("{:?}", self.new_hotkey);
                         ret = 1;
-                    } else {
-                        ret = 2;
+                    } else if self.new_hotkey.get_code().parse::<char>().is_ok() 
+                    && !self.new_hotkey.get_code().parse::<char>().unwrap().is_alphabetic(){
+                        ret = 4;
+                    }else{
+                        ret=2;
                     }
                     self.manager
-                        .register_all(self.shortcuts.get_hotkeys().as_slice())
-                        .unwrap();
+                        .register_all(self.shortcuts.get_hotkeys().as_slice());
+                        
+                            
+                           
+                        
                     self.customizing_hotkey = usize::MAX;
                     self.new_hotkey = CustomizeHotkey::default();
                 }

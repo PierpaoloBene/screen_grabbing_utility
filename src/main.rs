@@ -1032,6 +1032,10 @@ impl eframe::App for FirstWindow {
                                     self.toasts.as_mut().unwrap().error("Too many digits for the shortcut").set_duration(Some(Duration::from_secs(5)));
                                     self.show_toast=true;
                                     self.customizing_hotkey=usize::MAX;
+                                }else if ret==4{
+                                    self.toasts.as_mut().unwrap().error("Invalid shortcut").set_duration(Some(Duration::from_secs(5)));
+                                    self.show_toast=true;
+                                    self.customizing_hotkey=usize::MAX;
                                 }
                                 
                             }
