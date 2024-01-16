@@ -1,8 +1,10 @@
+
 pub mod first_window {
+
 
     use std::time::Duration;
 
-    use crate::{FirstWindow, ModeOptions, LoadingState};
+    use crate::{FirstWindow, ModeOptions, LoadingState, hotkeys::CustomizeHotkey};
     use egui::{ColorImage, ImageData, Response};
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
@@ -362,6 +364,30 @@ pub mod first_window {
             }
         
             None
+        }
+        
+        pub fn customize_shortcut(&mut self, ui: &mut egui::Ui){
+            if ui.input(|i|{
+    
+                if !i.keys_down.is_empty() && i.modifiers.any(){
+                    let key_string = format!("{:?}", i.keys_down).replace("{", "").replace("}", "");
+                    let stringaaa = format!("{:?}",i.modifiers);
+                    let modifier_string = FirstWindow::find_true_modifier(&stringaaa.as_str()).unwrap().to_string();
+                    self.new_hotkey=CustomizeHotkey::new(self.customizing_hotkey,modifier_string,key_string);
+
+                }
+                    self.customizing_hotkey != usize::MAX
+             }){
+                    if self.new_hotkey!= CustomizeHotkey::default(){
+                            self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
+                            self.shortcuts.update_hotkey(&self.new_hotkey);
+
+                         self.manager.register_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
+                         self.customizing_hotkey=usize::MAX;  
+                         self.new_hotkey = CustomizeHotkey::default();
+                    }
+             }
+            
         }
     }
 }

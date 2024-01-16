@@ -10,6 +10,7 @@ use egui::CursorIcon;
 use egui::InputState;
 use egui::Modifiers;
 use egui::style::Widgets;
+use hotkeys::CustomizeHotkey;
 use hotkeys::Hotkeys;
 use image::EncodableLayout;
 use rfd::FileDialog;
@@ -149,7 +150,8 @@ fn main() -> Result<(), eframe::Error> {
                 ready_to_save_with_name: false,
                 ready_to_copy: false,
                 ready_to_crop: false,
-                customize_hotkey: false,
+                customizing_hotkey: usize::MAX,
+                new_hotkey: CustomizeHotkey::default(),
                 to_cut_rect:None,
                 shrink_fact:None,
                 shortcuts: shortcuts,
@@ -209,7 +211,8 @@ struct FirstWindow {
     ready_to_save_with_name: bool,
     ready_to_copy: bool,
     ready_to_crop: bool,
-    customize_hotkey:bool,
+    customizing_hotkey:usize,
+    new_hotkey: CustomizeHotkey,
     to_cut_rect:Option<(Pos2, Pos2)>,
     shrink_fact:Option<f32>,
     shortcuts: Hotkeys,
@@ -989,33 +992,36 @@ impl eframe::App for FirstWindow {
                 }
                
 
-                let mut new_hotkey: (String,String) = ("modifier".to_string(),"key".to_string());
-                if ui.button("Customize screen button").clicked(){
-                    self.customize_hotkey=true;
-                 
+
+                if ui.button("Customize Exit button").clicked(){
+                    self.customizing_hotkey=0;
+
+                    
+                }
+                if ui.button("Customize Screenshot button").clicked(){
+                    self.customizing_hotkey=1;
+                    
+                }
+                if ui.button("Customize Save button").clicked(){
+                    self.customizing_hotkey=2;
+                    
+                }
+                if ui.button("Customize Copy button").clicked(){
+                    self.customizing_hotkey=3;
+                    
+                }
+                if ui.button("Customize Save with Name button").clicked(){
+                    self.customizing_hotkey=4;
+                    
+                }
+                if ui.button("Customize Crop button").clicked(){
+                    self.customizing_hotkey=5;
+                    
+                }
+                if self.customizing_hotkey != usize::MAX{
+                    self.customize_shortcut(ui);
                 }
 
-                        if ui.input(|i|{
-    
-                            if !i.keys_down.is_empty() && i.modifiers.any(){
-                                let key_string = format!("{:?}", i.keys_down);
-                                let stringaaa = format!("{:?}",i.modifiers);
-                                let modifier_string = FirstWindow::find_true_modifier(&stringaaa.as_str());
-                                new_hotkey=(modifier_string.unwrap().to_string(),key_string.replace("{", "").replace("}", ""));
-
-
-                            }
-                                self.customize_hotkey
-                         }){
-                                if new_hotkey!=("modifier".to_string(),"key".to_string()){
-                                                                    self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice());
-                                self.shortcuts.update_hotkey(1, new_hotkey.0, new_hotkey.1);
-
-                                self.manager.register_all(self.shortcuts.get_hotkeys().as_slice());
-                                self.customize_hotkey=false;
-                                }
-                         }
-                        
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }
