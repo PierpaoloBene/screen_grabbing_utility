@@ -91,7 +91,7 @@ fn main() -> Result<(), eframe::Error> {
 
     let manager = GlobalHotKeyManager::new().unwrap();
     let shortcuts = Hotkeys::new();
-    manager.register_all(shortcuts.get_hotkeys().as_slice());
+    manager.register_all(shortcuts.get_hotkeys().as_slice()).unwrap();
     //let p = post_processing::Painting::default();
     let p=pp_no_stroke::Painting::default();
 
@@ -383,7 +383,10 @@ impl eframe::App for FirstWindow {
                 });
                 ui.add_space(150.0);
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    ui.label(RichText::new("CTRL+D to take a screenshot").size(30.0));
+    
+                    ui.label(
+                        RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).size(30.0)
+                        );
                 });
             });
         } else if self.selected_window == 2 {

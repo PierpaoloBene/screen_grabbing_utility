@@ -40,6 +40,7 @@ impl CustomizeHotkey{
 }
 pub struct Hotkeys{
     hotkeys_vector: Vec<HotKey>,
+    hotkeys_strings:   Vec<(String,String)>,
 }
 
 
@@ -53,6 +54,14 @@ impl Hotkeys{
             HotKey::new(Some(Modifiers::CONTROL), Code::KeyC),  //Copy
             HotKey::new(Some(Modifiers::CONTROL), Code::KeyA),  //Save with name
             HotKey::new(Some(Modifiers::CONTROL), Code::KeyG),  //Crop
+            ],
+            hotkeys_strings: vec![
+                ("ctrl".to_string(),"E".to_string()),
+                ("ctrl".to_string(),"D".to_string()),
+                ("ctrl".to_string(),"S".to_string()),
+                ("ctrl".to_string(),"C".to_string()),
+                ("ctrl".to_string(),"A".to_string()),
+                ("ctrl".to_string(),"G".to_string()),
             ]
         }
       
@@ -61,10 +70,18 @@ impl Hotkeys{
     pub fn get_hotkeys(&self)-> Vec<HotKey>{
         self.hotkeys_vector.clone()
     }
+    pub fn get_hotkeys_strings(&self)-> Vec<(String,String)>{
+        self.hotkeys_strings.clone()
+    }
+
+    pub fn get_hotkey_strings_formatted(&self,id: usize) -> String{
+        format!("{} + {} to take a screenshot",   self.hotkeys_strings[id].0,  self.hotkeys_strings[id].1)
+    }
     pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey){
         
         let mut modifier_name: String = "CONTROL".to_string();
  
+        self.hotkeys_strings[new_hotkey.id]= (new_hotkey.modifier.clone(),new_hotkey.code.clone());
     
         match new_hotkey.modifier.as_str(){
             "alt" => {modifier_name = "ALT".to_string()},
