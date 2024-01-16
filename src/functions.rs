@@ -351,7 +351,7 @@ pub mod first_window {
             let mut is_true = false;
 
             json_str.replace(" ", "");
-            json_str.replace("{", ",");
+            //json_str.replace("{", ",");
             for (i, c) in json_str.char_indices() {
                 match c {
                     'r' => {
@@ -365,7 +365,7 @@ pub mod first_window {
                             modifier_end = Some(i - 2)
                         }
                     }
-                    ',' => modifier_start = Some(i + 2),
+                    ',' | '{' => modifier_start = Some(i + 2),
                     _ => {}
                 }
             }
