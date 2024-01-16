@@ -284,7 +284,7 @@ impl eframe::App for FirstWindow {
                     ui.add_space(20.0); // da modificare
                     if ui
                         .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
-                        .on_hover_text("Ctrl+D")
+                        .on_hover_text(self.shortcuts.get_hotkey_strings_formatted(1))
                         .clicked()
                     {
                         std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
@@ -385,7 +385,7 @@ impl eframe::App for FirstWindow {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
     
                     ui.label(
-                        RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).size(30.0)
+                        RichText::new(format!("{} to take a screenshot", self.shortcuts.get_hotkey_strings_formatted(1))).size(30.0)
                         );
                 });
             });
@@ -406,7 +406,7 @@ impl eframe::App for FirstWindow {
                             }
                             
                             ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
-                                ui.label(RichText::new("CTRL+E to go back").size(25.0));
+                                ui.label(RichText::new(format!("{} to go back", self.shortcuts.get_hotkey_strings_formatted(0))).size(25.0).color(egui::Color32::WHITE));
                             });
                             ui.ctx()
                                 .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
@@ -995,36 +995,58 @@ impl eframe::App for FirstWindow {
                 }
                
 
+                egui::Grid::new("my_grid")
+                .num_columns(2)
+                .spacing([40.0, 4.0])
+                .striped(true)
+                .show(ui, |ui| {
+                    ui.label("Customizabile Shortucts");
+                    ui.end_row();
+                if ui.button("Exit button").clicked(){
+                                self.customizing_hotkey=0;      
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(0));
+                            ui.end_row();  
 
-                if ui.button("Customize Exit button").clicked(){
-                    self.customizing_hotkey=0;
+                            if ui.button("Screenshot button").clicked(){
+                                self.customizing_hotkey=1;
+                                
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(1));
+                            ui.end_row();
+                            if ui.button("Save button").clicked(){
+                                self.customizing_hotkey=2;
+                                
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(2));
+                            ui.end_row();
+                            if ui.button("Save with Name button").clicked(){
+                                self.customizing_hotkey=4;
+                                
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(3));
+                            ui.end_row();
+                            if ui.button("Copy button").clicked(){
+                                self.customizing_hotkey=3;
+                                
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(4));
+                            ui.end_row();
+                            if ui.button("Crop button").clicked(){
+                                self.customizing_hotkey=5;
+                                
+                            }
+                            ui.label(self.shortcuts.get_hotkey_strings_formatted(5));
+                            ui.end_row();
+                            
+                            if self.customizing_hotkey != usize::MAX{
+                                self.customize_shortcut(ui);
+                            }
 
-                    
-                }
-                if ui.button("Customize Screenshot button").clicked(){
-                    self.customizing_hotkey=1;
-                    
-                }
-                if ui.button("Customize Save button").clicked(){
-                    self.customizing_hotkey=2;
-                    
-                }
-                if ui.button("Customize Copy button").clicked(){
-                    self.customizing_hotkey=3;
-                    
-                }
-                if ui.button("Customize Save with Name button").clicked(){
-                    self.customizing_hotkey=4;
-                    
-                }
-                if ui.button("Customize Crop button").clicked(){
-                    self.customizing_hotkey=5;
-                    
-                }
-                if self.customizing_hotkey != usize::MAX{
-                    self.customize_shortcut(ui);
-                }
-
+                });
+                
+            
+                ui.add_space(40.0);
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }

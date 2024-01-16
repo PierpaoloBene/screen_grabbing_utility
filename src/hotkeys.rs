@@ -75,7 +75,7 @@ impl Hotkeys{
     }
 
     pub fn get_hotkey_strings_formatted(&self,id: usize) -> String{
-        format!("{} + {} to take a screenshot",   self.hotkeys_strings[id].0,  self.hotkeys_strings[id].1)
+        format!("{} + {}",   self.hotkeys_strings[id].0,  self.hotkeys_strings[id].1)
     }
     pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey){
         
