@@ -92,10 +92,13 @@ impl Hotkeys{
             _ => {}
         }
 
-        println!("{:?}", self.hotkeys_vector.get(new_hotkey.id));
-        *self.hotkeys_vector.get_mut(new_hotkey.id).unwrap() = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
+        let hotkey_to_assing = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap());
         
-        println!("{:?}",  HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::from_str(format!("Key{}",new_hotkey.code).as_str()).unwrap()));
-        println!("{:?}", self.hotkeys_vector.get(new_hotkey.id));
+        if self.hotkeys_vector.contains(&hotkey_to_assing){
+ 
+        }
+            *self.hotkeys_vector.get_mut(new_hotkey.id).unwrap() =hotkey_to_assing;
+        
+
     }
-}
+}   

@@ -225,6 +225,7 @@ impl eframe::App for FirstWindow {
     fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {    
             
         let screens=Screen::all().unwrap();
+        self.hotkey_listener();
         if self.screen_to_show.is_none(){
             self.screen_to_show=Some(screens[0].display_info.id);
             self.screen_size=Some(Vec2::new(screens[0].display_info.width as f32, screens[0].display_info.height as f32));
@@ -234,42 +235,9 @@ impl eframe::App for FirstWindow {
         if self.multiplication_factor.is_none() {
             self.multiplication_factor = frame.info().native_pixels_per_point;
         }
-
-            match self.open_fw.try_recv() {
-            
-                Ok(event) => match event.state {
-                    HotKeyState::Pressed => 
-
-                    if event.id==self.shortcuts.get_hotkeys()[0].id() && self.selected_window==2{ //Exit
-                        self.selected_window = 1; //A
-                            frame.set_decorations(true); //A
-                            frame.set_window_size(egui::vec2(680.0, 480.0)); //A
-                    }else if event.id==self.shortcuts.get_hotkeys()[1].id() && self.selected_window==1{ //Screen
-                        std::thread::sleep(Duration::from_secs(self.selected_timer_numeric)); //A
-                        self.selected_window = 2;//A
-                    }
-                    else if event.id==self.shortcuts.get_hotkeys()[2].id() && self.selected_window==5{
-                        self.ready_to_save = true;
-                    }
-                    else if event.id==self.shortcuts.get_hotkeys()[3].id() && self.selected_window==5{
-                        self.ready_to_copy = true;
-                    }
-                    else if event.id==self.shortcuts.get_hotkeys()[4].id() && self.selected_window==5{
-                        self.ready_to_save_with_name = true;
-                    }
-                    else if event.id==self.shortcuts.get_hotkeys()[5].id() && self.selected_window==5{
-                        self.ready_to_crop = true;
-                    }
-                    else{//A
-                        println!("else {:?}", event.id);//A
-                    }//A
-                    HotKeyState::Released => {}
-                },
     
-                Err(_) => {
-                    
-                    }
-            }
+
+
 
          
 
@@ -278,6 +246,8 @@ impl eframe::App for FirstWindow {
             self.mouse_pos_f=Some(Pos2::new(-1.0, -1.0));
             self.rect_pos =  egui::pos2(0.0, 0.0);
             self.rect_pos_f =  egui::pos2(0.0, 0.0);
+            frame.set_decorations(true); 
+            frame.set_window_size(egui::vec2(680.0, 480.0)); 
 
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {

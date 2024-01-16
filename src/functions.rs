@@ -9,6 +9,7 @@ pub mod first_window {
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use rusttype::Font;
     use screenshots::Screen;
+    use global_hotkey::HotKeyState;
 
     impl FirstWindow {
         pub fn set_width_height(&mut self) {
@@ -388,6 +389,66 @@ pub mod first_window {
                     }
              }
             
+        }
+        pub fn hotkey_listener(&mut self,){
+            if self.selected_window == 1{
+                match self.open_fw.try_recv() {
+                    Ok(event) => match event.state {
+                        HotKeyState::Pressed => 
+                        if event.id==self.shortcuts.get_hotkeys()[1].id(){
+                            std::thread::sleep(Duration::from_secs(self.selected_timer_numeric));
+                            self.selected_window = 2;
+                        }
+                        HotKeyState::Released => {}
+                    },
+        
+                    Err(_) => {
+                        
+                        }
+                }
+            }else if self.selected_window == 2{
+                match self.open_fw.try_recv() {
+                    Ok(event) => match event.state {
+                        HotKeyState::Pressed => 
+                        if event.id==self.shortcuts.get_hotkeys()[0].id() && self.selected_window==2{ //Exit
+                               self.selected_window = 1; 
+                        }
+                        HotKeyState::Released => {}
+                    },
+        
+                    Err(_) => {
+                        
+                        }
+                }
+            }else if self.selected_window==5{
+                 match self.open_fw.try_recv() {
+                
+                    Ok(event) => match event.state {
+                        HotKeyState::Pressed => 
+                        if event.id==self.shortcuts.get_hotkeys()[2].id(){
+                            self.ready_to_save = true;
+                        }
+                        else if event.id==self.shortcuts.get_hotkeys()[3].id(){
+                            self.ready_to_copy = true;
+                        }
+                        else if event.id==self.shortcuts.get_hotkeys()[4].id(){
+                            self.ready_to_save_with_name = true;
+                        }
+                        else if event.id==self.shortcuts.get_hotkeys()[5].id(){
+                            self.ready_to_crop = true;
+                        }
+                        else{//A
+                            println!("else {:?}", event.id);//A
+                            println!("hotkey già assegnata!!");
+                        }//A
+                        HotKeyState::Released => {}
+                    },
+        
+                    Err(_) => {
+                        
+                        }
+                }
+            }
         }
     }
 }
