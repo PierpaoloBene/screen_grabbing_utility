@@ -902,6 +902,12 @@ impl eframe::App for FirstWindow {
                
             });
         } else if self.selected_window == 6 {
+           
+            if self.show_toast{
+                
+                self.toasts.as_mut().unwrap().show(ctx);    
+            }
+           
             let screens=Screen::all().unwrap();
             egui::CentralPanel::default().show(ctx, |ui| {
                 if ui.button("Choose Path").clicked() {
@@ -1013,9 +1019,20 @@ impl eframe::App for FirstWindow {
                             ui.end_row();
                             
                             if self.customizing_hotkey != usize::MAX{
-
-                                self.customize_shortcut(ui);
+                                ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Wait);
+                                let mut ret=self.customize_shortcut(ui);
+                                
+                                if ret==1{
+                                    self.toasts.as_mut().unwrap().success("Shortcut changed!" ).set_duration(Some(Duration::from_secs(5))); 
+                                     self.show_toast=true;            
+                                }else if ret==2{
+                                    
+                                    self.toasts.as_mut().unwrap().error("Shortcut already used!" ).set_duration(Some(Duration::from_secs(5)));
+                                    self.show_toast=true; 
+                                }
+                                
                             }
+                           
 
                 });
                 

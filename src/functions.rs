@@ -7,6 +7,7 @@ pub mod first_window {
     use crate::{FirstWindow, ModeOptions, LoadingState, hotkeys::CustomizeHotkey};
     use egui::{ColorImage, ImageData, Response};
     use egui_hotkey::Hotkey;
+    use egui_notify::Toasts;
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
     use keyboard_types::Modifiers;
     use rusttype::Font;
@@ -369,8 +370,9 @@ pub mod first_window {
             None
         }
         
-        pub fn customize_shortcut(&mut self, ui: &mut egui::Ui){
+        pub fn customize_shortcut(&mut self, ui: &mut egui::Ui)->u32{
             let _= self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice());
+            let mut ret=0;
             if ui.input(|i|{
                 if !i.keys_down.is_empty() && i.modifiers.any(){
 
@@ -389,7 +391,11 @@ pub mod first_window {
                            
                             self.shortcuts.update_hotkey(&self.new_hotkey, ui);
                             println!("{:?}", self.new_hotkey);
+                            ret=1;
  
+                        }else{
+                                                       
+                            ret=2;
                         }
                         self.manager.register_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
                         self.customizing_hotkey=usize::MAX;  
@@ -398,6 +404,7 @@ pub mod first_window {
                         
                     }
              }
+             ret
             
         }
         pub fn hotkey_listener(&mut self,){
