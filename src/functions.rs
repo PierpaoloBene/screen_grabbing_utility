@@ -370,7 +370,7 @@ pub mod first_window {
         }
         
         pub fn customize_shortcut(&mut self, ui: &mut egui::Ui){
-            self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice()).unwrap();
+            let _= self.manager.unregister_all(self.shortcuts.get_hotkeys().as_slice());
             if ui.input(|i|{
                 if !i.keys_down.is_empty() && i.modifiers.any(){
 

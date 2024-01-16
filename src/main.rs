@@ -989,8 +989,7 @@ impl eframe::App for FirstWindow {
                             ui.label(self.shortcuts.get_hotkey_strings_formatted(1));
                             ui.end_row();
                             if ui.button("Save button").clicked(){
-                                self.customizing_hotkey=2;
-                                
+                                self.customizing_hotkey=2;                                
                             }
                             ui.label(self.shortcuts.get_hotkey_strings_formatted(2));
                             ui.end_row();
