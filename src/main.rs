@@ -358,7 +358,7 @@ impl eframe::App for FirstWindow {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
     
                     ui.label(
-                        RichText::new(format!("{} to take a screenshot", self.shortcuts.get_hotkey_strings_formatted(1))).size(30.0)
+                        RichText::new(format!("{} to take a screenshot", self.shortcuts.get_hotkey_strings_formatted(1))).size(30.0).color(Color32::WHITE)
                         );
                 });
             });
@@ -914,7 +914,8 @@ impl eframe::App for FirstWindow {
                         .set_directory("./screenshot")
                         .pick_folder();
                 }
-
+                ui.add_space(10.0);
+                ui.label(RichText::new("Select a format").color(Color32::WHITE));
                 if ui
                     .add(egui::RadioButton::new(
                         self.image_format == Some(ImageFormat::Jpg),
@@ -945,7 +946,8 @@ impl eframe::App for FirstWindow {
                     self.image_format = Some(ImageFormat::Gif);
                     self.image_format_string = "gif".to_string();
                 }
-                ui.add(egui::Label::new("Select a monitor:"));
+                ui.add_space(10.0);
+                ui.add(egui::Label::new(RichText::new("Select a monitor").color(Color32::WHITE)));
                 if ui
                     .add(egui::RadioButton::new(
                         self.screen_to_show==Some(screens[0].display_info.id),
@@ -973,48 +975,48 @@ impl eframe::App for FirstWindow {
                 }
                 }
                
-
+                ui.add_space(10.0);
                 egui::Grid::new("my_grid")
                 .num_columns(2)
                 .spacing([40.0, 4.0])
                 .striped(true)
                 .show(ui, |ui| {
-                    ui.label("Customizabile Shortucts");
+                    ui.label(RichText::new("Customizable Shortcuts").color(Color32::WHITE));
                     ui.end_row();
                              if ui.button("Exit button").clicked(){
                                 self.customizing_hotkey=0;      
                             }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(0));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(0)).color(Color32::WHITE));
                             ui.end_row();  
 
                             if ui.button("Screenshot button").clicked(){
                                 self.customizing_hotkey=1;
                                 
                             }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(1));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).color(Color32::WHITE));
                             ui.end_row();
                             if ui.button("Save button").clicked(){
                                 self.customizing_hotkey=2;                                
                             }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(2));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(2)).color(Color32::WHITE));
                             ui.end_row();
                             if ui.button("Save with Name button").clicked(){
-                                self.customizing_hotkey=4;
-                                
-                            }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(3));
-                            ui.end_row();
-                            if ui.button("Copy button").clicked(){
                                 self.customizing_hotkey=3;
                                 
                             }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(4));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(3)).color(Color32::WHITE));
+                            ui.end_row();
+                            if ui.button("Copy button").clicked(){
+                                self.customizing_hotkey=4;
+                                
+                            }
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(4)).color(Color32::WHITE));
                             ui.end_row();
                             if ui.button("Crop button").clicked(){
                                 self.customizing_hotkey=5;
                                 
                             }
-                            ui.label(self.shortcuts.get_hotkey_strings_formatted(5));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(5)).color(Color32::WHITE));
                             ui.end_row();
                             
                             if self.customizing_hotkey != usize::MAX{
@@ -1040,7 +1042,7 @@ impl eframe::App for FirstWindow {
                 });
                 
             
-                ui.add_space(40.0);
+                ui.add_space(20.0);
                 if ui.button("Exit").clicked() {
                     self.selected_window = 1;
                 }

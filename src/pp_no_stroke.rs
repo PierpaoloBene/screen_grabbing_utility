@@ -1,6 +1,6 @@
 use egui::{
     emath::{self, Rot2},
-    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response,
+    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response, RichText,
 };
 pub trait View {
     fn ui(
@@ -986,7 +986,7 @@ impl View for Painting {
         match opt {
             PpOptions::Painting => {
                 self.ui_control(ui, opt);
-                ui.label("Paint with your mouse/touch! If you want to clear all the painting, click the button Clear Painting");
+                ui.label(RichText::new("Paint with your mouse/touch! If you want to clear all the painting, click the button Clear Painting").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     if  image.size().unwrap()[0] >= 1000.0 && image.size().unwrap()[1] <= 500.0 {
                         ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui|{
@@ -1006,7 +1006,7 @@ impl View for Painting {
             }
             PpOptions::Arrow => {
                 self.ui_control(ui, opt);
-                ui.label("Paint an arrow with your mouse/touch! Press the left button of your mouse wherever you want, as a starting point, and release it when you want to finish drawing the arrow ");
+                ui.label(RichText::new("Paint an arrow with your mouse/touch! Press the left button of your mouse wherever you want, as a starting point, and release it when you want to finish drawing the arrow ").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (arr,response) = self.ui_content_arrows(ui, image, dim, cut_clicked);
@@ -1016,7 +1016,7 @@ impl View for Painting {
             }
             PpOptions::Circle => {
                 self.ui_control(ui, opt);
-                ui.label("Paint a circle with your mouse/touch! Press the left button of your mouse wherever you want, to identify the circle's center, and release it when you want to finish drawing the circle ");
+                ui.label(RichText::new("Paint a circle with your mouse/touch! Press the left button of your mouse wherever you want, to identify the circle's center, and release it when you want to finish drawing the circle").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (crcls,response) = self.ui_content_circles(ui, image, dim, cut_clicked);
@@ -1026,7 +1026,7 @@ impl View for Painting {
             }
             PpOptions::Square => {
                 self.ui_control(ui, opt);
-                ui.label("Paint a square with your mouse/touch! Press the left button of your mouse wherever you want, to identify the rectangle's top-left corner, and release it when you want to set the right-bottom corner");
+                ui.label(RichText::new("Paint a square with your mouse/touch! Press the left button of your mouse wherever you want, to identify the rectangle's top-left corner, and release it when you want to set the right-bottom corner").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (sqrs,response) = self.ui_content_squares(ui, image, dim, cut_clicked);
@@ -1036,7 +1036,7 @@ impl View for Painting {
             }
             PpOptions::Text => {
                 self.ui_control(ui, opt);
-                ui.label("First, click were you want to write and type your text in the bar above! When you finish writing, press the button Write! to put your text on the image below");
+                ui.label(RichText::new("First, click were you want to write and type your text in the bar above! When you finish writing, press the button Write! to insert your text on the image below").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (txt,response) = self.ui_content_texts(ui, image, mult_fact, dim, cut_clicked);
@@ -1047,7 +1047,7 @@ impl View for Painting {
 
             PpOptions::Cut => {
                 self.ui_control(ui, opt);
-                ui.label("Restrict the grabbed image however you want and when you identify the right area to cut, press the button Finish Your Cut ");
+                ui.label(RichText::new("Restrict the grabbed image however you want and when you identify the right area to cut, press the button Finish Your Cut ").color(Color32::WHITE));
                 ui.vertical_centered(|ui| {
                     egui::Frame::canvas(ui.style()).show(ui, |ui| {
                         (txt,response) = self.ui_content_cut(ui, image, mult_fact, dim, cut_clicked);

@@ -316,7 +316,7 @@ pub mod first_window {
             if mod_img.is_none() == false {
                 if self.current_os == "windows" {
                     let _ = mod_img.unwrap().save(format!(
-                        "{}\\{}.{}",
+                        "{}/{}.{}",
                         self.filepath
                             .clone()
                             .unwrap()
