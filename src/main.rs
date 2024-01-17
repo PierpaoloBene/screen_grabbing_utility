@@ -528,11 +528,11 @@ impl eframe::App for FirstWindow {
                             self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
                         }
-                        save_btn = Some(ui.add(egui::Button::new("Save")));
-                        save_edit_btn = Some(ui.add(egui::Button::new("Save with name")));
-                        copy_btn = Some(ui.add(egui::Button::new("Copy")));
+                        save_btn = Some(ui.add(egui::Button::new("Save")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
+                        save_edit_btn = Some(ui.add(egui::Button::new("Save with name")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
+                        copy_btn = Some(ui.add(egui::Button::new("Copy")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
                     }
-                        crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")));
+                        crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
                     });
                    
