@@ -982,6 +982,9 @@ impl eframe::App for FirstWindow {
                 .striped(true)
                 .show(ui, |ui| {
                     ui.label(RichText::new("Customizable Shortcuts").color(Color32::WHITE));
+                    
+                    ui.end_row();
+                    ui.label("First click on the shortcut to modify and then press a combination of CTRL, ALT or SHIFT and a letter");
                     ui.end_row();
                              if ui.button("Exit button").clicked(){
                                 self.customizing_hotkey=0;      
