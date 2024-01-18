@@ -86,6 +86,8 @@ fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(680.0, 480.0)),
         transparent: true,
+        follow_system_theme:false,
+        default_theme:eframe::Theme::Dark,
         ..Default::default()
     };
 
@@ -358,7 +360,7 @@ impl eframe::App for FirstWindow {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
     
                     ui.label(
-                        RichText::new(format!("{} to take a screenshot", self.shortcuts.get_hotkey_strings_formatted(1))).size(30.0).color(Color32::WHITE)
+                        RichText::new(format!("{} to take a screenshot", self.shortcuts.get_hotkey_strings_formatted(1))).size(30.0).color(Color32::GRAY)
                         );
                 });
             });
@@ -640,9 +642,13 @@ impl eframe::App for FirstWindow {
                             }
                             if (save_edit_btn.is_none()==false && save_edit_btn.unwrap().clicked() )|| self. ready_to_save_with_name{
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
-                               
+                                let mut stringpath: String;
                                 self.save=true;
-                                let stringpath =  dialog
+                                
+                                if dialog.is_some(){
+
+
+                                stringpath =  dialog
                                 .clone()
                                 .unwrap()
                                 .as_os_str()
@@ -657,18 +663,23 @@ impl eframe::App for FirstWindow {
                                    
                                 )).set_duration(Some(Duration::from_secs(5)));
                                 
+
                                 self.show_toast=true;
+                                
+                                
+ 
                                 
                                 self.edit_image(ui);
                                 let mod_img: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>> = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
-                                    let stringpath =  dialog
+                               /*      let stringpath =  dialog
                                     .clone()
                                     .unwrap()
                                     .as_os_str()
                                     .to_str()
                                     .unwrap()
                                     .to_string();
+                                */
                                 let slice = stringpath.get(..stringpath.len() -3).unwrap();
 
                                     let _ = mod_img.unwrap().save(format!(
@@ -680,6 +691,7 @@ impl eframe::App for FirstWindow {
                                 }
                                 self.save = false;
                                 self.ready_to_save_with_name = false;
+                             }
                             }
                             if (copy_btn.is_none()==false && copy_btn.unwrap().clicked()) || self.ready_to_copy{
                                 self.edit_image(ui);
@@ -915,7 +927,7 @@ impl eframe::App for FirstWindow {
                         .pick_folder();
                 }
                 ui.add_space(10.0);
-                ui.label(RichText::new("Select a format").color(Color32::WHITE));
+                ui.heading(RichText::new("Select a format").color(Color32::WHITE));
                 if ui
                     .add(egui::RadioButton::new(
                         self.image_format == Some(ImageFormat::Jpg),
@@ -947,7 +959,7 @@ impl eframe::App for FirstWindow {
                     self.image_format_string = "gif".to_string();
                 }
                 ui.add_space(10.0);
-                ui.add(egui::Label::new(RichText::new("Select a monitor").color(Color32::WHITE)));
+                ui.heading(RichText::new("Select a monitor").color(Color32::WHITE));
                 if ui
                     .add(egui::RadioButton::new(
                         self.screen_to_show==Some(screens[0].display_info.id),
@@ -981,45 +993,45 @@ impl eframe::App for FirstWindow {
                 .spacing([40.0, 4.0])
                 .striped(true)
                 .show(ui, |ui| {
-                    ui.label(RichText::new("Customizable Shortcuts").color(Color32::WHITE));
+                    ui.heading(RichText::new("Customizable Shortcuts").color(Color32::WHITE));
                     
-                    ui.end_row();
-                    ui.label("First click on the shortcut to modify and then press a combination of CTRL, ALT or SHIFT and a letter");
+
+
                     ui.end_row();
                              if ui.button("Exit button").clicked(){
                                 self.customizing_hotkey=0;      
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(0)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(0)).color(Color32::GRAY));
                             ui.end_row();  
 
                             if ui.button("Screenshot button").clicked(){
                                 self.customizing_hotkey=1;
                                 
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Save button").clicked(){
                                 self.customizing_hotkey=2;                                
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(2)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(2)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Save with Name button").clicked(){
                                 self.customizing_hotkey=3;
                                 
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(3)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(3)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Copy button").clicked(){
                                 self.customizing_hotkey=4;
                                 
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(4)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(4)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Crop button").clicked(){
                                 self.customizing_hotkey=5;
                                 
                             }
-                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(5)).color(Color32::WHITE));
+                            ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(5)).color(Color32::GRAY));
                             ui.end_row();
                             
                             if self.customizing_hotkey != usize::MAX{
@@ -1044,9 +1056,10 @@ impl eframe::App for FirstWindow {
 
                 });
                 
-            
+                ui.label(RichText::new("First click on the shortcut to modify and then press a combination of CTRL, ALT or SHIFT and a letter").size(15.0));
+              
                 ui.add_space(20.0);
-                if ui.button("Exit").clicked() {
+                if ui.button("Back").clicked() {
                     self.selected_window = 1;
                 }
 
