@@ -9,6 +9,7 @@ use chrono;
 use egui::CursorIcon;
 use egui::InputState;
 use egui::Modifiers;
+use egui::style::Spacing;
 use egui::style::Widgets;
 use hotkeys::CustomizeHotkey;
 use hotkeys::Hotkeys;
@@ -257,6 +258,7 @@ impl eframe::App for FirstWindow {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.add_space(20.0); // da modificare
+                    
                     if ui
                         .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
                         .on_hover_text(self.shortcuts.get_hotkey_strings_formatted(1))
@@ -467,6 +469,7 @@ impl eframe::App for FirstWindow {
             let mut copy_btn=None;
             let mut crop_btn=None;
             let mut finish_crop=None;
+            let mut settings_btn=None;
             
             if self.show_toast{
                 self.toasts.as_mut().unwrap().show(ctx);                    
@@ -536,6 +539,9 @@ impl eframe::App for FirstWindow {
                     }
                         crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
+                        ui.add_space(107.0*ui.style().spacing.item_spacing.x);
+                        settings_btn=Some(ui.add(egui::Button::new("⚙ Settings")));
+
                     });
                    
                     match self.loading_state {                        
@@ -821,14 +827,15 @@ impl eframe::App for FirstWindow {
                                      .fill(Color32::from_rgba_unmultiplied(0, 0, 0, 0))
                                      )
                             .show(ctx, |ui|{
-                                ui.allocate_space(ui.available_size());
+                                let r= ui.allocate_space(ui.available_size());
                                 
+
                                 egui::Window::new("cut")
                                 .constraint_to(response.clone().unwrap().rect)
                                 .default_width(dim[0]-1.0)//da modificare
                                 .default_height(dim[1]-1.0)//da modificare
                                 .title_bar(false)
-                                .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
+                                .default_pos(Pos2::new(r.1.left_top().x+1.0, r.1.left_top().y+1.0))
                                 .vscroll(false)
                                 .resizable(false)
                                 .interactable(false)
@@ -893,6 +900,9 @@ impl eframe::App for FirstWindow {
                                
 
                                 
+                            }
+                            if settings_btn.unwrap().clicked(){
+                                self.selected_window=6;
                             }
                         }
                         LoadingState::NotLoaded => {
@@ -1060,9 +1070,13 @@ impl eframe::App for FirstWindow {
               
                 ui.add_space(20.0);
                 if ui.button("Back").clicked() {
-                    self.selected_window = 1;
+                    if self.image.is_none(){
+                        self.selected_window = 1;
+                    }else if !self.image.is_none(){
+                        self.selected_window=5;
+                    }
+                    
                 }
-
             });
         }
 
