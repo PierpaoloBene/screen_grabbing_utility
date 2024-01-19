@@ -613,7 +613,7 @@ impl Painting {
             self.radius = self.radius.abs();
         }
 
-        if self.circle_center.x != -1.0 && self.circle_center.y != -1.0 && self.radius != -1.0 {
+        if self.circle_center.x != -1.0 && self.circle_center.y != -1.0 && self.radius != -1.0{
             self.circles
                 .push((self.circle_center, self.radius, self.circles_color));
             self.circle_center = Pos2 { x: -1.0, y: -1.0 };
@@ -705,13 +705,16 @@ impl Painting {
         {
             let re =
                 egui::Rect::from_points(&[self.square_starting_point, self.square_ending_point]);
-
-            self.squares.push((re, self.squares_color));
+            if re.area()>0.0 && re.width()>0.0 && re.height()>0.0{
+                self.squares.push((re, self.squares_color));
+                self.last_type_added.push(PpOptions::Square);
+            }
+            
             self.square_starting_point.x = -1.0;
             self.square_starting_point.y = -1.0;
             self.square_ending_point.x = -1.0;
             self.square_ending_point.y = -1.0;
-            self.last_type_added.push(PpOptions::Square);
+            
         }
 
         self.render_elements(painter.clone(), to_screen);
