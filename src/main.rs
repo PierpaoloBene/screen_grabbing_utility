@@ -647,8 +647,20 @@ impl eframe::App for FirstWindow {
                                 }
 
                             if (save_btn.is_none()==false && save_btn.unwrap().clicked() )|| self.ready_to_save {
+
                                 self.save_img(ui);
+                                self.pp_option=Some(PpOptions::Painting);
                                 self.ready_to_save = false;
+
+
+                                self.edit_image(ui);
+                                self.circle_pixels= Vec::new();
+                                self.square_pixels= Vec::new();
+                                self.arrow_pixels= Vec::new();
+                                self.text_pixels= Vec::new();
+                                self.line_pixels=  Vec::new();
+                                
+
                             }
                             if (save_edit_btn.is_none()==false && save_edit_btn.unwrap().clicked() )|| self. ready_to_save_with_name{
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
@@ -676,20 +688,14 @@ impl eframe::App for FirstWindow {
 
                                 self.show_toast=true;
                                 
-                                
+                        
+
  
-                                
-                                self.edit_image(ui);
+
+  
                                 let mod_img: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>> = self.image_buffer.clone();
                                 if mod_img.is_none() == false {
-                               /*      let stringpath =  dialog
-                                    .clone()
-                                    .unwrap()
-                                    .as_os_str()
-                                    .to_str()
-                                    .unwrap()
-                                    .to_string();
-                                */
+
                                 let slice = stringpath.get(..stringpath.len() -3).unwrap();
 
                                     let _ = mod_img.unwrap().save(format!(
@@ -701,6 +707,16 @@ impl eframe::App for FirstWindow {
                                 }
                                 self.save = false;
                                 self.ready_to_save_with_name = false;
+                                self.pp_option=Some(PpOptions::Painting);
+                                self.edit_image(ui);
+                                self.circle_pixels= Vec::new();
+                                self.square_pixels= Vec::new();
+                                self.arrow_pixels= Vec::new();
+                                self.text_pixels= Vec::new();
+                                self.line_pixels=  Vec::new();
+  
+
+                                
                              }
                             }
                             if (copy_btn.is_none()==false && copy_btn.unwrap().clicked()) || self.ready_to_copy{

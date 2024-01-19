@@ -1,6 +1,6 @@
 use egui::{
     emath::{self, Rot2},
-    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response, RichText,
+    vec2, Color32, CursorIcon, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2, Response, RichText, Rounding, Shape, epaint::RectShape,
 };
 pub trait View {
     fn ui(
@@ -480,85 +480,104 @@ impl Painting {
     }
 
     pub fn ui_content_arrows(
-        &mut self,
-        ui: &mut Ui,
-        image: egui::Image,
-        dim: Vec2,
-        cut_clicked:bool
-    ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<Response>) {
-        let (response, painter) = ui.allocate_painter(dim, Sense::drag());
-
-        let to_screen = emath::RectTransform::from_to(
-            Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
-            response.rect,
-        );
-       
-        
-        image.paint_at(ui, response.rect);
-        self.mult_factor = Some((
-            image.size().unwrap().x as f32 / response.rect.width(),
-            image.size().unwrap().y as f32 / response.rect.height(),
-        ));
-        let mouse_pos = ui.input(|i| i.pointer.interact_pos());
-        if mouse_pos.is_none() == false
-            && response.rect.x_range().contains(mouse_pos.unwrap().x)
-            && response.rect.y_range().contains(mouse_pos.unwrap().y)
-        {
-            ui.ctx()
-                .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
-        }
-        self.render_elements(painter.clone(), to_screen);
-
-        if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false{
+            &mut self,
+            ui: &mut Ui,
+            image: egui::Image,
+            dim: Vec2,
+            cut_clicked:bool
+        ) -> (Option<Vec<(Vec<Pos2>, Color32)>>, Option<Response>) {
+            let (response, painter) = ui.allocate_painter(dim, Sense::drag());
+    
+            let to_screen = emath::RectTransform::from_to(
+                Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
+                response.rect,
+            );
            
-            let pos = ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none() == false
             
-                && response.rect.contains(pos.unwrap())
-                && self.starting_point.x == -1.0
-                && self.starting_point.y == -1.0
+            image.paint_at(ui, response.rect);
+            self.mult_factor = Some((
+                image.size().unwrap().x as f32 / response.rect.width(),
+                image.size().unwrap().y as f32 / response.rect.height(),
+            ));
+            let mouse_pos = ui.input(|i| i.pointer.interact_pos());
+            if mouse_pos.is_none() == false
+                && response.rect.x_range().contains(mouse_pos.unwrap().x)
+                && response.rect.y_range().contains(mouse_pos.unwrap().y)
             {
-                self.starting_point = pos.unwrap();
+                ui.ctx()
+                    .output_mut(|i| i.cursor_icon = CursorIcon::Crosshair);
             }
-        }
-
-        if ui.input(|i| i.pointer.any_released()) && cut_clicked==false {
-           
-            let pos = ui.input(|i| i.pointer.interact_pos());
-            if pos.is_none() == false
-                && response.rect.contains(pos.unwrap())
-                && self.final_point.x == -1.0
-                && self.final_point.y == -1.0
+            self.render_elements(painter.clone(), to_screen);
+    
+            if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false{
+               
+                let pos = ui.input(|i| i.pointer.interact_pos());
+                if pos.is_none() == false
+                
+                    && response.rect.contains(pos.unwrap())
+                    && self.starting_point.x == -1.0
+                    && self.starting_point.y == -1.0
+                {
+                    self.starting_point = pos.unwrap();
+                }
+            }
+    
+            if ui.input(|i| i.pointer.any_down()) && cut_clicked==false {
+    
+                let pos_dinamica= ui.input(|i| i.pointer.latest_pos());
+    
+                if  pos_dinamica.is_none() == false
+                    && self.starting_point.x != -1.0
+                    && self.starting_point.y != -1.0
+                {   
+    
+                    ui.painter().with_clip_rect(response.rect).arrow(
+                        self.starting_point, 
+                        vec2(pos_dinamica.unwrap().x-self.starting_point.x,pos_dinamica.unwrap().y-self.starting_point.y),
+                        Stroke::new(1.0, self.arrows_color))
+    
+                }
+            }
+    
+    
+    
+    
+            if ui.input(|i| i.pointer.any_released()) && cut_clicked==false {
+               
+                let pos = ui.input(|i| i.pointer.interact_pos());
+                if pos.is_none() == false
+                    && self.final_point.x == -1.0
+                    && self.final_point.y == -1.0
+                    && self.starting_point.x != -1.0
+                    && self.starting_point.y != -1.0
+                    
+                {
+                    self.final_point = pos.unwrap();
+                }
+            }
+    
+            if self.final_point.x != -1.0
+                && self.final_point.y != -1.0
                 && self.starting_point.x != -1.0
                 && self.starting_point.y != -1.0
-                
             {
-                self.final_point = pos.unwrap();
+                self.arrows
+                    .push((self.starting_point, self.final_point, self.arrows_color));
+                self.starting_point = Pos2 { x: -1.0, y: -1.0 };
+                self.final_point = Pos2 { x: -1.0, y: -1.0 };
+                self.last_type_added.push(PpOptions::Arrow);
+                
             }
+            self.shift_squares = Some(Pos2::new(
+                response.rect.left_top().x,
+                response.rect.left_top().y,
+            ));
+    
+            self.render_elements(painter.clone(), to_screen);
+    
+            (Some(self.arrows_pixels.clone()), Some(response))
         }
-
-        if self.final_point.x != -1.0
-            && self.final_point.y != -1.0
-            && self.starting_point.x != -1.0
-            && self.starting_point.y != -1.0
-        {
-            self.arrows
-                .push((self.starting_point, self.final_point, self.arrows_color));
-            self.starting_point = Pos2 { x: -1.0, y: -1.0 };
-            self.final_point = Pos2 { x: -1.0, y: -1.0 };
-            self.last_type_added.push(PpOptions::Arrow);
-            
-        }
-        self.shift_squares = Some(Pos2::new(
-            response.rect.left_top().x,
-            response.rect.left_top().y,
-        ));
-
-        self.render_elements(painter.clone(), to_screen);
-
-        (Some(self.arrows_pixels.clone()), Some(response))
-    }
-
+    
     pub fn ui_content_circles(
         &mut self,
         ui: &mut Ui,
@@ -600,7 +619,35 @@ impl Painting {
             {
                 self.circle_center = ui.input(|i| i.pointer.interact_pos().unwrap());
             }
+
         }
+
+
+        if ui.input(|i| i.pointer.any_down()) && cut_clicked==false {
+
+            let pos_dinamica= ui.input(|i| i.pointer.latest_pos());
+
+            if  pos_dinamica.is_none() == false
+                && self.circle_center.x != -1.0
+                && self.circle_center.y != -1.0
+            {   
+
+                let mut distanza=0.0;
+               
+                if ((pos_dinamica.unwrap().x-self.circle_center.x)/2.0).abs() >= ((pos_dinamica.unwrap().y-self.circle_center.y)/2.0).abs(){
+                    distanza= ((pos_dinamica.unwrap().x-self.circle_center.x)/2.0).abs();
+                }else{
+                    distanza= ((pos_dinamica.unwrap().y-self.circle_center.y)/2.0).abs();
+                }
+
+                ui.painter().with_clip_rect(response.rect)
+                .circle(self.circle_center,
+                    distanza,
+                    egui::Color32::TRANSPARENT, Stroke::new(1.0, self.circles_color));
+
+            }
+        }
+
 
 
         if ui.input(|i| i.pointer.any_released())
@@ -609,8 +656,14 @@ impl Painting {
             && self.circle_center.y != -1.0
             && self.radius == -1.0
         {
-            self.radius = ui.input(|i| i.pointer.interact_pos().unwrap()).x - self.circle_center.x;
-            self.radius = self.radius.abs();
+            let pos_finale=ui.input(|i| i.pointer.interact_pos());
+
+            if ((pos_finale.unwrap().x-self.circle_center.x)/2.0).abs() >= ((pos_finale.unwrap().y-self.circle_center.y)/2.0).abs(){
+                self.radius= ((pos_finale.unwrap().x-self.circle_center.x)/2.0).abs();
+            }else{
+                self.radius= ((pos_finale.unwrap().y-self.circle_center.y)/2.0).abs();
+            }
+
         }
 
         if self.circle_center.x != -1.0 && self.circle_center.y != -1.0 && self.radius != -1.0{
@@ -625,7 +678,7 @@ impl Painting {
             ));
         }
 
-        self.render_elements(painter.clone(), to_screen);
+self.render_elements(painter.clone(), to_screen);
         let mut crcls=Vec::new();
         for c in self.circles.clone(){
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
@@ -636,7 +689,6 @@ impl Painting {
         }
         (Some(crcls.clone()), Some(response))
     }
-
     pub fn ui_content_squares(
         &mut self,
         ui: &mut Ui,
@@ -671,24 +723,45 @@ impl Painting {
 
         if ui.input(|i| i.pointer.any_pressed()) && cut_clicked==false {
             let pos = response.interact_pointer_pos();
-
             if pos.is_none() == false
                 && response.rect.contains(pos.unwrap())
                 && self.square_starting_point.x == -1.0
                 && self.square_starting_point.y == -1.0
-            {
+            {   
+
                 self.shift_squares = Some(Pos2::new(
                     response.rect.left_top().x,
                     response.rect.left_top().y,
                 ));
+
                 self.square_starting_point = pos.unwrap();
+
+            }
+        }
+
+        if ui.input(|i| i.pointer.any_down()) && cut_clicked==false {
+
+            let pos_dinamica= ui.input(|i| i.pointer.latest_pos());
+
+            if  pos_dinamica.is_none() == false
+                && self.square_starting_point.x != -1.0
+                && self.square_starting_point.y != -1.0
+            {   
+
+                ui.painter().with_clip_rect(response.rect).add(Shape::Rect(RectShape::new(
+                    Rect::from_two_pos(self.square_starting_point, pos_dinamica.unwrap()),
+                    Rounding::default(),
+                    Color32::TRANSPARENT,
+                    Stroke::new(1.0, self.squares_color),
+                )));
+
             }
         }
 
         if ui.input(|i| i.pointer.any_released())  && cut_clicked==false {
             let pos = ui.input(|i| i.pointer.interact_pos());
+
             if pos.is_none() == false
-                && response.rect.contains(pos.unwrap())
                 && self.square_ending_point.x == -1.0
                 && self.square_ending_point.y == -1.0
                 && self.square_starting_point.x != -1.0
@@ -697,6 +770,7 @@ impl Painting {
                 self.square_ending_point = pos.unwrap();
             }
         }
+
 
         if self.square_starting_point.x != -1.0
             && self.square_starting_point.y != -1.0
@@ -719,8 +793,7 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
 
-        
-        let mut sqrs = Vec::new();
+let mut sqrs = Vec::new();
         for s in self.squares.clone() {
             let min = Pos2::new(
                 (s.0.left_top().x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
@@ -739,7 +812,7 @@ impl Painting {
         }
         (Some(sqrs.clone()), Some(response))
     }
-
+    
     pub fn ui_content_texts(
         &mut self,
         ui: &mut Ui,
