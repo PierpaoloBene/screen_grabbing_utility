@@ -159,6 +159,7 @@ fn main() -> Result<(), eframe::Error> {
                 shrink_fact:None,
                 shortcuts: shortcuts,
                 manager: manager,
+                ready_to_cut:None,
         
             })
         }),
@@ -220,7 +221,7 @@ struct FirstWindow {
     shrink_fact:Option<f32>,
     shortcuts: Hotkeys,
     manager: GlobalHotKeyManager,
-
+    ready_to_cut:Option<bool>,
     
 }
 
@@ -715,6 +716,13 @@ impl eframe::App for FirstWindow {
                             }
 
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{
+                                if self.ready_to_cut.is_none(){
+                                    self.selected_window=7;
+                                }
+                                
+                                
+                                if self.ready_to_cut.is_none()==false && self.ready_to_cut.unwrap(){
+
                                 
                                 self.pp_option = Some(PpOptions::Cut);
                                 self.cut_clicked=true;
@@ -899,11 +907,12 @@ impl eframe::App for FirstWindow {
                                     self.cropped=true;
                                     self.pp_option=Some(PpOptions::Painting);
                                     self.ready_to_crop= false;
+                                    self.ready_to_cut=None;
 
                                 }
                                
 
-                                
+                            }  
                             }
                             if (settings_btn.is_none()==false && settings_btn.unwrap().clicked()){
                                 self.selected_window=6;
@@ -1081,6 +1090,25 @@ impl eframe::App for FirstWindow {
                     }
                     
                 }
+            });
+        }else if self.selected_window==7{
+            egui::Window::new("Saving").show(ctx, |ui|{
+                ui.label("Your changes will be saved, do you want proceed?");
+                let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
+                let mut no_btn=Some(ui.add(egui::Button::new("No")));
+
+                if yes_btn.unwrap().clicked(){
+                    self.ready_to_cut=Some(true);
+                    self.ready_to_crop=true;
+                    self.selected_window=5;
+
+                }
+
+                if no_btn.unwrap().clicked(){
+                    self.ready_to_cut=Some(false);
+                    self.selected_window=5;
+                }
+                
             });
         }
 
