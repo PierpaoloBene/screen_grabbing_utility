@@ -539,8 +539,11 @@ impl eframe::App for FirstWindow {
                     }
                         crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
+                        if self.cut_clicked==false{
                         ui.add_space(107.0*ui.style().spacing.item_spacing.x);
+
                         settings_btn=Some(ui.add(egui::Button::new("⚙ Settings")));
+                        }
 
                     });
                    
@@ -712,6 +715,7 @@ impl eframe::App for FirstWindow {
                             }
 
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{
+                                
                                 self.pp_option = Some(PpOptions::Cut);
                                 self.cut_clicked=true;
                                 
@@ -901,7 +905,7 @@ impl eframe::App for FirstWindow {
 
                                 
                             }
-                            if settings_btn.unwrap().clicked(){
+                            if (settings_btn.is_none()==false && settings_btn.unwrap().clicked()){
                                 self.selected_window=6;
                             }
                         }
