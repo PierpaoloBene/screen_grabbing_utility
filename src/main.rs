@@ -912,7 +912,7 @@ impl eframe::App for FirstWindow {
                                 }
                                
 
-                            }  
+                            }
                             }
                             if (settings_btn.is_none()==false && settings_btn.unwrap().clicked()){
                                 self.selected_window=6;
@@ -1105,7 +1105,7 @@ impl eframe::App for FirstWindow {
                 }
 
                 if no_btn.unwrap().clicked(){
-                    self.ready_to_cut=Some(false);
+                    
                     self.selected_window=5;
                 }
                 
