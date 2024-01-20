@@ -675,6 +675,10 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
         let mut crcls = Vec::new();
+        let mut incremento=0.0;
+
+        for i in 1..6{//da rendere dinamico e da cambiare il painter in tempo reale
+            incremento=incremento+0.5;
         for c in self.circles.clone() {
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
             let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
@@ -682,6 +686,50 @@ impl Painting {
             let new_radius = c.1 * self.mult_factor.unwrap().1;
             crcls.push((new_center, new_radius, c.2));
         }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = (c.1+incremento) * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = (c.1-incremento) * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = c.1 * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = c.1 * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = c.1 * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        for c in self.circles.clone() {
+            let center_x = (c.0.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+            let center_y = (c.0.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+            let new_center = Pos2::new(center_x, center_y);
+            let new_radius = c.1 * self.mult_factor.unwrap().1;
+            crcls.push((new_center, new_radius, c.2));
+        }
+        }
+        
         (Some(crcls.clone()), Some(response))
     }
     pub fn ui_content_squares(
@@ -785,7 +833,7 @@ impl Painting {
 
         let mut sqrs = Vec::new();
         let mut incremento = 0.0;
-        for i in 1..8 {
+        for i in 1..2 {//da rendere dinamico e da cambiare il painter in tempo reale
             incremento = incremento + 0.5;
             for s in self.squares.clone() {
                 let mut min = Pos2::new(
