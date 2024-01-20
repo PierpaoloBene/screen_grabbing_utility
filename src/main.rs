@@ -553,18 +553,18 @@ impl eframe::App for FirstWindow {
                             if self.width >= 1200.0 && self.height >= 700.0 {
                                // println!("caso 1");
                                 if self.current_os=="windows"{
-                                    self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
+                                    self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
-                                    self.shrink_fact=Some(0.7);
+                                    self.shrink_fact=Some(0.6);
                                 }
                               
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
                                // println!("caso 2");
                                 if self.current_os=="windows"{
-                                    self.shrink_fact=Some(0.7/self.multiplication_factor.unwrap());
+                                    self.shrink_fact=Some(0.65/self.multiplication_factor.unwrap());
                                 }else{
-                                    self.shrink_fact=Some(0.7);
+                                    self.shrink_fact=Some(0.65);
                                 }
                                 
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
