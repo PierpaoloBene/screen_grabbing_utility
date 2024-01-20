@@ -76,7 +76,9 @@ pub struct Painting {
     ready_to_write: bool,
     counter:i32,
     inizializzato:bool,
+    entrato: bool,
 }
+
 
 impl Default for Painting {
     fn default() -> Self {
@@ -119,6 +121,7 @@ impl Default for Painting {
             ready_to_write: false,
             counter: 0,
             inizializzato:false,
+            entrato: false,
         }
     }
 }
@@ -353,7 +356,14 @@ impl Painting {
                 ui.horizontal(|ui: &mut Ui| {
                     ui.color_edit_button_srgba(&mut self.texts_color);
                     ui.separator();
-                    ui.add(egui::TextEdit::singleline(&mut self.to_write_text));
+                    if ui.add(egui::TextEdit::singleline(&mut self.to_write_text)).clicked()==false{
+
+                    }else {
+                        if self.entrato==false{
+                            self.entrato=true;
+                            self.to_write_text="".to_string();
+                        }
+                    }
                     ui.separator();
                     write_btn = Some(ui.add(egui::Button::new("Write!")));
                     if write_btn.unwrap().clicked()
@@ -362,6 +372,7 @@ impl Painting {
                         && self.text_ending_position.x != -1.0
                         && self.text_ending_position.y != -1.0
                     {
+                        self.entrato=true;
                         self.to_write_text = self.to_write_text.clone();
                         self.ready_to_write = true;
                     }
@@ -871,10 +882,13 @@ let mut sqrs = Vec::new();
                         
                         
                         self.counter=self.counter+1;
+                        if self.counter==3000{
+                            self.counter=0;
+                        }
 
 
                     
-                     if self.counter%10==0{
+                     if self.counter%50==0{
                         ui.painter().add(
                             egui::Shape::dashed_line(&[ 
                                 Pos2::new(self.text_starting_position.x,self.text_starting_position.y+10.0),
