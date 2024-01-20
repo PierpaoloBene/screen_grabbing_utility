@@ -806,22 +806,92 @@ impl Painting {
         self.render_elements(painter.clone(), to_screen);
 
 let mut sqrs = Vec::new();
-        for s in self.squares.clone() {
-            let min = Pos2::new(
-                (s.0.left_top().x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
-                (s.0.left_top().y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
-            );
-            let max = Pos2::new(
-                (s.0.right_bottom().x - self.shift_squares.unwrap().x)
-                    * self.mult_factor.unwrap().0,
-                (s.0.right_bottom().y - self.shift_squares.unwrap().y)
-                    * self.mult_factor.unwrap().1,
-            );
+let mut incremento=0.0;
+for i in 1..8{
+    incremento=incremento+0.5;
+for s in self.squares.clone() {
+    let min = Pos2::new(
+        (s.0.left_top().x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+        (s.0.left_top().y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+    );
+    let max = Pos2::new(
+        (s.0.right_bottom().x - self.shift_squares.unwrap().x)
+            * self.mult_factor.unwrap().0,
+        (s.0.right_bottom().y - self.shift_squares.unwrap().y)
+            * self.mult_factor.unwrap().1,
+    );
 
-            let r = egui::Rect::from_min_max(min, max);
+    let r = egui::Rect::from_min_max(min, max);
 
-            sqrs.push((r, s.1));
-        }
+    sqrs.push((r, s.1));
+}
+for s in self.squares.clone() {
+    let min = Pos2::new(
+        (s.0.left_top().x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+        (s.0.left_top().y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+    );
+    let max = Pos2::new(
+        (s.0.right_bottom().x-incremento - self.shift_squares.unwrap().x)
+            * self.mult_factor.unwrap().0,
+        (s.0.right_bottom().y-incremento - self.shift_squares.unwrap().y)
+            * self.mult_factor.unwrap().1,
+    );
+
+    let r = egui::Rect::from_min_max(min, max);
+
+    sqrs.push((r, s.1));
+}
+for s in self.squares.clone() {
+    let min = Pos2::new(
+        (s.0.left_top().x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+        (s.0.left_top().y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+    );
+    let max = Pos2::new(
+        (s.0.right_bottom().x+incremento - self.shift_squares.unwrap().x)
+            * self.mult_factor.unwrap().0,
+        (s.0.right_bottom().y+incremento - self.shift_squares.unwrap().y)
+            * self.mult_factor.unwrap().1,
+    );
+
+    let r = egui::Rect::from_min_max(min, max);
+
+    sqrs.push((r, s.1));
+}
+
+for s in self.squares.clone() {
+    let min = Pos2::new(
+        (s.0.left_top().x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+        (s.0.left_top().y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+    );
+    let max = Pos2::new(
+        (s.0.right_bottom().x-incremento - self.shift_squares.unwrap().x)
+            * self.mult_factor.unwrap().0,
+        (s.0.right_bottom().y+incremento - self.shift_squares.unwrap().y)
+            * self.mult_factor.unwrap().1,
+    );
+
+    let r = egui::Rect::from_min_max(min, max);
+
+    sqrs.push((r, s.1));
+}
+for s in self.squares.clone() {
+    let min = Pos2::new(
+        (s.0.left_top().x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+        (s.0.left_top().y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+    );
+    let max = Pos2::new(
+        (s.0.right_bottom().x+incremento - self.shift_squares.unwrap().x)
+            * self.mult_factor.unwrap().0,
+        (s.0.right_bottom().y-incremento - self.shift_squares.unwrap().y)
+            * self.mult_factor.unwrap().1,
+    );
+
+    let r = egui::Rect::from_min_max(min, max);
+
+    sqrs.push((r, s.1));
+}
+
+}
         (Some(sqrs.clone()), Some(response))
     }
     
