@@ -5,12 +5,9 @@ mod pp_no_stroke;
 mod hotkeys;
 use crate::pp_no_stroke::PpOptions;
 use crate::pp_no_stroke::View;
-use chrono;
+
 use egui::CursorIcon;
-use egui::InputState;
-use egui::Modifiers;
-use egui::style::Spacing;
-use egui::style::Widgets;
+
 use hotkeys::CustomizeHotkey;
 use hotkeys::Hotkeys;
 use image::EncodableLayout;
@@ -26,6 +23,7 @@ use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle
 
 use screenshots::Screen;
 use std::collections::HashSet;
+use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -483,6 +481,7 @@ impl eframe::App for FirstWindow {
                         if self.cut_clicked==false{
 
                         paint_btn = Some(ui.add(egui::Button::new("🖊 Paint")));
+                        
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
@@ -623,7 +622,7 @@ impl eframe::App for FirstWindow {
                                                     }
                                             if crcls.is_none() == false {
                                                             self.circle_pixels = crcls.clone().unwrap();
-                                                            println!("cerchi nel main {:?}", self.circle_pixels.len());
+                                                            
                                                         }
                                                 if sqrs.is_none() == false {
                                                                 self.square_pixels = sqrs.clone().unwrap();
@@ -683,12 +682,11 @@ impl eframe::App for FirstWindow {
                             }
                             if (save_edit_btn.is_none()==false && save_edit_btn.unwrap().clicked() )|| self. ready_to_save_with_name{
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
+                                
                                 let mut stringpath: String;
                                 self.save=true;
                                 
                                 if dialog.is_some(){
-
-
                                 stringpath =  dialog
                                 .clone()
                                 .unwrap()
@@ -943,6 +941,7 @@ impl eframe::App for FirstWindow {
                                     self.pp_option=Some(PpOptions::Painting);
                                     self.ready_to_crop= false;
                                     self.ready_to_cut=None;
+                                    self.selected_shape_string = "Select a shape!".to_string();
 
                                 }
                                
