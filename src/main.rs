@@ -485,6 +485,7 @@ impl eframe::App for FirstWindow {
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
+                            self.ready_to_cut=None;
                         }
                         egui::ComboBox::from_id_source("Select a shape!")
                             .selected_text(format!("{}", self.selected_shape_string))
@@ -500,6 +501,7 @@ impl eframe::App for FirstWindow {
                                     self.selected_shape = Shapes::Arrow;
                                     self.selected_shape_string = "↘ Arrow".to_string();
                                     self.pp_option = Some(PpOptions::Arrow);
+                                    self.ready_to_cut=None;
                                 }
 
                                 if ui
@@ -513,6 +515,8 @@ impl eframe::App for FirstWindow {
                                     self.selected_shape = Shapes::Circle;
                                     self.selected_shape_string = "⭕ Circle".to_string();
                                     self.pp_option = Some(PpOptions::Circle);
+                                    self.ready_to_cut=None;
+
                                 }
 
                                 if ui
@@ -520,18 +524,21 @@ impl eframe::App for FirstWindow {
                                         &mut self.selected_shape,
                                         Shapes::Square,
                                         "⬜ Square",
+
                                     )
                                     .clicked()
                                 {
                                     self.selected_shape = Shapes::Square;
                                     self.selected_shape_string = "⬜ Square".to_string();
                                     self.pp_option = Some(PpOptions::Square);
+                                    self.ready_to_cut=None;
                                 };
                             });
                         text_btn = Some(ui.add(egui::Button::new("✒ Text")));
                         if text_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
+                            self.ready_to_cut=None;
                         }
                         save_btn = Some(ui.add(egui::Button::new("Save")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
@@ -669,6 +676,7 @@ impl eframe::App for FirstWindow {
                                 self.save_img(ui);
                                 self.pp_option=Some(PpOptions::Painting);
                                 self.ready_to_save = false;
+                                self.ready_to_cut=None;
 
 
                                 self.edit_image(ui);
@@ -685,6 +693,7 @@ impl eframe::App for FirstWindow {
                                 
                                 let mut stringpath: String;
                                 self.save=true;
+                                self.ready_to_cut=None;
                                 
                                 if dialog.is_some(){
                                 stringpath =  dialog
@@ -739,7 +748,7 @@ impl eframe::App for FirstWindow {
                             if (copy_btn.is_none()==false && copy_btn.unwrap().clicked()) || self.ready_to_copy{
                                 self.edit_image(ui);
                                 self.toasts.as_mut().unwrap().success("Image copied to clipboard" ).set_duration(Some(Duration::from_secs(5)));
-                                
+                                self.ready_to_cut=None;
                                 self.show_toast=true;
                                 let mut clipboard = Clipboard::new().unwrap();
                                 let w=self.image_buffer.clone().unwrap().width() as usize;
@@ -748,7 +757,10 @@ impl eframe::App for FirstWindow {
                                 self.ready_to_copy=false;
                             }
 
-                            if !self.ready_to_cut.is_none() && self.ready_to_cut.unwrap()==false {//&& (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
+                            if !self.ready_to_cut.is_none() && self.ready_to_cut.unwrap()==false {
+                                ui.ctx()
+                                .output_mut(|i| i.cursor_icon = CursorIcon::Default);
+                           
                                 egui::Window::new("Saving")
             //.constraint_to(response.clone().unwrap().rect)
             .default_width(300.0)//da modificare
@@ -763,7 +775,7 @@ impl eframe::App for FirstWindow {
             //      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
             //      )
             .show(ctx, |ui| {
-                ui.label("Your changes will be saved, do you want to proceed?");
+                ui.label(RichText::new("Your changes will be saved, do you want to proceed?").color(Color32::WHITE));
                 let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
                 let mut no_btn=Some(ui.add(egui::Button::new("No")));
 
