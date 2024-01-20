@@ -689,6 +689,7 @@ impl eframe::App for FirstWindow {
 
                             }
                             if (save_edit_btn.is_none()==false && save_edit_btn.unwrap().clicked() )|| self. ready_to_save_with_name{
+                                self.edit_image(ui);
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
                                 
                                 let mut stringpath: String;
@@ -731,10 +732,10 @@ impl eframe::App for FirstWindow {
                                        
                                     ));
                                 }
-                                self.save = false;
+                                self.save = true;
                                 self.ready_to_save_with_name = false;
                                 self.pp_option=Some(PpOptions::Painting);
-                                self.edit_image(ui);
+                                
                                 self.circle_pixels= Vec::new();
                                 self.square_pixels= Vec::new();
                                 self.arrow_pixels= Vec::new();
