@@ -191,6 +191,7 @@ impl Painting {
             PpOptions::Circle => {
                 let rem=self.circles.pop().unwrap();
                 self.removed_circles.push(rem);
+                //println!("{:?}", self.circles.len());
                 self.last_type_removed.push(PpOptions::Circle);  
             }
             PpOptions::Square => {
@@ -689,7 +690,7 @@ impl Painting {
             ));
         }
 
-self.render_elements(painter.clone(), to_screen);
+        self.render_elements(painter.clone(), to_screen);
         let mut crcls=Vec::new();
         for c in self.circles.clone(){
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
@@ -1146,7 +1147,58 @@ impl View for Painting {
                 });
             }
         }
-        
+        if self.last_type_removed.last().is_some(){
+        match self.last_type_removed.last().unwrap(){
+            PpOptions::Arrow=>{
+                arr=Some(self.arrows_pixels.clone());
+            },
+            PpOptions::Circle=>{
+                let mut circls=Vec::new();
+                for c in self.circles.clone(){
+                    let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
+                    let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
+                    let new_center=Pos2::new(center_x, center_y);
+                    let new_radius=c.1*self.mult_factor.unwrap().1;
+                    circls.push((new_center, new_radius, c.2));
+                }
+                crcls=Some(circls.clone());
+            },
+            PpOptions::Square=>{
+                let mut sqars = Vec::new();
+                for s in self.squares.clone() {
+                let min = Pos2::new(
+                    (s.0.left_top().x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (s.0.left_top().y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
+                let max = Pos2::new(
+                    (s.0.right_bottom().x - self.shift_squares.unwrap().x)
+                    * self.mult_factor.unwrap().0,
+                    (s.0.right_bottom().y - self.shift_squares.unwrap().y)
+                    * self.mult_factor.unwrap().1,
+                );
+
+                let r = egui::Rect::from_min_max(min, max);
+
+                sqars.push((r, s.1));
+                }
+                sqrs=Some(sqars.clone());
+            },
+            PpOptions::Text=>{
+                let mut tx=Vec::new();
+        for t in self.texts.clone(){
+            let new_pos = Pos2::new(
+                (t.1.x - self.shift_squares.unwrap().x)
+                    * self.mult_factor.unwrap().0,
+                (t.1.y - self.shift_squares.unwrap().y)
+                    * self.mult_factor.unwrap().1,
+            );
+            tx.push((new_pos,  t.3, t.0 ));
+        }
+        txt=Some(tx.clone());
+            }
+            _=>{}
+        }
+    }
         *mult_fact=self.mult_factor;
         (pix, arr, txt, sqrs, crcls,response)
     }

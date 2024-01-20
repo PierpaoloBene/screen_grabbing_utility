@@ -143,6 +143,7 @@ pub mod first_window {
 
         pub fn edit_image(&mut self, ui: &mut egui::Ui) {
             if self.circle_pixels.is_empty() == false {
+                println!("renderizzo i cerchi");
                 for c in self.circle_pixels.clone() {
                     imageproc::drawing::draw_hollow_circle_mut(
                         self.image_buffer.as_mut().unwrap(),

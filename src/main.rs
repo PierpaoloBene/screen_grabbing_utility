@@ -613,38 +613,57 @@ impl eframe::App for FirstWindow {
                                   
                                 self.save=false;
                                 self.cropped=false;
-                                match self.pp_option.clone().unwrap() {
-                                    PpOptions::Painting => {
-                                        if pxs.is_none() == false {
-                                            self.line_pixels = pxs.clone().unwrap();
-                                        }
-                                    }
-                                    PpOptions::Arrow => {
-                                        if arr.is_none() == false {
+                                if pxs.is_none() == false {
+                                                 self.line_pixels = pxs.clone().unwrap();
+                                           }
+                                           if arr.is_none() == false {
                                            
-                                        self.arrow_pixels=arr.clone().unwrap();
+                                                    self.arrow_pixels=arr.clone().unwrap();
+                                                        
+                                                    }
+                                            if crcls.is_none() == false {
+                                                            self.circle_pixels = crcls.clone().unwrap();
+                                                            println!("cerchi nel main {:?}", self.circle_pixels.len());
+                                                        }
+                                                if sqrs.is_none() == false {
+                                                                self.square_pixels = sqrs.clone().unwrap();
+                                                            }
+                                                    if txt.is_none() == false {
+                                                                    self.text_pixels=txt.clone().unwrap();
+                                                                }
+                                // match self.pp_option.clone().unwrap() {
+                                //     PpOptions::Painting => {
+                                //         if pxs.is_none() == false {
+                                //             self.line_pixels = pxs.clone().unwrap();
+                                //         }
+                                //     }
+                                //     PpOptions::Arrow => {
+                                //         if arr.is_none() == false {
+                                           
+                                //         self.arrow_pixels=arr.clone().unwrap();
                                             
-                                        }
-                                    }
-                                    PpOptions::Circle => {
-                                        if crcls.is_none() == false {
-                                            self.circle_pixels = crcls.clone().unwrap();
-                                        }
-                                    }
-                                    PpOptions::Square => {
-                                        if sqrs.is_none() == false {
-                                            self.square_pixels = sqrs.clone().unwrap();
-                                        }
-                                    }
-                                    PpOptions::Text => {
-                                        if txt.is_none() == false {
-                                            self.text_pixels=txt.clone().unwrap();
-                                        }
-                                    }
-                                    PpOptions::Cut => {
+                                //         }
+                                //     }
+                                //     PpOptions::Circle => {
+                                //         if crcls.is_none() == false {
+                                //             self.circle_pixels = crcls.clone().unwrap();
+                                //             println!("cerchi nel main {:?}", self.circle_pixels.len());
+                                //         }
+                                //     }
+                                //     PpOptions::Square => {
+                                //         if sqrs.is_none() == false {
+                                //             self.square_pixels = sqrs.clone().unwrap();
+                                //         }
+                                //     }
+                                //     PpOptions::Text => {
+                                //         if txt.is_none() == false {
+                                //             self.text_pixels=txt.clone().unwrap();
+                                //         }
+                                //     }
+                                //     PpOptions::Cut => {
                                         
-                                    }
-                                }
+                                //     }
+                                // }
 
                             if (save_btn.is_none()==false && save_btn.unwrap().clicked() )|| self.ready_to_save {
 
