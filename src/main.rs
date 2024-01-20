@@ -748,14 +748,50 @@ impl eframe::App for FirstWindow {
                                 self.ready_to_copy=false;
                             }
 
-                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{
-                                if self.ready_to_cut.is_none() && (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
-                                    self.selected_window=7;
-                                }
-                                
-                                
-                                if (self.ready_to_cut.is_none()==false && self.ready_to_cut.unwrap()) || (self.square_pixels.len()==0 && self.text_pixels.len()==0 && self.circle_pixels.len()==0 && self.line_pixels.len()==0 && self.arrow_pixels.len()==0) {
+                            if !self.ready_to_cut.is_none() && self.ready_to_cut.unwrap()==false {//&& (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
+                                egui::Window::new("Saving")
+            //.constraint_to(response.clone().unwrap().rect)
+            .default_width(300.0)//da modificare
+            .default_height(50.0)//da modificare
+            .title_bar(false)
+            .default_pos(Pos2::new((frame.info().window_info.size.x/2.0)/self.multiplication_factor.unwrap(), (frame.info().window_info.size.y/2.0)/self.multiplication_factor.unwrap()))
+            .vscroll(false)
+            .interactable(true)
+            .resizable(true)
+            // .frame(egui::Frame::none()
+            //      .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
+            //      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
+            //      )
+            .show(ctx, |ui| {
+                ui.label("Your changes will be saved, do you want to proceed?");
+                let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
+                let mut no_btn=Some(ui.add(egui::Button::new("No")));
 
+                if yes_btn.unwrap().clicked(){
+                    
+                    self.ready_to_cut=Some(true);
+                    self.ready_to_crop=true;
+                   //self.selected_window=5;
+
+                }
+
+                if no_btn.unwrap().clicked(){
+                    self.ready_to_cut=None;
+                    //self.selected_window=5;
+                }
+            });
+                              }
+                           
+                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{      
+                                                         
+                                if self.ready_to_cut.is_none() && (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
+                                    self.ready_to_cut=Some(false);
+                                }
+
+                                     println!("{:?}", self.ready_to_cut);           
+                                
+                                if (self.ready_to_cut.is_none()==false && self.ready_to_cut.unwrap()==true) || (self.square_pixels.len()==0 && self.text_pixels.len()==0 && self.circle_pixels.len()==0 && self.line_pixels.len()==0 && self.arrow_pixels.len()==0) {
+                                     
                                 
                                 self.pp_option = Some(PpOptions::Cut);
                                 self.cut_clicked=true;
@@ -1123,37 +1159,6 @@ impl eframe::App for FirstWindow {
                         self.selected_window=5;
                     }
                     
-                }
-            });
-        }else if self.selected_window==7{
-            egui::Window::new("Saving")
-            //.constraint_to(response.clone().unwrap().rect)
-            .default_width(300.0)//da modificare
-            .default_height(50.0)//da modificare
-            .title_bar(false)
-            .default_pos(Pos2::new((frame.info().window_info.size.x/2.0)/self.multiplication_factor.unwrap(), (frame.info().window_info.size.y/2.0)/self.multiplication_factor.unwrap()))
-            .vscroll(false)
-            .interactable(true)
-            .resizable(true)
-            // .frame(egui::Frame::none()
-            //      .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
-            //      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
-            //      )
-            .show(ctx, |ui| {
-                ui.label("Your changes will be saved, do you want to proceed?");
-                let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
-                let mut no_btn=Some(ui.add(egui::Button::new("No")));
-
-                if yes_btn.unwrap().clicked(){
-                    self.ready_to_cut=Some(true);
-                    self.ready_to_crop=true;
-                   self.selected_window=5;
-
-                }
-
-                if no_btn.unwrap().clicked(){
-                    
-                    self.selected_window=5;
                 }
             });
         }
