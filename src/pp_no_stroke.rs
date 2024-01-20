@@ -158,7 +158,7 @@ impl Painting {
                     point.0,
                     point.1,
                     egui::Color32::TRANSPARENT,
-                    Stroke::new(1.0, point.2),
+                    Stroke::new(4.0, point.2),
                 );
             }
         }
@@ -469,15 +469,54 @@ impl Painting {
                 l.0.into_iter()
                     .map(|f| from_screen.inverse().transform_pos(f));
             let mut retlns = Vec::new();
-            for li in lns.into_iter() {
+            let mut incremento=0.0;
+
+            for i in 1..4{
+            incremento=incremento+0.5;
+            for li in lns.clone().into_iter() {
                 let ps = Pos2::new(
                     (li.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
                     (li.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
                 );
                 retlns.push(ps);
             }
-            if retlns.len() > 0 {
-                ret.push((retlns, clr));
+
+            for li in lns.clone().into_iter() {
+                let ps = Pos2::new(
+                    (li.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (li.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
+                retlns.push(ps);
+            }
+
+
+            for li in lns.clone().into_iter() {
+                let ps = Pos2::new(
+                    (li.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (li.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
+                retlns.push(ps);
+            }
+   
+
+            for li in lns.clone().into_iter() {
+                let ps = Pos2::new(
+                    (li.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (li.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
+                retlns.push(ps);
+            }
+            ret.push((retlns.clone(), clr));
+
+            for li in lns.clone().into_iter() {
+                let ps = Pos2::new(
+                    (li.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
+                    (li.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
+                );
+                retlns.push(ps);
+            }
+            ret.push((retlns.clone(), clr));            
+            
             }
         }
 
@@ -537,7 +576,7 @@ impl Painting {
                         pos_dinamica.unwrap().x - self.starting_point.x,
                         pos_dinamica.unwrap().y - self.starting_point.y,
                     ),
-                    Stroke::new(1.0, self.arrows_color),
+                    Stroke::new(10.0, self.arrows_color),
                 )
             }
         }
@@ -677,7 +716,7 @@ impl Painting {
         let mut crcls = Vec::new();
         let mut incremento=0.0;
 
-        for i in 1..6{//da rendere dinamico e da cambiare il painter in tempo reale
+        for i in 1..4{//da rendere dinamico e da cambiare il painter in tempo reale
             incremento=incremento+0.5;
         for c in self.circles.clone() {
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
@@ -833,6 +872,7 @@ impl Painting {
 
         let mut sqrs = Vec::new();
         let mut incremento = 0.0;
+
         for i in 1..2 {//da rendere dinamico e da cambiare il painter in tempo reale
             incremento = incremento + 0.5;
             for s in self.squares.clone() {
