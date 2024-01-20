@@ -775,7 +775,7 @@ impl eframe::App for FirstWindow {
             //      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
             //      )
             .show(ctx, |ui| {
-                ui.label(RichText::new("Your changes will be saved, do you want to proceed?").color(Color32::WHITE));
+                ui.label(RichText::new("Your changes will be saved, do you want to proceed?").color(Color32::WHITE).size(15.0));
                 let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
                 let mut no_btn=Some(ui.add(egui::Button::new("No")));
 
