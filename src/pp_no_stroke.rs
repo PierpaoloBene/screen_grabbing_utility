@@ -133,7 +133,7 @@ impl Painting {
                 .filter(|line| line.0.len() >= 2)
                 .map(|line| {
                     let points: Vec<Pos2> = line.0.iter().map(|p| to_screen * *p).collect();
-                    egui::Shape::line(points, Stroke::new(1.0, line.1))
+                    egui::Shape::line(points, Stroke::new(0.5, line.1))
                 });
             painter.extend(shapes);
         }
@@ -142,7 +142,7 @@ impl Painting {
                 painter.arrow(
                     point.0,
                     vec2(point.1.x - point.0.x, point.1.y - point.0.y),
-                    Stroke::new(1.0, point.2),
+                    Stroke::new(0.5, point.2),
                 );
                 let pixels = self
                     .calc_pixels_arrow(point.0, vec2(point.1.x - point.0.x, point.1.y - point.0.y));
@@ -158,7 +158,7 @@ impl Painting {
                     point.0,
                     point.1,
                     egui::Color32::TRANSPARENT,
-                    Stroke::new(4.0, point.2),
+                    Stroke::new(0.5, point.2),
                 );
             }
         }
@@ -169,7 +169,7 @@ impl Painting {
                     point.0,
                     0.0,
                     egui::Color32::TRANSPARENT,
-                    Stroke::new(1.0, point.1),
+                    Stroke::new(0.5, point.1),
                 );
             }
         }
@@ -469,10 +469,7 @@ impl Painting {
                 l.0.into_iter()
                     .map(|f| from_screen.inverse().transform_pos(f));
             let mut retlns = Vec::new();
-            let mut incremento=0.0;
 
-            for i in 1..4{
-            incremento=incremento+0.5;
             for li in lns.clone().into_iter() {
                 let ps = Pos2::new(
                     (li.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
@@ -480,48 +477,12 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
-           
 
-            for li in lns.clone().into_iter() {
-                let ps = Pos2::new(
-                    (li.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
-                    (li.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
-                );
-                retlns.push(ps);
-            }
-           
-
-            for li in lns.clone().into_iter() {
-                let ps = Pos2::new(
-                    (li.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
-                    (li.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
-                );
-                retlns.push(ps);
-            }
-        
-   
-
-            for li in lns.clone().into_iter() {
-                let ps = Pos2::new(
-                    (li.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
-                    (li.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
-                );
-                retlns.push(ps);
-            }
-           
-
-            for li in lns.clone().into_iter() {
-                let ps = Pos2::new(
-                    (li.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0,
-                    (li.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1,
-                );
-                retlns.push(ps);
-            }
             if retlns.len()>0{
-            ret.push((retlns.clone(), clr));  
-            }          
+             ret.push((retlns.clone(), clr));     
+            }      
             
-            }
+           
         }
 
         (Some(ret), Some(response))
@@ -580,7 +541,7 @@ impl Painting {
                         pos_dinamica.unwrap().x - self.starting_point.x,
                         pos_dinamica.unwrap().y - self.starting_point.y,
                     ),
-                    Stroke::new(10.0, self.arrows_color),
+                    Stroke::new(0.5, self.arrows_color),
                 )
             }
         }
@@ -682,7 +643,7 @@ impl Painting {
                     self.circle_center,
                     distanza,
                     egui::Color32::TRANSPARENT,
-                    Stroke::new(1.0, self.circles_color),
+                    Stroke::new(0.5, self.circles_color),
                 );
             }
         }
@@ -718,10 +679,8 @@ impl Painting {
 
         self.render_elements(painter.clone(), to_screen);
         let mut crcls = Vec::new();
-        let mut incremento=0.0;
+       
 
-        for i in 1..4{//da rendere dinamico e da cambiare il painter in tempo reale
-            incremento=incremento+0.5;
         for c in self.circles.clone() {
             let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
             let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
@@ -729,49 +688,7 @@ impl Painting {
             let new_radius = c.1 * self.mult_factor.unwrap().1;
             crcls.push((new_center, new_radius, c.2));
         }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = (c.1+incremento) * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = (c.1-incremento) * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = c.1 * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = c.1 * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x-incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y+incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = c.1 * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        for c in self.circles.clone() {
-            let center_x = (c.0.x+incremento - self.shift_squares.unwrap().x) * self.mult_factor.unwrap().0;
-            let center_y = (c.0.y-incremento - self.shift_squares.unwrap().y) * self.mult_factor.unwrap().1;
-            let new_center = Pos2::new(center_x, center_y);
-            let new_radius = c.1 * self.mult_factor.unwrap().1;
-            crcls.push((new_center, new_radius, c.2));
-        }
-        }
+        
         
         (Some(crcls.clone()), Some(response))
     }
@@ -836,7 +753,7 @@ impl Painting {
                         Rect::from_two_pos(self.square_starting_point, pos_dinamica.unwrap()),
                         Rounding::default(),
                         Color32::TRANSPARENT,
-                        Stroke::new(1.0, self.squares_color),
+                        Stroke::new(0.5, self.squares_color),
                     )));
             }
         }
@@ -875,94 +792,26 @@ impl Painting {
         self.render_elements(painter.clone(), to_screen);
 
         let mut sqrs = Vec::new();
-        let mut incremento = 0.0;
-
-        for i in 1..2 {//da rendere dinamico e da cambiare il painter in tempo reale
-            incremento = incremento + 0.5;
+  
             for s in self.squares.clone() {
-                let mut min = Pos2::new(
+                let min = Pos2::new(
                     (s.0.left_top().x - self.shift_squares.unwrap().x)
                         * self.mult_factor.unwrap().0,
                     (s.0.left_top().y - self.shift_squares.unwrap().y)
                         * self.mult_factor.unwrap().1,
                 );
-                let mut max = Pos2::new(
+                let max = Pos2::new(
                     (s.0.right_bottom().x - self.shift_squares.unwrap().x)
                         * self.mult_factor.unwrap().0,
                     (s.0.right_bottom().y - self.shift_squares.unwrap().y)
                         * self.mult_factor.unwrap().1,
                 );
 
-                let mut r = egui::Rect::from_min_max(min, max);
-
-                sqrs.push((r, s.1));
-                min = Pos2::new(
-                    (s.0.left_top().x - incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.left_top().y - incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-                max = Pos2::new(
-                    (s.0.right_bottom().x - incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.right_bottom().y - incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-
-                r = egui::Rect::from_min_max(min, max);
-
-                sqrs.push((r, s.1));
-                min = Pos2::new(
-                    (s.0.left_top().x + incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.left_top().y + incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-                max = Pos2::new(
-                    (s.0.right_bottom().x + incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.right_bottom().y + incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-
-                r = egui::Rect::from_min_max(min, max);
-
-                sqrs.push((r, s.1));
-                min = Pos2::new(
-                    (s.0.left_top().x - incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.left_top().y + incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-                max = Pos2::new(
-                    (s.0.right_bottom().x - incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.right_bottom().y + incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-
-                r = egui::Rect::from_min_max(min, max);
-
-                sqrs.push((r, s.1));
-
-                min = Pos2::new(
-                    (s.0.left_top().x + incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.left_top().y - incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-                max = Pos2::new(
-                    (s.0.right_bottom().x + incremento - self.shift_squares.unwrap().x)
-                        * self.mult_factor.unwrap().0,
-                    (s.0.right_bottom().y - incremento - self.shift_squares.unwrap().y)
-                        * self.mult_factor.unwrap().1,
-                );
-
-                r = egui::Rect::from_min_max(min, max);
+                let r = egui::Rect::from_min_max(min, max);
 
                 sqrs.push((r, s.1));
             }
-        }
+        
         (Some(sqrs.clone()), Some(response))
     }
 
