@@ -495,8 +495,13 @@ impl eframe::App for FirstWindow {
                     ui.horizontal(|ui| {
                         if self.cut_clicked==false{
 
-                        paint_btn = Some(ui.add(egui::Button::new(RichText::new("🖊 Paint").size(20.0))));
-                        
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0); 
+                                paint_btn = Some(ui.add(egui::Button::new(RichText::new("🖊 Paint").size(20.0))));
+                            }
+                        ) ;  
+
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
                             self.selected_shape_string = "Select a shape!".to_string();
@@ -551,25 +556,62 @@ impl eframe::App for FirstWindow {
                                     self.ready_to_cut=None;
                                 };
                             });
-                        text_btn = Some(ui.add(egui::Button::new(RichText::new("✒ Text").size(20.0))));
-                        if text_btn.unwrap().clicked() {
+
+                            ui.vertical(
+                                |ui| {
+                                    ui.add_space(6.0); 
+                                     text_btn = Some(ui.add(egui::Button::new(RichText::new("✒ Text").size(20.0))));
+                       
+                                }
+                            ) ;  
+                       if text_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
                             self.ready_to_cut=None;
                         }
-                        save_btn = Some(ui.add(egui::Button::new(RichText::new("Save").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
-                        save_edit_btn = Some(ui.add(egui::Button::new(RichText::new("Save with name").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
-                        copy_btn = Some(ui.add(egui::Button::new(RichText::new("Copy").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
-                    }
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0);
+                                save_btn = Some(ui.add(egui::Button::new(RichText::new("Save").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
+                      
+                            }
+                        ) ;  
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0); 
+                                 save_edit_btn = Some(ui.add(egui::Button::new(RichText::new("Save with name").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
                         
-                        crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new(RichText::new("Cut").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
+                            }
+                        ) ;  
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0);
+                                copy_btn = Some(ui.add(egui::Button::new(RichText::new("Copy").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
+                    
+                            }
+                        ) ;  
+                        }
                         
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0);
+                                crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new(RichText::new("Cut").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
+                        
+                            }
+                        ) ;  
+                       
                         if self.cut_clicked==false{
                             
                         ui.add_space(90.0*ui.style().spacing.item_spacing.x);
 
-                        settings_btn=Some(ui.add(egui::Button::new(RichText::new("⚙ Settings").size(20.0))));
+                        ui.vertical(
+                            |ui| {
+                                ui.add_space(6.0);
+                                settings_btn=Some(ui.add(egui::Button::new(RichText::new("⚙ Settings").size(20.0))));
 
+                            }
+                        ) ;  
+                    
                         }
 
                     });
