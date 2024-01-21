@@ -158,7 +158,8 @@ fn main() -> Result<(), eframe::Error> {
                 shortcuts: shortcuts,
                 manager: manager,
                 ready_to_cut:None,
-                is_pointer_on_cut_window: false
+                is_pointer_on_cut_window: false,
+                set_Wh_window:true
         
             })
         }),
@@ -222,6 +223,7 @@ struct FirstWindow {
     manager: GlobalHotKeyManager,
     ready_to_cut:Option<bool>,
     is_pointer_on_cut_window: bool,
+    set_Wh_window:bool,
     
 }
 
@@ -849,11 +851,12 @@ impl eframe::App for FirstWindow {
                                
                                 
                                let d= egui::Window::new("cut")
+                               
                                 .constraint_to(response.clone().unwrap().rect)
-                                .default_width(dim[0]-1.0)//da modificare
-                                .default_height(dim[1]-1.0)//da modificare
+                                //.default_width(dim[0]-1.0)//da modificare
+                                //.default_height(dim[1]-1.0)//da modificare
                                 .title_bar(false)
-                                .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
+                                //.default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
                                 .vscroll(false)
                                 .interactable(   self.is_pointer_on_cut_window )
                                 .resizable(   self.is_pointer_on_cut_window )
@@ -863,6 +866,11 @@ impl eframe::App for FirstWindow {
                                      )
                                 .show(ctx, |ui| {
                                      //2 linee verticali
+                                     if self.set_Wh_window{
+                                        ui.set_height(dim[1]-1.0);
+                                     ui.set_width(dim[0]-1.0);
+                                     self.set_Wh_window=false;
+                                     }
                                      
                                      ui.painter().add(
                                         egui::Shape::dashed_line(
@@ -902,13 +910,15 @@ impl eframe::App for FirstWindow {
                                     
                                 });
                                 println!("response {:?}", response.clone().unwrap().rect.left_top());
-                                println!("finestra {:?}", d.unwrap().response.rect.left_top());
+                                println!("finestra {:?}", d.as_ref().unwrap().response.rect.left_top());
+                                println!("response dim {:?}", response.clone().unwrap().rect.size());
+                                println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
 
                             
                         
 
                                 if finish_crop.unwrap().clicked(){
-
+                                    self.set_Wh_window=true;
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
                                     self.cropped=true;
