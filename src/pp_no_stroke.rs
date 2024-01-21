@@ -480,6 +480,7 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
+           
 
             for li in lns.clone().into_iter() {
                 let ps = Pos2::new(
@@ -488,7 +489,7 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
-
+           
 
             for li in lns.clone().into_iter() {
                 let ps = Pos2::new(
@@ -497,6 +498,7 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
+        
    
 
             for li in lns.clone().into_iter() {
@@ -506,7 +508,7 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
-            ret.push((retlns.clone(), clr));
+           
 
             for li in lns.clone().into_iter() {
                 let ps = Pos2::new(
@@ -515,7 +517,9 @@ impl Painting {
                 );
                 retlns.push(ps);
             }
-            ret.push((retlns.clone(), clr));            
+            if retlns.len()>0{
+            ret.push((retlns.clone(), clr));  
+            }          
             
             }
         }
