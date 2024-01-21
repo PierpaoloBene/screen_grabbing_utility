@@ -159,7 +159,8 @@ fn main() -> Result<(), eframe::Error> {
                 manager: manager,
                 ready_to_cut:None,
                 is_pointer_on_cut_window: false,
-                set_Wh_window:true
+                set_Wh_window:true,
+                dim_bool: false,
         
             })
         }),
@@ -224,6 +225,7 @@ struct FirstWindow {
     ready_to_cut:Option<bool>,
     is_pointer_on_cut_window: bool,
     set_Wh_window:bool,
+    dim_bool:bool,
     
 }
 
@@ -548,7 +550,7 @@ impl eframe::App for FirstWindow {
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
                         copy_btn = Some(ui.add(egui::Button::new("Copy")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
                     }
-                        crop_btn=Some(ui.add_enabled(!self.cut_clicked,egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
+                        crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
                         if self.cut_clicked==false{
                         ui.add_space(107.0*ui.style().spacing.item_spacing.x);
@@ -599,6 +601,15 @@ impl eframe::App for FirstWindow {
 
                                 dim = Vec2::new(self.width * self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             }
+
+                            if self.shrink_fact.is_some(){
+                             if dim[0]>30.0*self.shrink_fact.unwrap() || dim[1]>30.0*self.shrink_fact.unwrap(){
+                                 self.dim_bool=true;
+                             }else{
+                                 self.dim_bool=false;
+                             } 
+                            }
+
                             let mut pxs = None;
                             let mut arr=None;
                             let mut txt = None;
@@ -938,6 +949,8 @@ impl eframe::App for FirstWindow {
                                
 
                             }
+                            }else if dim[0]==30.0 && dim[1]==30.0{
+                                self.cut_clicked=false;
                             }
                             if (settings_btn.is_none()==false && settings_btn.unwrap().clicked()){
                                 self.selected_window=6;
