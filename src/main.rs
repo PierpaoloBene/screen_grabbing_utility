@@ -495,7 +495,7 @@ impl eframe::App for FirstWindow {
                     ui.horizontal(|ui| {
                         if self.cut_clicked==false{
 
-                        paint_btn = Some(ui.add(egui::Button::new("🖊 Paint")));
+                        paint_btn = Some(ui.add(egui::Button::new(RichText::new("🖊 Paint").size(20.0))));
                         
                         if paint_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Painting);
@@ -503,13 +503,15 @@ impl eframe::App for FirstWindow {
                             self.ready_to_cut=None;
                         }
                         egui::ComboBox::from_id_source("Select a shape!")
-                            .selected_text(format!("{}", self.selected_shape_string))
+                            .selected_text(RichText::new(format!("{}", self.selected_shape_string)).size(20.0))
+                            
                             .show_ui(ui, |ui| {
+                               
                                 if ui
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Arrow,
-                                        "↘ Arrow",
+                                        RichText::new("↘ Arrow").size(20.0),
                                     )
                                     .clicked()
                                 {
@@ -523,7 +525,7 @@ impl eframe::App for FirstWindow {
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Circle,
-                                        "⭕ Circle",
+                                        RichText::new("⭕ Circle").size(20.0),
                                     )
                                     .clicked()
                                 {
@@ -538,7 +540,7 @@ impl eframe::App for FirstWindow {
                                     .selectable_value(
                                         &mut self.selected_shape,
                                         Shapes::Square,
-                                        "⬜ Square",
+                                        RichText::new("⬜ Square").size(20.0),
 
                                     )
                                     .clicked()
@@ -549,24 +551,24 @@ impl eframe::App for FirstWindow {
                                     self.ready_to_cut=None;
                                 };
                             });
-                        text_btn = Some(ui.add(egui::Button::new("✒ Text")));
+                        text_btn = Some(ui.add(egui::Button::new(RichText::new("✒ Text").size(20.0))));
                         if text_btn.unwrap().clicked() {
                             self.pp_option = Some(PpOptions::Text);
                             self.selected_shape_string = "Select a shape!".to_string();
                             self.ready_to_cut=None;
                         }
-                        save_btn = Some(ui.add(egui::Button::new("Save")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
-                        save_edit_btn = Some(ui.add(egui::Button::new("Save with name")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
-                        copy_btn = Some(ui.add(egui::Button::new("Copy")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
+                        save_btn = Some(ui.add(egui::Button::new(RichText::new("Save").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(2)));
+                        save_edit_btn = Some(ui.add(egui::Button::new(RichText::new("Save with name").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
+                        copy_btn = Some(ui.add(egui::Button::new(RichText::new("Copy").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
                     }
                         
-                        crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
+                        crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new(RichText::new("Cut").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         
                         if self.cut_clicked==false{
                             
-                        ui.add_space(107.0*ui.style().spacing.item_spacing.x);
+                        ui.add_space(90.0*ui.style().spacing.item_spacing.x);
 
-                        settings_btn=Some(ui.add(egui::Button::new("⚙ Settings")));
+                        settings_btn=Some(ui.add(egui::Button::new(RichText::new("⚙ Settings").size(20.0))));
 
                         }
 
@@ -826,8 +828,8 @@ impl eframe::App for FirstWindow {
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{   
 
                                 ui.horizontal(|ui|{
-                                    finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
-                                exit_cut_btn=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Exit")));
+                                    finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new(RichText::new("Finish Your Cut").size(20.0))));
+                                exit_cut_btn=Some(ui.add_enabled(self.cut_clicked, egui::Button::new(RichText::new("Exit").size(20.0))));
                                   
                                 });
                                                        
