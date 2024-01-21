@@ -161,7 +161,7 @@ fn main() -> Result<(), eframe::Error> {
                 is_pointer_on_cut_window: false,
                 set_Wh_window:true,
                 dim_bool: false,
-        
+                first_time:true,
             })
         }),
     )
@@ -226,6 +226,7 @@ struct FirstWindow {
     is_pointer_on_cut_window: bool,
     set_Wh_window:bool,
     dim_bool:bool,
+    first_time:bool,
     
 }
 
@@ -437,7 +438,12 @@ impl eframe::App for FirstWindow {
             
             self.hotkey_listener();
             frame.set_decorations(true);
-            frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
+            if self.first_time{
+                frame.set_window_pos(Pos2{x: 0.0, y: 0.0});
+                self.first_time=false;
+            }
+            
+            
             if self.current_os=="windows"{
                 frame.set_window_size(self.screen_size.unwrap()/(self.multiplication_factor.unwrap()));
             }else{
@@ -483,7 +489,9 @@ impl eframe::App for FirstWindow {
             
             egui::CentralPanel::default().show(ctx, |_ui| {
                 
+                
                 egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
+                    
                     ui.horizontal(|ui| {
                         if self.cut_clicked==false{
 
@@ -976,7 +984,7 @@ impl eframe::App for FirstWindow {
                         }
                         LoadingState::NotLoaded => {
                             
-                                if self.image_texture.is_none()==false{
+                                if self.image_texture.is_none()==false && (self.width>50.0 && self.height>50.0){
                                     self.load_image(ui);
                                     self.pp_option = Some(PpOptions::Painting);
                                     self.loading_state = LoadingState::Loaded;

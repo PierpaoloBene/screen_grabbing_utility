@@ -27,10 +27,7 @@ pub mod first_window {
                 }
             }
             if self.current_os == "windows" {
-                println!(
-                    "self.multiplication factor = {:?}",
-                    self.multiplication_factor
-                );
+                
                 self.width = self.width * self.multiplication_factor.unwrap();
                 self.height = self.height * self.multiplication_factor.unwrap();
                 self.rect_pos[0] = self.rect_pos[0] * self.multiplication_factor.unwrap();
@@ -278,9 +275,9 @@ pub mod first_window {
             self.image = Some(new_img);
 
             self.width =
-                self.image.clone().unwrap().size()[0] as f32 / self.multiplication_factor.unwrap();
+                (self.image.clone().unwrap().size()[0] as f32 + 1.0) / self.multiplication_factor.unwrap();
             self.height =
-                self.image.clone().unwrap().size()[1] as f32 / self.multiplication_factor.unwrap();
+                (self.image.clone().unwrap().size()[1] as f32 + 1.0 )/ self.multiplication_factor.unwrap();
 
             self.image_buffer = image_buffer_cutted.clone();
         }
