@@ -562,7 +562,7 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
-                               println!("caso 1");
+                               //println!("caso 1");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -571,7 +571,7 @@ impl eframe::App for FirstWindow {
                               
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                println!("caso 2");
+                                //println!("caso 2");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.65/self.multiplication_factor.unwrap());
                                 }else{
@@ -580,7 +580,7 @@ impl eframe::App for FirstWindow {
                                 
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             } else if self.width <= 1200.0 && self.height >= 700.0 {   
-                                println!("caso 3");    
+                               // println!("caso 3");    
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -589,7 +589,7 @@ impl eframe::App for FirstWindow {
                                
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap() , self.height*self.shrink_fact.unwrap());
                             } else {
-                               println!("caso 4");
+                               //println!("caso 4");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(1.0/self.multiplication_factor.unwrap());
                                 }else{
@@ -854,6 +854,8 @@ impl eframe::App for FirstWindow {
                                let d= egui::Window::new("cut")
                                
                                 .constraint_to(response.clone().unwrap().rect)
+                                .min_width(30.0*self.shrink_fact.unwrap())
+                                .min_height(30.0*self.shrink_fact.unwrap())
                                 .default_width(dim[0]-1.0)//da modificare
                                 .default_height(dim[1]-1.0)//da modificare
                                 .title_bar(false)
@@ -871,9 +873,11 @@ impl eframe::App for FirstWindow {
                                         println!("cambio w e h");
                                         ui.set_height(dim[1]-1.0);
                                         ui.set_width(dim[0]-1.0);
+                                        
                                         self.set_Wh_window=false;
                                      }
-                                     
+                                     //println!("{:?}",  ui.available_size());
+                                   
                                      ui.painter().add(
                                         egui::Shape::dashed_line(
                                         &[
@@ -911,10 +915,10 @@ impl eframe::App for FirstWindow {
                                     ui.allocate_space(ui.available_size());
                                     
                                 });
-                                // println!("response {:?}", response.clone().unwrap().rect.left_top());
-                                // println!("finestra {:?}", d.as_ref().unwrap().response.rect.left_top());
-                                // println!("response dim {:?}", response.clone().unwrap().rect.size());
-                                // println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
+                                println!("response {:?}", response.clone().unwrap().rect.left_top());
+                                println!("finestra {:?}", d.as_ref().unwrap().response.rect.left_top());
+                                println!("response dim {:?}", response.clone().unwrap().rect.size());
+                                println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
 
                             
                         
