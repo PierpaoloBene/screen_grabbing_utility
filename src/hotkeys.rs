@@ -96,7 +96,7 @@ impl Hotkeys{
             "shift" => {modifier_name = "SHIFT".to_string()},
             "mac_cmd" => {modifier_name = "CONTROL".to_string()},
             "command" => {modifier_name = "CONTROL".to_string()},
-            _ => {println!()}
+            _ => {}
         }
         let mut hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::Abort);
         
@@ -107,10 +107,11 @@ impl Hotkeys{
         }
         
         if self.hotkeys_vector.contains(&hotkey_to_assign){
-            println!("Hotkey selezionata già utilizzata scegline un altra");
+            
+            
             true
         }else{
-            println!("aggiorno hotkey");
+
             self.hotkeys_strings[new_hotkey.id]= (new_hotkey.modifier.clone(),new_hotkey.code.clone());
              *self.hotkeys_vector.get_mut(new_hotkey.id).unwrap() =hotkey_to_assign;
              false

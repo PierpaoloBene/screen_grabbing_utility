@@ -282,6 +282,7 @@ impl Painting {
                 }
             }
             PpOptions::Text => {
+
                 ui.horizontal(|ui: &mut Ui| {
                     ui.color_edit_button_srgba(&mut self.texts_color);
                  

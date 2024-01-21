@@ -1058,35 +1058,53 @@ impl eframe::App for FirstWindow {
 
                     ui.end_row();
                              if ui.button("Exit button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=0;      
                             }
                             ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(0)).color(Color32::GRAY));
                             ui.end_row();  
 
                             if ui.button("Screenshot button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=1;
                                 
                             }
                             ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(1)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Save button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=2;                                
                             }
                             ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(2)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Save with Name button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=3;
                                 
                             }
                             ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(3)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Copy button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=4;
                                 
                             }
                             ui.label(RichText::new(self.shortcuts.get_hotkey_strings_formatted(4)).color(Color32::GRAY));
                             ui.end_row();
                             if ui.button("Crop button").clicked(){
+                                self.toasts.as_mut().unwrap().info("Waiting for the keyboard input").set_duration(Some(Duration::from_secs(5)));
+                                self.show_toast=true;
+                             
                                 self.customizing_hotkey=5;
                                 
                             }
@@ -1095,7 +1113,7 @@ impl eframe::App for FirstWindow {
                             
                             if self.customizing_hotkey != usize::MAX{
                                 ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Wait);
-                                let ret=self.customize_shortcut(ui);
+                                 let ret=self.customize_shortcut(ui);
                                 
                                 if ret==1{
                                     self.toasts.as_mut().unwrap().success("Shortcut changed!" ).set_duration(Some(Duration::from_secs(5))); 
