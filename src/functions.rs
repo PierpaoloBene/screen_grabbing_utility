@@ -1,14 +1,13 @@
 pub mod first_window {
 
-    use std::{process::exit, string, time::Duration};
+    use std::time::Duration;
 
-    use crate::{hotkeys::CustomizeHotkey, FirstWindow, LoadingState, ModeOptions};
+    use crate::{hotkeys::CustomizeHotkey, FirstWindow, ModeOptions};
     use egui::{ColorImage, ImageData, Response};
-    use egui_hotkey::Hotkey;
-    use egui_notify::Toasts;
-    use global_hotkey::{hotkey::HotKey, HotKeyState};
+
+
+    use global_hotkey::HotKeyState;
     use image::{DynamicImage, EncodableLayout, ImageBuffer};
-    use keyboard_types::Modifiers;
     use rusttype::Font;
     use screenshots::Screen;
 
@@ -43,7 +42,7 @@ pub mod first_window {
                 ];
                 self.image_buffer = Some(self.screenshots_taken.clone().unwrap());
 
-                let mut pixels = self
+                let pixels = self
                     .screenshots_taken
                     .as_mut()
                     .unwrap()
@@ -73,7 +72,7 @@ pub mod first_window {
                             if self.rect_pos[0] < 0.0 {
                                 self.rect_pos[0] += self.screen_size.unwrap()[0];
                             }
-                            let mut image = screen.capture_area(
+                            let image = screen.capture_area(
                                 self.rect_pos[0] as i32,
                                 self.rect_pos[1] as i32,
                                 self.width as u32,
@@ -140,7 +139,6 @@ pub mod first_window {
 
         pub fn edit_image(&mut self, ui: &mut egui::Ui) {
             if self.circle_pixels.is_empty() == false {
-                println!("renderizzo i cerchi");
                 for c in self.circle_pixels.clone() {
                     imageproc::drawing::draw_hollow_circle_mut(
                         self.image_buffer.as_mut().unwrap(),
@@ -152,10 +150,8 @@ pub mod first_window {
             }
 
             if self.square_pixels.is_empty() == false {
-                let mut i = 0;
-
+   
                 for p in self.square_pixels.clone() {
-                    i += 1;
                     let w = p.0.width() as u32;
                     let h = p.0.height() as u32;
                     let rett =
@@ -169,6 +165,7 @@ pub mod first_window {
                 }
             }
 
+       
             if self.arrow_pixels.is_empty() == false {
                 for p in self.arrow_pixels.clone() {
                     let head = p.0[1];
@@ -237,7 +234,7 @@ pub mod first_window {
             let di = DynamicImage::ImageRgba8(self.image_buffer.clone().unwrap());
             let w = f32::abs(self.to_cut_rect.unwrap().0.x - self.to_cut_rect.unwrap().1.x);
             let h = f32::abs(self.to_cut_rect.unwrap().0.y - self.to_cut_rect.unwrap().1.y);
-            let mut cutted: DynamicImage;
+            let cutted: DynamicImage;
             if self.current_os == "windows" {
                 cutted = di.crop_imm(
                     ((self.to_cut_rect.unwrap().0.x - response.clone().unwrap().rect.left_top().x)
@@ -348,8 +345,8 @@ pub mod first_window {
             let mut modifier_end = None;
             let mut is_true = false;
 
-            json_str.replace(" ", "");
-            //json_str.replace("{", ",");
+            let _ = json_str.replace(" ", "");
+
             for (i, c) in json_str.char_indices() {
                 match c {
                     'r' => {
@@ -393,8 +390,7 @@ pub mod first_window {
                         let stringaaa = format!("{:?}", i.modifiers);
                        
                         let true_cnt = Self::count_true(&stringaaa);
-                        println!("{:?}", stringaaa);
-                        //println!("{:?}", true_cnt);
+
                         if true_cnt > 1 || i.keys_down.len() + true_cnt > 2 {
                             ret = 3;
                         } else {
@@ -402,7 +398,7 @@ pub mod first_window {
                                 FirstWindow::find_true_modifier(&stringaaa.as_str())
                                     .unwrap()
                                     .to_string();
-                            println!("{:?}", modifier_string);
+  
                             self.new_hotkey = CustomizeHotkey::new(
                                 self.customizing_hotkey,
                                 modifier_string,
@@ -421,16 +417,15 @@ pub mod first_window {
                         && self.new_hotkey.get_code().parse::<char>().is_ok() 
                         && self.new_hotkey.get_code().parse::<char>().unwrap().is_alphanumeric()
                     {
-                        println!("non assegnata e valida");
 
-                        self.shortcuts.update_hotkey(&self.new_hotkey, ui);
-                        println!("{:?}", self.new_hotkey);
+                        self.shortcuts.update_hotkey(&self.new_hotkey);
+
                         ret = 1;
                     
                     }else{
                         ret=2;
                     }
-                    self.manager
+                    let _ = self.manager
                         .register_all(self.shortcuts.get_hotkeys().as_slice());
                         
                             
@@ -464,7 +459,7 @@ pub mod first_window {
                     Ok(event) => match event.state {
                         HotKeyState::Pressed => {
                             if event.id == self.shortcuts.get_hotkeys()[1].id() {
-                                println!("PREMUTO CTRL+D");
+  
                                 std::thread::sleep(Duration::from_secs(
                                     self.selected_timer_numeric,
                                 ));
@@ -505,18 +500,16 @@ pub mod first_window {
                             } else if event.id == self.shortcuts.get_hotkeys()[5].id() {
                                 self.ready_to_crop = true;
                             } else {
-                                //A
-                                println!("else {:?}", event.id); //A
-                                println!("hotkey già assegnata!!");
+                       
                             }
-                        } //A
+                        } 
                         HotKeyState::Released => {}
                     },
 
                     Err(_) => {}
                 }
             } else if self.selected_window == 6 {
-                println!("ehehehhe");
+
             }
         }
     }

@@ -1,10 +1,7 @@
-// mod post_processing;
-// use crate::post_processing::PpOptions;
-// use crate::post_processing::View;
-mod pp_no_stroke;
+mod post_processing;
 mod hotkeys;
-use crate::pp_no_stroke::PpOptions;
-use crate::pp_no_stroke::View;
+use crate::post_processing::PpOptions;
+use crate::post_processing::View;
 
 use egui::CursorIcon;
 
@@ -22,15 +19,12 @@ use eframe::{
 use egui::{epaint::RectShape, Pos2, Rect, Rounding, Shape, Stroke, TextureHandle, Vec2};
 
 use screenshots::Screen;
-use std::collections::HashSet;
-use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use global_hotkey::{
-    hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager, HotKeyState,
+    GlobalHotKeyEvent, GlobalHotKeyEventReceiver, GlobalHotKeyManager,
 };
-use keyboard_types::{Code};
 
 #[derive(PartialEq, Debug)]
 enum ModeOptions {
@@ -93,8 +87,7 @@ fn main() -> Result<(), eframe::Error> {
     let manager = GlobalHotKeyManager::new().unwrap();
     let shortcuts = Hotkeys::new();
     manager.register_all(shortcuts.get_hotkeys().as_slice()).unwrap();
-    //let p = post_processing::Painting::default();
-    let p=pp_no_stroke::Painting::default();
+    let p=post_processing::Painting::default();
 
     let openfw = GlobalHotKeyEvent::receiver();
 
@@ -159,13 +152,14 @@ fn main() -> Result<(), eframe::Error> {
                 manager: manager,
                 ready_to_cut:None,
                 is_pointer_on_cut_window: false,
-                set_Wh_window:true,
+                set_wh_window:true,
                 dim_bool: false,
                 first_time:true,
             })
         }),
     )
 }
+
 
 struct FirstWindow {
     toasts:Option<Toasts>,
@@ -199,8 +193,7 @@ struct FirstWindow {
     rect_pos_f: Pos2,
     open_fw: GlobalHotKeyEventReceiver,
     screenshots_taken: Option<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
-    //painting: post_processing::Painting,
-    painting: pp_no_stroke::Painting,
+    painting: post_processing::Painting,
     width: f32,
     height: f32,
     mult_factor: Option<(f32, f32)>,
@@ -224,7 +217,7 @@ struct FirstWindow {
     manager: GlobalHotKeyManager,
     ready_to_cut:Option<bool>,
     is_pointer_on_cut_window: bool,
-    set_Wh_window:bool,
+    set_wh_window:bool,
     dim_bool:bool,
     first_time:bool,
     
@@ -263,7 +256,7 @@ impl eframe::App for FirstWindow {
 
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.add_space(20.0); // da modificare
+                    ui.add_space(20.0); 
                     
                     if ui
                         .add_sized([50., 50.], egui::Button::new(RichText::new("+").size(30.0)))
@@ -449,29 +442,7 @@ impl eframe::App for FirstWindow {
             }else{
                 frame.set_window_size(self.screen_size.unwrap());
             }
-            
-            //println!("w={:} , h={:}",self.width,self.height);
            
-               /*  
-               
-            if self.width <= 1000.0 && self.height <= 500.0 {
-                frame.set_window_size(Vec2::new(1100.0, 600.0)); //1400 750
-                println!("1");
-            } else if self.width <= 1000.0 && self.height >= 500.0 {
-                frame.set_window_size(Vec2::new(1100.0, self.height+self.height*0.3));
-                println!("2");
-            } else if self.width >= 1000.0 && self.height <= 500.0 {
-                frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap(), 600.0));
-                println!("3");
-            } else if self.width >= 1200.0 && self.height >= 700.0 {
-                println!("4");
-                frame.set_window_size(Vec2::new(1300.0, 800.0));
-            } else {
-                println!("5");
-                frame.set_window_size(Vec2::new(self.screen_size.unwrap().x /self.multiplication_factor.unwrap()- self.screen_size.unwrap().x /self.multiplication_factor.unwrap()*0.001, self.screen_size.unwrap().y /self.multiplication_factor.unwrap()- self.screen_size.unwrap().y /self.multiplication_factor.unwrap()*0.01));
-            }
-
-           */
 
             let mut paint_btn = None;
             let mut text_btn = None;
@@ -595,7 +566,7 @@ impl eframe::App for FirstWindow {
                         ui.vertical(
                             |ui| {
                                 ui.add_space(6.0);
-                                crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new(RichText::new("Cut").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
+                                crop_btn=Some(ui.add_enabled(!self.cut_clicked && self.dim_bool,egui::Button::new(RichText::new("Cut").size(20.0))).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         
                             }
                         ) ;  
@@ -620,7 +591,7 @@ impl eframe::App for FirstWindow {
                         LoadingState::Loaded => {
                             let dim: Vec2;
                             if self.width >= 1200.0 && self.height >= 700.0 {
-                               //println!("caso 1");
+                               //("caso 1");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -629,7 +600,7 @@ impl eframe::App for FirstWindow {
                               
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                                //println!("caso 2");
+                                //("caso 2");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.65/self.multiplication_factor.unwrap());
                                 }else{
@@ -638,7 +609,7 @@ impl eframe::App for FirstWindow {
                                 
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             } else if self.width <= 1200.0 && self.height >= 700.0 {   
-                               // println!("caso 3");    
+                               // ("caso 3");    
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -647,7 +618,7 @@ impl eframe::App for FirstWindow {
                                
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap() , self.height*self.shrink_fact.unwrap());
                             } else {
-                               //println!("caso 4");
+                               //("caso 4");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(1.0/self.multiplication_factor.unwrap());
                                 }else{
@@ -666,12 +637,12 @@ impl eframe::App for FirstWindow {
                              } 
                             }
 
-                            let mut pxs = None;
-                            let mut arr=None;
-                            let mut txt = None;
-                            let mut sqrs = None;
-                            let mut crcls=None;
-                            let mut response=None;
+                            let pxs ;
+                            let arr;
+                            let txt ;
+                            let sqrs ;
+                            let crcls;
+                            let response;
                             
                             
 
@@ -694,54 +665,23 @@ impl eframe::App for FirstWindow {
                                 if pxs.is_none() == false {
                                                  self.line_pixels = pxs.clone().unwrap();
                                            }
-                                           if arr.is_none() == false {
-                                           
-                                                    self.arrow_pixels=arr.clone().unwrap();
-                                                        
-                                                    }
-                                            if crcls.is_none() == false {
-                                                            self.circle_pixels = crcls.clone().unwrap();
-                                                            
-                                                        }
-                                                if sqrs.is_none() == false {
-                                                                self.square_pixels = sqrs.clone().unwrap();
-                                                            }
-                                                    if txt.is_none() == false {
-                                                                    self.text_pixels=txt.clone().unwrap();
-                                                                }
-                                // match self.pp_option.clone().unwrap() {
-                                //     PpOptions::Painting => {
-                                //         if pxs.is_none() == false {
-                                //             self.line_pixels = pxs.clone().unwrap();
-                                //         }
-                                //     }
-                                //     PpOptions::Arrow => {
-                                //         if arr.is_none() == false {
-                                           
-                                //         self.arrow_pixels=arr.clone().unwrap();
-                                            
-                                //         }
-                                //     }
-                                //     PpOptions::Circle => {
-                                //         if crcls.is_none() == false {
-                                //             self.circle_pixels = crcls.clone().unwrap();
-                                //             println!("cerchi nel main {:?}", self.circle_pixels.len());
-                                //         }
-                                //     }
-                                //     PpOptions::Square => {
-                                //         if sqrs.is_none() == false {
-                                //             self.square_pixels = sqrs.clone().unwrap();
-                                //         }
-                                //     }
-                                //     PpOptions::Text => {
-                                //         if txt.is_none() == false {
-                                //             self.text_pixels=txt.clone().unwrap();
-                                //         }
-                                //     }
-                                //     PpOptions::Cut => {
+                                if arr.is_none() == false {
                                         
-                                //     }
-                                // }
+                                        self.arrow_pixels=arr.clone().unwrap();
+                                    
+                                }
+                                if crcls.is_none() == false {
+                                        self.circle_pixels = crcls.clone().unwrap();
+                                                        
+                               }
+                     
+                               if sqrs.is_none() == false {
+                                      self.square_pixels = sqrs.clone().unwrap();
+                               }
+                               if txt.is_none() == false {
+                                    self.text_pixels=txt.clone().unwrap();
+                                }
+
 
                             if (save_btn.is_none()==false && save_btn.unwrap().clicked() )|| self.ready_to_save {
 
@@ -764,7 +704,7 @@ impl eframe::App for FirstWindow {
                                 self.edit_image(ui);
                                 let dialog = FileDialog::new().add_filter(".jpg", &["jpg"]).add_filter(".png", &["png"]).add_filter(".gif", &["gif"]).save_file();
                                 
-                                let mut stringpath: String;
+                                let stringpath: String;
                                 self.save=true;
                                 self.ready_to_cut=None;
                                 
@@ -835,34 +775,28 @@ impl eframe::App for FirstWindow {
                                 .output_mut(|i| i.cursor_icon = CursorIcon::Default);
                            
                                 egui::Window::new("Saving")
-            //.constraint_to(response.clone().unwrap().rect)
-            .default_width(300.0)//da modificare
-            .default_height(50.0)//da modificare
+
+            .default_width(300.0)
+            .default_height(50.0)
             .title_bar(false)
             .default_pos(Pos2::new((frame.info().window_info.size.x/2.0)/self.multiplication_factor.unwrap(), (frame.info().window_info.size.y/2.0)/self.multiplication_factor.unwrap()))
             .vscroll(false)
             .interactable(true)
             .resizable(true)
-            // .frame(egui::Frame::none()
-            //      .fill(egui::Color32::from_rgba_unmultiplied(70, 70, 70, 70))
-            //      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
-            //      )
             .show(ctx, |ui| {
                 ui.label(RichText::new("Your changes will be saved, do you want to proceed?").color(Color32::WHITE).size(15.0));
-                let mut yes_btn=Some(ui.add(egui::Button::new("Yes")));
-                let mut no_btn=Some(ui.add(egui::Button::new("No")));
+                let yes_btn=Some(ui.add(egui::Button::new("Yes")));
+                let no_btn=Some(ui.add(egui::Button::new("No")));
 
                 if yes_btn.unwrap().clicked(){
                     
                     self.ready_to_cut=Some(true);
                     self.ready_to_crop=true;
-                   //self.selected_window=5;
 
                 }
-
                 if no_btn.unwrap().clicked(){
                     self.ready_to_cut=None;
-                    //self.selected_window=5;
+
                 }
             });
                               }
@@ -878,8 +812,7 @@ impl eframe::App for FirstWindow {
                                 if self.ready_to_cut.is_none() && (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
                                     self.ready_to_cut=Some(false);
                                 }
-
-                                     println!("{:?}", self.ready_to_cut);           
+        
                                 
                                 if (self.ready_to_cut.is_none()==false && self.ready_to_cut.unwrap()==true) || (self.square_pixels.len()==0 && self.text_pixels.len()==0 && self.circle_pixels.len()==0 && self.line_pixels.len()==0 && self.arrow_pixels.len()==0) {
                                      
@@ -924,13 +857,13 @@ impl eframe::App for FirstWindow {
                             
                                
                                 
-                               let d= egui::Window::new("cut")
+                                egui::Window::new("cut")
                                
                                 .constraint_to(response.clone().unwrap().rect)
                                 .min_width(30.0*self.shrink_fact.unwrap())
                                 .min_height(30.0*self.shrink_fact.unwrap())
-                                .default_width(dim[0]-1.0)//da modificare
-                                .default_height(dim[1]-1.0)//da modificare
+                                .default_width(dim[0]-1.0)
+                                .default_height(dim[1]-1.0)
                                 .title_bar(false)
                                 .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
                                 .vscroll(false)
@@ -941,15 +874,15 @@ impl eframe::App for FirstWindow {
                                      .stroke(Stroke::new(1.0, egui::Color32::WHITE))
                                      )
                                 .show(ctx, |ui| {
-                                     //2 linee verticali
-                                     if self.set_Wh_window{
-                                        println!("cambio w e h");
+                             
+                                     if self.set_wh_window{
+                                      
                                         ui.set_height(dim[1]-1.0);
                                         ui.set_width(dim[0]-1.0);
                                         
-                                        self.set_Wh_window=false;
+                                        self.set_wh_window=false;
                                      }
-                                     //println!("{:?}",  ui.available_size());
+                               
                                    
                                      ui.painter().add(
                                         egui::Shape::dashed_line(
@@ -967,7 +900,7 @@ impl eframe::App for FirstWindow {
                                         Stroke::new(2.0, Color32::WHITE),
                                         10.0, 5.0));
 
-                                    //2 linee orizzontali
+                                 
                                     ui.painter().add(
                                         egui::Shape::dashed_line(
                                         &[
@@ -988,12 +921,7 @@ impl eframe::App for FirstWindow {
                                     ui.allocate_space(ui.available_size());
                                     
                                 });
-                                println!("response {:?}", response.clone().unwrap().rect.left_top());
-                                println!("finestra {:?}", d.as_ref().unwrap().response.rect.left_top());
-                                println!("response dim {:?}", response.clone().unwrap().rect.size());
-                                println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
-
-                               
+ 
                             
                                 if exit_cut_btn.unwrap().clicked(){
                                     self.cut_clicked=false;
@@ -1006,7 +934,7 @@ impl eframe::App for FirstWindow {
 
                                 if finish_crop.unwrap().clicked(){
                                    
-                                    self.set_Wh_window=true;
+                                    self.set_wh_window=true;
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
                                     self.cropped=true;
@@ -1022,7 +950,7 @@ impl eframe::App for FirstWindow {
                             }else if dim[0]==30.0 && dim[1]==30.0{
                                 self.cut_clicked=false;
                             }
-                            if (settings_btn.is_none()==false && settings_btn.unwrap().clicked()){
+                            if settings_btn.is_none()==false && settings_btn.unwrap().clicked(){
                                 self.selected_window=6;
                             }
                         }
@@ -1167,7 +1095,7 @@ impl eframe::App for FirstWindow {
                             
                             if self.customizing_hotkey != usize::MAX{
                                 ui.ctx().output_mut(|i| i.cursor_icon = CursorIcon::Wait);
-                                let mut ret=self.customize_shortcut(ui);
+                                let ret=self.customize_shortcut(ui);
                                 
                                 if ret==1{
                                     self.toasts.as_mut().unwrap().success("Shortcut changed!" ).set_duration(Some(Duration::from_secs(5))); 

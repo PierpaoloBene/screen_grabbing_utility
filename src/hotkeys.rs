@@ -1,10 +1,5 @@
-use std::ops::Index;
+
 use std::str::FromStr;
-
-
-use std::string;
-
-use egui::TextBuffer;
 use global_hotkey::hotkey::HotKey;
 use keyboard_types::Modifiers;
 use keyboard_types::Code;
@@ -89,7 +84,7 @@ impl Hotkeys{
     pub fn get_hotkey_strings_formatted(&self,id: usize) -> String{
         format!("{} + {}",   self.hotkeys_strings[id].0,  self.hotkeys_strings[id].1)
     }
-    pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey, ui: &mut egui::Ui)-> bool{
+    pub fn update_hotkey(&mut self, new_hotkey: &CustomizeHotkey)-> bool{
         
         let mut modifier_name: String = "CONTROL".to_string();
  
@@ -101,7 +96,7 @@ impl Hotkeys{
             "shift" => {modifier_name = "SHIFT".to_string()},
             "mac_cmd" => {modifier_name = "CONTROL".to_string()},
             "command" => {modifier_name = "CONTROL".to_string()},
-            _ => {}
+            _ => {println!()}
         }
         let mut hotkey_to_assign = HotKey::new(Modifiers::from_name(modifier_name.as_str()), Code::Abort);
         
