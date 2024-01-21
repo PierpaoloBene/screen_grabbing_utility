@@ -551,9 +551,9 @@ impl eframe::App for FirstWindow {
                         save_edit_btn = Some(ui.add(egui::Button::new("Save with name")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(4)));
                         copy_btn = Some(ui.add(egui::Button::new("Copy")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(3)));
                     }
+                        
                         crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
-                        finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
-                        exit_cut_btn=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Exit")));
+                        
                         if self.cut_clicked==false{
                             
                         ui.add_space(107.0*ui.style().spacing.item_spacing.x);
@@ -817,8 +817,12 @@ impl eframe::App for FirstWindow {
                            
                             if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{   
 
-                                
-                                                         
+                                ui.horizontal(|ui|{
+                                    finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
+                                exit_cut_btn=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Exit")));
+                                  
+                                });
+                                                       
                                 if self.ready_to_cut.is_none() && (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
                                     self.ready_to_cut=Some(false);
                                 }
@@ -937,6 +941,7 @@ impl eframe::App for FirstWindow {
                                 println!("response dim {:?}", response.clone().unwrap().rect.size());
                                 println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
 
+                               
                             
                                 if exit_cut_btn.unwrap().clicked(){
                                     self.cut_clicked=false;
