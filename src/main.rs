@@ -845,21 +845,10 @@ impl eframe::App for FirstWindow {
                                         self.is_pointer_on_cut_window = false;
                                      }
                                 
-                            egui::Window::new("precut")
-                            .constraint_to(response.clone().unwrap().rect)
-                            .default_width(dim[0]-0.0)//da modificare
-                            .default_height(dim[1]-0.0)//da modificare
-                            .title_bar(false)
-                            .vscroll(false)
-                            .interactable(   self.is_pointer_on_cut_window )
-                            .resizable(false)
-                            .frame(egui::Frame::none()
-                                     .fill(Color32::from_rgba_unmultiplied(0, 0, 0, 0))
-                                     )
-                            .show(ctx, |ui|{
-                                ui.allocate_space(ui.available_size());
+                            
+                               
                                 
-                                egui::Window::new("cut")
+                               let d= egui::Window::new("cut")
                                 .constraint_to(response.clone().unwrap().rect)
                                 .default_width(dim[0]-1.0)//da modificare
                                 .default_height(dim[1]-1.0)//da modificare
@@ -912,8 +901,10 @@ impl eframe::App for FirstWindow {
                                     ui.allocate_space(ui.available_size());
                                     
                                 });
+                                println!("response {:?}", response.clone().unwrap().rect.left_top());
+                                println!("finestra {:?}", d.unwrap().response.rect.left_top());
 
-                            });
+                            
                         
 
                                 if finish_crop.unwrap().clicked(){
