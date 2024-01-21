@@ -475,6 +475,7 @@ impl eframe::App for FirstWindow {
             let mut crop_btn=None;
             let mut finish_crop=None;
             let mut settings_btn=None;
+            let mut exit_cut_btn=None;
             
             if self.show_toast{
                 self.toasts.as_mut().unwrap().show(ctx);                    
@@ -552,10 +553,13 @@ impl eframe::App for FirstWindow {
                     }
                         crop_btn=Some(ui.add_enabled((!self.cut_clicked && self.dim_bool),egui::Button::new("Cut")).on_hover_text(self.shortcuts.get_hotkey_strings_formatted(5)));
                         finish_crop=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Finish Your Cut")));
+                        exit_cut_btn=Some(ui.add_enabled(self.cut_clicked, egui::Button::new("Exit")));
                         if self.cut_clicked==false{
+                            
                         ui.add_space(107.0*ui.style().spacing.item_spacing.x);
 
                         settings_btn=Some(ui.add(egui::Button::new("⚙ Settings")));
+
                         }
 
                     });
@@ -811,7 +815,9 @@ impl eframe::App for FirstWindow {
             });
                               }
                            
-                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{      
+                            if (crop_btn.unwrap().clicked() || self.cut_clicked==true)||self.ready_to_crop{   
+
+                                
                                                          
                                 if self.ready_to_cut.is_none() && (self.square_pixels.len()>0 || self.text_pixels.len()>0 || self.circle_pixels.len()>0 || self.line_pixels.len()>0 || self.arrow_pixels.len()>0){
                                     self.ready_to_cut=Some(false);
@@ -932,7 +938,14 @@ impl eframe::App for FirstWindow {
                                 println!("finestra dim {:?}", d.as_ref().unwrap().response.rect.size());
 
                             
-                        
+                                if exit_cut_btn.unwrap().clicked(){
+                                    self.cut_clicked=false;
+                                    self.pp_option=Some(PpOptions::Painting);
+                                    self.ready_to_crop= false;
+                                    self.ready_to_cut=None;
+                                    self.selected_shape_string = "Select a shape!".to_string();
+                                    self.cropped=false;
+                                }
 
                                 if finish_crop.unwrap().clicked(){
                                    
