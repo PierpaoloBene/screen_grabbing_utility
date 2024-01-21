@@ -571,7 +571,7 @@ impl eframe::App for FirstWindow {
                               
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap()); 
                             } else if self.width >= 1200.0 && self.height <= 700.0 {
-                               // println!("caso 2");
+                                //println!("caso 2");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.65/self.multiplication_factor.unwrap());
                                 }else{
@@ -580,7 +580,7 @@ impl eframe::App for FirstWindow {
                                 
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap(), self.height*self.shrink_fact.unwrap());
                             } else if self.width <= 1200.0 && self.height >= 700.0 {   
-                               // println!("caso 3");    
+                                //println!("caso 3");    
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(0.6/self.multiplication_factor.unwrap());
                                 }else{
@@ -589,7 +589,7 @@ impl eframe::App for FirstWindow {
                                
                                 dim = Vec2::new(self.width*self.shrink_fact.unwrap() , self.height*self.shrink_fact.unwrap());
                             } else {
-                               // println!("caso 4");
+                               //println!("caso 4");
                                 if self.current_os=="windows"{
                                     self.shrink_fact=Some(1.0/self.multiplication_factor.unwrap());
                                 }else{
@@ -853,10 +853,10 @@ impl eframe::App for FirstWindow {
                                let d= egui::Window::new("cut")
                                
                                 .constraint_to(response.clone().unwrap().rect)
-                                //.default_width(dim[0]-1.0)//da modificare
-                                //.default_height(dim[1]-1.0)//da modificare
+                                .default_width(dim[0]-1.0)//da modificare
+                                .default_height(dim[1]-1.0)//da modificare
                                 .title_bar(false)
-                                //.default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
+                                .default_pos(Pos2::new(response.clone().unwrap().rect.left_top().x+1.0, response.clone().unwrap().rect.left_top().y+1.0))
                                 .vscroll(false)
                                 .interactable(   self.is_pointer_on_cut_window )
                                 .resizable(   self.is_pointer_on_cut_window )
@@ -867,9 +867,10 @@ impl eframe::App for FirstWindow {
                                 .show(ctx, |ui| {
                                      //2 linee verticali
                                      if self.set_Wh_window{
+                                        println!("cambio w e h");
                                         ui.set_height(dim[1]-1.0);
-                                     ui.set_width(dim[0]-1.0);
-                                     self.set_Wh_window=false;
+                                        ui.set_width(dim[0]-1.0);
+                                        self.set_Wh_window=false;
                                      }
                                      
                                      ui.painter().add(
@@ -918,6 +919,7 @@ impl eframe::App for FirstWindow {
                         
 
                                 if finish_crop.unwrap().clicked(){
+                                   
                                     self.set_Wh_window=true;
                                     self.cut_clicked=false;
                                     self.load_cutted_img(ui, response);
