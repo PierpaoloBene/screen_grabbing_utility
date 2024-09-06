@@ -1,32 +1,37 @@
-# screen_grabbing_utility
+# Multiplatform Screen Grabbing Utility
 
+The application fulfills the following requirements: 
 
-Screen grabbing utility 
+**1. Platform Support:** The utility is compatible with multiple desktop
+operating systems, including Windows and macOS.
 
-Cose da fare per il progetto:
-- [x] Ritaglio immagine in post processing;
-- [x] Gestione più monitor;
-    - [x] Testare su Mac 
-    - [x] Testare su più schermi
-    - [x] Risolvere 'problema' risoluzione diversa dal 100%
+**2. User Interface (UI):** The utility has an intuitive and user-friendly
+interface that allows users to easily navigate through the application's
+features.
 
-- [x] Finestra Setting , con casella testo per scegliere path (e path di default) e radio button per scegliere formato , salvataggio;
-- [x] Capire come salvare immagine con edit senza fare screen;
+**3. Selection Options:** The utility allows the user to restrict the grabbed
+image to a custom area selected with a click and drag motion. The selected
+area may be further adjusted with subsequent interactions.
 
-Aggiustamenti:
-- [x] Rendering shapes in tempo reale e evitare sfasamenti;
-- [x] Numeri fissi a cazzo per dimensioni finestra, prendendo dimensioni finestra da frame;
-- [x] Cambiare puntatori del mouse nelle varie fasi (rettandgolo ,testo)
-- [x] Sistemare scrittura testo (posizionamento, dimensione a scelta) 
-- [x] Capire come funziona la selected window di buffer
-- [x] Aggiungere testo : “premere ctrl+D per fare screen” 
+**4. Hotkey Support:** The utility supports customizable hotkeys for quick
+screen grabbing. Users are able to set up their preferred shortcut keys.
 
+**5. Output Format:** The utility supports multiple output formats including
+.png, .jpg, .gif. It also supports copying the screen grab to the clipboard.
 
-Modulare:
-- [x]Take_Screenshot: funzione a cui delegare la capture. (Width,height,current_os,rect_pos ,….)  
-- [x]Save_Screenot:  solo per fare il save;
-- [x]Define_Rectangle: definire rettangolo  della mouse_pos ( da mettere dopo mouse_pos = ui.input) , da diff_x e diff_y 
-- [x]Init: Funzione Central panel select window 1 da delegare.
-- [x]Refactor_on_windows: da chiamare negli if current_os==windows, modifica il self height e with; 
-- [x]Load_image : Funzione per caricare immagine. 
+**6. Annotation Tools:** The utility has built-in annotation tools like
+shapes, arrows, text, and a color picker for highlighting or redacting parts of
+the screen grab.
 
+**7. Delay Timer:** The utility supports a delay timer function, allowing users
+to set up a screen grab after a specified delay.
+
+**8. Save Options:** The utility allows users to specify the default save
+location for screen grabs. It also supports automatic saving with
+predefined naming conventions.
+
+**9. Multi-monitor Support:** The utility is able to recognize and handle
+multiple monitors independently, allowing users to grab screens from any of the connected
+displays.
+
+To prove the app download the files and execute a cargo build.
